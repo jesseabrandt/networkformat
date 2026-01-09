@@ -39,3 +39,4 @@ edges.data.frame <- function(input_object, source_cols = c(1), target_cols = c(2
 edges.default <- function(input_object, ...){
   print("edges method not implemented for this object type")
 }
+
