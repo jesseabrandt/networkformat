@@ -3,4 +3,7 @@
 S3method(edges,data.frame)
 S3method(edges,default)
 S3method(edges,randomForest)
+S3method(edges,tree)
+S3method(nodes,data.frame)
 export(edges)
+export(nodes)
