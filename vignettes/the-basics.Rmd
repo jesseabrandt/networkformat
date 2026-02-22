@@ -1,0 +1,62 @@
+---
+title: "toplevel"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{toplevel}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(networkformat)
+```
+
+# Introduction
+
+There are two main functions in the **networkformat** package: `edgelist()` and `nodelist()`.
+
+These functions are generics, with different methods for different types of input objects from which you might want to extract network data. These include data.frames and various model objects from popular machine learning packages.
+
+# Types of network data
+
+R is full of packages for network analysis and visualization (e.g. igraph, tidygraph, ggraph, network(?)). These packages typically take data in one of three formats: adjacency matrix, incidence matrix, or edgelist. This package is for converting data not in one of those three formats into edgelist format. 
+
+
+# Examples
+
+## Random Forest
+
+```{r}
+library(igraph) # 
+
+```
+
+
+## Data Frame
+
+```{r}
+data <- data.frame(course = c("stat101", "stat102", "stat202", "math102", "data202", "math101"),
+                   prereq = c("math101", "stat101", "stat101", NA, NA, NA),
+                   crosslist = c(NA, "math102", "data202", "stat102", "stat202", NA))
+```
+
+
+## With igraph
+
+```{r}
+# replace with 
+library(igraph)
+
+
+# graph <- (edgelist(data), nodelist(data))
+
+```
+
+
