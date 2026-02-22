@@ -53,7 +53,7 @@ The package uses **S3 method dispatch** with two generic functions that dispatch
 
 ### File organization
 
-Each S3 method lives in its own file: `R/edgelist.R` (generic + data.frame + default), `R/edgelist.randomForest.R`, `R/edgelist.tree.R`, `R/edgelist.xgboost.R`, `R/nodelist.R` (generic + all node methods).
+Each S3 method lives in its own file: `R/edgelist.R` (generic + data.frame + default), `R/edgelist.randomForest.R`, `R/edgelist.tree.R`, `R/edgelist.xgb.Booster.R`, `R/nodelist.R` (generic + all node methods).
 
 ### Key algorithms
 
