@@ -6,7 +6,7 @@
 #' @export
 #'
 #'
-edges.randomForest <- function(input_object, ...){#TODO: attach nodes? check package installed?
+edgelist.randomForest <- function(input_object, ...){#TODO: attach nodelist? check package installed?
   convert_tree <- function(treenum){
     tree1 <- randomForest::getTree(input_object, treenum)
     tree1 <- as.data.frame(tree1)

@@ -20,7 +20,7 @@ library(networkformat)
 
 # Introduction
 
-There are two main functions in the **networkformat** package: `edgelist()` and `nodes()`.
+There are two main functions in the **networkformat** package: `edgelist()` and `nodelist()`.
 
 These functions are generics, with different methods for different types of input objects from which you might want to extract network data. These include data.frames and various model objects from popular machine learning packages.
 
@@ -55,7 +55,7 @@ data <- data.frame(course = c("stat101", "stat102", "stat202", "math102", "data2
 library(igraph)
 
 
-graph <- (edgelist(data), nodes(data))
+# graph <- (edgelist(data), nodelist(data))
 
 ```
 

@@ -7,7 +7,7 @@
 #' @export
 #'
 #' @examples
-nodes <- function(input_object, ...){UseMethod("nodes")}
+nodelist <- function(input_object, ...){UseMethod("nodelist")}
 
 #' Title
 #'
@@ -19,11 +19,10 @@ nodes <- function(input_object, ...){UseMethod("nodes")}
 #' @export
 #'
 #' @examples
-nodes.data.frame <- function(input_object, id_col = 1, ...){
-  # make id_col the first column
-  input_object[,c(id_col, setdiff(1:ncol(input_object), id_col))]
-  #works for number rn - make work for string
+#' @importFrom dplyr relocate
+nodelist.data.frame <- function(input_object, id_col = 1){
 
+  relocate(input_object, {{id_col}})
 
 }
 
@@ -36,6 +35,20 @@ nodes.data.frame <- function(input_object, id_col = 1, ...){
 #' @export
 #'
 #' @examples
-nodes.random.foret <- function(input_object, ...){
+nodelist.random.forest <- function(input_object, ...){
 
+}
+
+
+#' Title
+#'
+#' @param input_object
+#' @param ...
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+nodelist.default <- function(input_object, ...){
+  print("nodelist method not implemented for this object type")
 }

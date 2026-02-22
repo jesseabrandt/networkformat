@@ -7,15 +7,15 @@
 #' @export
 #'
 #' @examples
-edges.tree <- function(input_object, ...){
+edgelist.tree <- function(input_object, ...){
   df <- input_object$frame
 
   #initialize empty edge list
-  edges <- data.frame(from = integer(0), to = integer(0))#efficiency?
+  edgelist <- data.frame(from = integer(0), to = integer(0))#efficiency?
   n <- nrow(df)
 
 
-  # construct edges labelled w rownums
+  # construct edgelist labelled w rownums
 
   df$index <- c(1:n)
 
@@ -31,7 +31,7 @@ edges.tree <- function(input_object, ...){
       parent_idx <- df$index[parent_row]
 
 
-      edges <- rbind(edges, data.frame(
+      edgelist <- rbind(edgelist, data.frame(
         from = parent_idx,
         to = i
       ))
@@ -55,17 +55,17 @@ edges.tree <- function(input_object, ...){
 
 
   ### NOW add labels
-  edges$label <- NA
-  for (i in 1:nrow(edges)) {
-    parent_node <- edges$from[i]
-    child_node <- edges$to[i]
+  edgelist$label <- NA
+  for (i in 1:nrow(edgelist)) {
+    parent_node <- edgelist$from[i]
+    child_node <- edgelist$to[i]
     var <- df$var[parent_node]
     split <- df$splits[parent_node]
 
-    edges$label[i] <- ifelse(child_node %% 2 == 0,
+    edgelist$label[i] <- ifelse(child_node %% 2 == 0,
                              paste(var, df$splits[parent_node,1]),
                              paste(var, df$splits[parent_node,2]))
 
   }
-  return(edges)
+  return(edgelist)
 }
