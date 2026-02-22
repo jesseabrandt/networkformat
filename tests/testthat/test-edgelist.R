@@ -21,7 +21,8 @@ test_that("edgelist.randomForest includes split variable names", {
   el <- edgelist(rf)
 
   expect_true("split_var_name" %in% names(el))
-  expect_s3_class(el$split_var_name, "factor")
+  expect_type(el$split_var_name, "character")
+  expect_true(all(el$split_var_name %in% c("cyl", "disp", "hp")))
 })
 
 test_that("edgelist.data.frame method returns data frame with source and target", {

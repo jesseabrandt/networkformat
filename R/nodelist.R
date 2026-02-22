@@ -55,7 +55,7 @@ nodelist <- function(input_object, ...){UseMethod("nodelist")}
 #' node_list2
 nodelist.data.frame <- function(input_object, id_col = 1, ...){
   # Reorder columns: ID column first, then all others
-  input_object[, c(id_col, setdiff(1:ncol(input_object), id_col))]
+  input_object[, c(id_col, setdiff(1:ncol(input_object), id_col)), drop = FALSE]
 }
 
 #' Extract Node List from RandomForest Model

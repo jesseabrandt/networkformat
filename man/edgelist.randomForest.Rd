@@ -20,7 +20,7 @@ A data.frame with the following columns:
     \item{split_point}{Threshold value for the split}
     \item{prediction}{Prediction value at the parent node}
     \item{treenum}{Tree number within the forest}
-    \item{split_var_name}{Factor with human-readable variable names}
+    \item{split_var_name}{Character vector with human-readable variable names}
   }
 }
 \description{

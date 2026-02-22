@@ -16,7 +16,7 @@
 #'     \item{split_point}{Threshold value for the split}
 #'     \item{prediction}{Prediction value at the parent node}
 #'     \item{treenum}{Tree number within the forest}
-#'     \item{split_var_name}{Factor with human-readable variable names}
+#'     \item{split_var_name}{Character vector with human-readable variable names}
 #'   }
 #' @export
 #'
@@ -58,6 +58,7 @@ edgelist.randomForest <- function(input_object, ...){
   }
   forest_edge <- lapply(c(1:input_object$ntree), \(i)(convert_tree(i)))
   forest_df <- do.call(rbind, forest_edge)
-  forest_df$split_var_name <- factor(forest_df$split_var, labels = names(input_object$forest$ncat))
+  var_names <- names(input_object$forest$ncat)
+  forest_df$split_var_name <- var_names[forest_df$split_var]
   return(forest_df)
 }
