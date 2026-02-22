@@ -22,7 +22,7 @@
 #'   tree_model <- tree::tree(Species ~ ., data = iris)
 #'
 #'   # Extract edgelist
-#'   tree_edges <- edges(tree_model)
+#'   tree_edges <- edgelist(tree_model)
 #'   head(tree_edges)
 #'
 #'   # View edge labels (split conditions)
@@ -32,7 +32,7 @@
 #'   # plot(tree_model)
 #'   # text(tree_model)
 #' }
-edges.tree <- function(input_object, ...){
+edgelist.tree <- function(input_object, ...){
   df <- input_object$frame
 
   #initialize empty edge list

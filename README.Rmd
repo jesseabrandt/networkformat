@@ -57,7 +57,7 @@ library(randomForest)
 rf_model <- randomForest(Species ~ ., data = iris, ntree = 5, maxnodes = 10)
 
 # Extract edgelist
-rf_edges <- edges(rf_model)
+rf_edges <- edgelist(rf_model)
 head(rf_edges)
 
 # Examine structure
@@ -82,7 +82,7 @@ library(tree)
 tree_model <- tree(Species ~ Sepal.Length + Sepal.Width + Petal.Length, data = iris)
 
 # Extract edgelist
-tree_edges <- edges(tree_model)
+tree_edges <- edgelist(tree_model)
 head(tree_edges)
 
 # View split conditions
@@ -103,7 +103,7 @@ courses <- data.frame(
 )
 
 # Convert to edgelist
-course_edges <- edges(courses, source_cols = 2, target_cols = 1)
+course_edges <- edgelist(courses, source_cols = 2, target_cols = 1)
 head(course_edges)
 ```
 
@@ -123,7 +123,7 @@ V(g)$label <- V(g)$name
 E(g)$split_var <- rf_edges_tree1$split_var_name
 
 # Plot
-plot(g, 
+plot(g,
      layout = layout_as_tree(g, root = 1),
      vertex.size = 20,
      vertex.color = "lightblue",
@@ -143,7 +143,7 @@ tree_graph <- as_tbl_graph(g) %>%
 
 # Create visualization
 ggraph(tree_graph, layout = 'tree') +
-  geom_edge_link(arrow = arrow(length = unit(2, 'mm')), 
+  geom_edge_link(arrow = arrow(length = unit(2, 'mm')),
                  end_cap = circle(3, 'mm')) +
   geom_node_point(aes(color = depth), size = 5) +
   geom_node_text(aes(label = name), vjust = -0.5) +
@@ -158,8 +158,8 @@ ggraph(tree_graph, layout = 'tree') +
 # Calculate network metrics
 library(tidygraph)
 
-rf_edges_all <- edges(rf_model)
-g_forest <- graph_from_data_frame(rf_edges_all[, c("source", "target", "treenum")], 
+rf_edges_all <- edgelist(rf_model)
+g_forest <- graph_from_data_frame(rf_edges_all[, c("source", "target", "treenum")],
                                    directed = TRUE)
 
 # Node centrality (which nodes are most central?)
@@ -186,11 +186,11 @@ library(dplyr)
 
 # Single tree
 tree_single <- tree(Species ~ ., data = iris)
-edges_tree <- edges(tree_single)
+edges_tree <- edgelist(tree_single)
 
 # Random forest (average across trees)
 rf_multi <- randomForest(Species ~ ., data = iris, ntree = 10)
-edges_rf <- edges(rf_multi)
+edges_rf <- edgelist(rf_multi)
 
 # Compare complexity
 data.frame(
@@ -209,17 +209,17 @@ data.frame(
 
 To add support for a new tree-based model class:
 
-1. Create a new file `R/edges.newmodel.R`
-2. Implement the S3 method `edges.newmodel()`
+1. Create a new file `R/edgelist.newmodel.R`
+2. Implement the S3 method `edgelist.newmodel()`
 3. Extract tree structure into data.frame with source/target columns
-4. Add tests in `tests/testthat/test-edges.R`
+4. Add tests in `tests/testthat/test-edgelist.R`
 
-See `R/edges.randomForest.R` as a reference implementation.
+See `R/edgelist.randomForest.R` as a reference implementation.
 
 ### Contributing
 
 Contributions are welcome! Particularly:
-- XGBoost implementation (`edges.xgb.Booster()`)
+- XGBoost implementation (`edgelist.xgb.Booster()`)
 - Node extraction methods for tree models
 - Additional network metrics and utilities
 - Visualization helpers and themes
@@ -233,8 +233,6 @@ Contributions are welcome! Particularly:
 - **[ggraph](https://cran.r-project.org/package=ggraph)**: Grammar of graphics for networks
 
 ## Citation
-
-To cite networkformat in publications:
 
 ``` r
 citation("networkformat")

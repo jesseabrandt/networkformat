@@ -18,9 +18,9 @@
 #'   level = c(100, 100, 100),
 #'   credits = c(3, 4, 3)
 #' )
-#' node_list <- nodes(courses)
+#' node_list <- nodelist(courses)
 #' node_list
-nodes <- function(input_object, ...){UseMethod("nodes")}
+nodelist <- function(input_object, ...){UseMethod("nodelist")}
 
 #' Extract Node List from Data Frame
 #'
@@ -42,7 +42,7 @@ nodes <- function(input_object, ...){UseMethod("nodes")}
 #'   type = c("course", "course", "prereq"),
 #'   level = c(100, 200, 100)
 #' )
-#' node_list <- nodes(nodes_df)
+#' node_list <- nodelist(nodes_df)
 #' node_list
 #'
 #' # Specify ID column by index
@@ -51,9 +51,9 @@ nodes <- function(input_object, ...){UseMethod("nodes")}
 #'   id = c("stat101", "stat102"),
 #'   credits = c(3, 4)
 #' )
-#' node_list2 <- nodes(nodes_df2, id_col = 2)
+#' node_list2 <- nodelist(nodes_df2, id_col = 2)
 #' node_list2
-nodes.data.frame <- function(input_object, id_col = 1, ...){
+nodelist.data.frame <- function(input_object, id_col = 1, ...){
   # Reorder columns: ID column first, then all others
   input_object[, c(id_col, setdiff(1:ncol(input_object), id_col))]
 }
@@ -73,11 +73,11 @@ nodes.data.frame <- function(input_object, id_col = 1, ...){
 #' \dontrun{
 #' if (requireNamespace("randomForest", quietly = TRUE)) {
 #'   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 5)
-#'   # node_list <- nodes(rf)  # Not fully implemented
+#'   # node_list <- nodelist(rf)  # Not fully implemented
 #' }
 #' }
-nodes.randomForest <- function(input_object, ...){
-  message("nodes() method for randomForest not fully implemented yet. ",
-          "Consider extracting from edges() output.")
+nodelist.randomForest <- function(input_object, ...){
+  message("nodelist() method for randomForest not fully implemented yet. ",
+          "Consider extracting from edgelist() output.")
   invisible(NULL)
 }

@@ -31,7 +31,7 @@
 #'   )
 #'
 #'   # Extract edgelist
-#'   rf_edges <- edges(rf_model)
+#'   rf_edges <- edgelist(rf_model)
 #'   head(rf_edges)
 #'
 #'   # Examine split variables
@@ -41,7 +41,7 @@
 #'   tree1_edges <- subset(rf_edges, treenum == 1)
 #'   nrow(tree1_edges)
 #' }
-edges.randomForest <- function(input_object, ...){
+edgelist.randomForest <- function(input_object, ...){
   convert_tree <- function(treenum){
     tree1 <- randomForest::getTree(input_object, treenum)
     tree1 <- as.data.frame(tree1)
@@ -56,19 +56,8 @@ edges.randomForest <- function(input_object, ...){
                            treenum = treenum)
     return(edgelist)
   }
-  # edgelist$split_var |> unique()
-  # forest_edge <- data.frame()
-  # # is most efficient way adding to a list?
-  # for(i in 1:input_object$ntree){
-  #   forest_edge <- rbind(forest_edge, convert_tree(i))
-  #
-  # }
   forest_edge <- lapply(c(1:input_object$ntree), \(i)(convert_tree(i)))
-  # forest_edge$split_var_name
   forest_df <- do.call(rbind, forest_edge)
   forest_df$split_var_name <- factor(forest_df$split_var, labels = names(input_object$forest$ncat))
-  # do for all trees then attach varnames
   return(forest_df)
 }
-
-

@@ -17,7 +17,7 @@ devtools::test()
 # Or from terminal: Rscript -e 'testthat::test_dir("tests/testthat")'
 
 # Run a single test file
-testthat::test_file("tests/testthat/test-edges.R")
+testthat::test_file("tests/testthat/test-edgelist.R")
 
 # Regenerate documentation (man/ pages and NAMESPACE) after changing roxygen2 comments
 devtools::document()
@@ -34,26 +34,26 @@ R CMD build .
 
 The package uses **S3 method dispatch** with two generic functions that dispatch on the class of `input_object`:
 
-### `edges()` — extract parent-child relationships as edgelists
+### `edgelist()` — extract parent-child relationships as edgelists
 
 | Method | Input Class | Output Columns | Status |
 |--------|-------------|---------------|--------|
-| `edges.randomForest` | randomForest | source, target, split_var, split_point, prediction, treenum, split_var_name | Complete |
-| `edges.tree` | tree | from, to, label | Complete |
-| `edges.data.frame` | data.frame | source, target | Complete |
-| `edges.xgb.Booster` | xgb.Booster | — | Stub (not implemented) |
-| `edges.default` | any other | — | Fallback error message |
+| `edgelist.randomForest` | randomForest | source, target, split_var, split_point, prediction, treenum, split_var_name | Complete |
+| `edgelist.tree` | tree | from, to, label | Complete |
+| `edgelist.data.frame` | data.frame | source, target | Complete |
+| `edgelist.xgb.Booster` | xgb.Booster | — | Stub (not implemented) |
+| `edgelist.default` | any other | — | Fallback error message |
 
-### `nodes()` — extract node attributes
+### `nodelist()` — extract node attributes
 
 | Method | Input Class | Status |
 |--------|-------------|--------|
-| `nodes.data.frame` | data.frame | Complete (reorders columns, id_col first) |
-| `nodes.randomForest` | randomForest | Stub (returns NULL) |
+| `nodelist.data.frame` | data.frame | Complete (reorders columns, id_col first) |
+| `nodelist.randomForest` | randomForest | Stub (returns NULL) |
 
 ### File organization
 
-Each S3 method lives in its own file: `R/edges.R` (generic + data.frame + default), `R/edges.randomForest.R`, `R/edges.tree.R`, `R/edges.xgboost.R`, `R/nodes.R` (generic + all node methods).
+Each S3 method lives in its own file: `R/edgelist.R` (generic + data.frame + default), `R/edgelist.randomForest.R`, `R/edgelist.tree.R`, `R/edgelist.xgboost.R`, `R/nodelist.R` (generic + all node methods).
 
 ### Key algorithms
 
@@ -62,15 +62,15 @@ Each S3 method lives in its own file: `R/edges.R` (generic + data.frame + defaul
 
 ## Adding a New Model Type
 
-1. Create `R/edges.newclass.R` with `edges.newclass(input_object, ...)`
+1. Create `R/edgelist.newclass.R` with `edgelist.newclass(input_object, ...)`
 2. Add roxygen2 `@export` tag
 3. Run `devtools::document()` to update NAMESPACE
-4. Add tests in `tests/testthat/test-edges.R`
-5. Use `R/edges.randomForest.R` as reference
+4. Add tests in `tests/testthat/test-edgelist.R`
+5. Use `R/edgelist.randomForest.R` as reference
 
 ## Testing
 
 - Framework: testthat 3rd edition
-- Test files: `tests/testthat/test-edges.R` (11 tests), `tests/testthat/test-nodes.R` (9 tests)
+- Test files: `tests/testthat/test-edgelist.R` (11 tests), `tests/testthat/test-nodelist.R` (9 tests)
 - Tests require `randomForest` and `tree` packages (listed in Suggests)
 - Documentation is roxygen2-generated — never edit `man/*.Rd` or `NAMESPACE` by hand

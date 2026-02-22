@@ -22,10 +22,10 @@
 #'     nrounds = 2,
 #'     objective = "binary:logistic"
 #'   )
-#'   # edges_xgb <- edges(bst)  # Not yet implemented
+#'   # edges_xgb <- edgelist(bst)  # Not yet implemented
 #' }
 #' }
-edges.xgb.Booster <- function(input_object, ...) {
-  stop("edges() method for xgboost models not yet implemented. ",
+edgelist.xgb.Booster <- function(input_object, ...) {
+  stop("edgelist() method for xgboost models not yet implemented. ",
        "Contributions welcome!")
 }
