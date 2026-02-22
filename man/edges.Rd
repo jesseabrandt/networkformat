@@ -2,16 +2,37 @@
 % Please edit documentation in R/edges.R
 \name{edges}
 \alias{edges}
-\title{Extracts edgelist from various object types}
+\title{Extract Edgelist from Tree Models}
 \usage{
 edges(input_object, ...)
 }
 \arguments{
-\item{...}{}
+\item{input_object}{A tree model object (randomForest, tree, xgboost, or data.frame)}
+
+\item{...}{Additional arguments passed to specific methods}
 }
 \value{
-data.frame representing edgelist
+A data.frame with columns representing edges between nodes in the tree.
+  The specific columns depend on the input object type.
 }
 \description{
-Extracts edgelist from various object types
+Generic function to extract network edgelist representation from various
+tree-based models including randomForest, tree, and xgboost objects.
+The edgelist represents the hierarchical structure of decision trees
+with parent-child relationships.
+}
+\examples{
+# RandomForest example
+if (requireNamespace("randomForest", quietly = TRUE)) {
+  rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 10)
+  edges_rf <- edges(rf)
+  head(edges_rf)
+}
+
+# Tree example
+if (requireNamespace("tree", quietly = TRUE)) {
+  tr <- tree::tree(Species ~ ., data = iris)
+  edges_tr <- edges(tr)
+  head(edges_tr)
+}
 }

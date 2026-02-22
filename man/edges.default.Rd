@@ -2,13 +2,23 @@
 % Please edit documentation in R/edges.R
 \name{edges.default}
 \alias{edges.default}
-\title{Title}
+\title{Default Edge Extraction Method}
 \usage{
 \method{edges}{default}(input_object, ...)
 }
 \arguments{
-\item{...}{}
+\item{input_object}{An object for which no specific edges method exists}
+
+\item{...}{Additional arguments (currently unused)}
+}
+\value{
+NULL (invisibly). Prints a message to console.
 }
 \description{
-Title
+Default method that is called when no specific method is implemented for
+the input object type. Prints an informative message to the user.
+}
+\examples{
+# Attempting to extract edges from unsupported object type
+edges(list(a = 1, b = 2))
 }

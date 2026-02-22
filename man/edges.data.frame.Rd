@@ -2,13 +2,37 @@
 % Please edit documentation in R/edges.R
 \name{edges.data.frame}
 \alias{edges.data.frame}
-\title{Title}
+\title{Extract Edgelist from Data Frame}
 \usage{
 \method{edges}{data.frame}(input_object, source_cols = c(1), target_cols = c(2), ...)
 }
 \arguments{
-\item{...}{}
+\item{input_object}{A data.frame containing network information}
+
+\item{source_cols}{Column index or indices for source nodes (default: 1)}
+
+\item{target_cols}{Column index or indices for target nodes (default: 2)}
+
+\item{...}{Additional arguments (currently unused)}
+}
+\value{
+A data.frame with two columns: 'source' and 'target', representing edges
 }
 \description{
-Title
+Converts a data.frame to network edgelist format by specifying which columns
+represent source and target nodes. This is useful for creating edgelists from
+tabular data where node relationships are stored in columns.
+}
+\examples{
+# Course prerequisite network
+courses <- data.frame(
+  course = c("stat101", "stat102", "stat202"),
+  prereq = c("math101", "stat101", "stat101")
+)
+edges_df <- edges(courses)
+edges_df
+
+# Specify custom columns
+edges_custom <- edges(courses, source_cols = 2, target_cols = 1)
+edges_custom
 }

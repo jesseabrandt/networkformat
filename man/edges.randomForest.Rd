@@ -2,16 +2,52 @@
 % Please edit documentation in R/edges.randomForest.R
 \name{edges.randomForest}
 \alias{edges.randomForest}
-\title{Title}
+\title{Extract Edgelist from RandomForest Model}
 \usage{
 \method{edges}{randomForest}(input_object, ...)
 }
 \arguments{
-\item{input_obj}{}
+\item{input_object}{A randomForest model object from the randomForest package}
+
+\item{...}{Additional arguments (currently unused)}
 }
 \value{
-data.frame representing edgelist.
+A data.frame with the following columns:
+  \describe{
+    \item{source}{Parent node index within the tree}
+    \item{target}{Child node index (left or right daughter)}
+    \item{split_var}{Numeric index of the variable used for splitting}
+    \item{split_point}{Threshold value for the split}
+    \item{prediction}{Prediction value at the parent node}
+    \item{treenum}{Tree number within the forest}
+    \item{split_var_name}{Factor with human-readable variable names}
+  }
 }
 \description{
-Title
+Converts a randomForest model object into a network edgelist representation
+by extracting parent-child relationships from all trees in the forest. Each
+edge represents a split in the decision tree, with additional attributes
+including split variable, split point, and prediction values.
+}
+\examples{
+if (requireNamespace("randomForest", quietly = TRUE)) {
+  # Fit a small random forest
+  rf_model <- randomForest::randomForest(
+    Species ~ .,
+    data = iris,
+    ntree = 5,
+    maxnodes = 10
+  )
+
+  # Extract edgelist
+  rf_edges <- edges(rf_model)
+  head(rf_edges)
+
+  # Examine split variables
+  table(rf_edges$split_var_name)
+
+  # Filter to first tree only
+  tree1_edges <- subset(rf_edges, treenum == 1)
+  nrow(tree1_edges)
+}
 }

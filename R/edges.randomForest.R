@@ -1,12 +1,47 @@
-#' Title
+#' Extract Edgelist from RandomForest Model
 #'
-#' @param input_obj
+#' Converts a randomForest model object into a network edgelist representation
+#' by extracting parent-child relationships from all trees in the forest. Each
+#' edge represents a split in the decision tree, with additional attributes
+#' including split variable, split point, and prediction values.
 #'
-#' @returns data.frame representing edgelist.
+#' @param input_object A randomForest model object from the randomForest package
+#' @param ... Additional arguments (currently unused)
+#'
+#' @returns A data.frame with the following columns:
+#'   \describe{
+#'     \item{source}{Parent node index within the tree}
+#'     \item{target}{Child node index (left or right daughter)}
+#'     \item{split_var}{Numeric index of the variable used for splitting}
+#'     \item{split_point}{Threshold value for the split}
+#'     \item{prediction}{Prediction value at the parent node}
+#'     \item{treenum}{Tree number within the forest}
+#'     \item{split_var_name}{Factor with human-readable variable names}
+#'   }
 #' @export
 #'
+#' @examples
+#' if (requireNamespace("randomForest", quietly = TRUE)) {
+#'   # Fit a small random forest
+#'   rf_model <- randomForest::randomForest(
+#'     Species ~ .,
+#'     data = iris,
+#'     ntree = 5,
+#'     maxnodes = 10
+#'   )
 #'
-edges.randomForest <- function(input_object, ...){#TODO: attach nodes? check package installed?
+#'   # Extract edgelist
+#'   rf_edges <- edges(rf_model)
+#'   head(rf_edges)
+#'
+#'   # Examine split variables
+#'   table(rf_edges$split_var_name)
+#'
+#'   # Filter to first tree only
+#'   tree1_edges <- subset(rf_edges, treenum == 1)
+#'   nrow(tree1_edges)
+#' }
+edges.randomForest <- function(input_object, ...){
   convert_tree <- function(treenum){
     tree1 <- randomForest::getTree(input_object, treenum)
     tree1 <- as.data.frame(tree1)

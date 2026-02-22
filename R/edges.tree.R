@@ -1,12 +1,37 @@
-#' Title
+#' Extract Edgelist from Tree Model
 #'
-#' @param input_object
-#' @param ...
+#' Converts a tree model object (from the tree package) into a network edgelist
+#' representation. Uses a parent-stack algorithm to traverse the binary tree
+#' structure and construct parent-child relationships. Each edge is labeled
+#' with the split condition.
 #'
-#' @returns
+#' @param input_object A tree model object from the tree package
+#' @param ... Additional arguments (currently unused)
+#'
+#' @returns A data.frame with the following columns:
+#'   \describe{
+#'     \item{from}{Parent node index}
+#'     \item{to}{Child node index}
+#'     \item{label}{Split condition label (variable and threshold)}
+#'   }
 #' @export
 #'
 #' @examples
+#' if (requireNamespace("tree", quietly = TRUE)) {
+#'   # Fit a classification tree
+#'   tree_model <- tree::tree(Species ~ ., data = iris)
+#'
+#'   # Extract edgelist
+#'   tree_edges <- edges(tree_model)
+#'   head(tree_edges)
+#'
+#'   # View edge labels (split conditions)
+#'   tree_edges$label
+#'
+#'   # Visualize with base R (if desired)
+#'   # plot(tree_model)
+#'   # text(tree_model)
+#' }
 edges.tree <- function(input_object, ...){
   df <- input_object$frame
 

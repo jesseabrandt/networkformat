@@ -1,0 +1,10 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^LICENSE\.md$
+^README\.Rmd$
+^\.git$
+^\.gitignore$
+^\.DS_Store$
+^\.Rhistory$
+^codecov\.yml$
+^\.github$
