@@ -8,3 +8,4 @@
 ^\.Rhistory$
 ^codecov\.yml$
 ^\.github$
+^data-raw$

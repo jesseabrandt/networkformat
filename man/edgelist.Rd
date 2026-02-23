@@ -2,26 +2,28 @@
 % Please edit documentation in R/edgelist.R
 \name{edgelist}
 \alias{edgelist}
-\title{Extract Edgelist from Tree Models}
+\title{Extract Edgelist from Various Object Types}
 \usage{
 edgelist(input_object, ...)
 }
 \arguments{
-\item{input_object}{A tree model object (randomForest, tree, xgboost, or data.frame)}
+\item{input_object}{An object to extract an edgelist from}
 
 \item{...}{Additional arguments passed to specific methods}
 }
 \value{
-A data.frame with columns representing edges between nodes in the tree.
-  The specific columns depend on the input object type.
+A data.frame representing an edgelist. The specific columns depend
+  on the input object type.
 }
 \description{
-Generic function to extract network edgelist representation from various
-tree-based models including randomForest, tree, and xgboost objects.
-The edgelist represents the hierarchical structure of decision trees
-with parent-child relationships.
+Generic function to extract a network edgelist from various object types.
+Methods exist for data.frames and tree-based model objects (randomForest,
+tree, xgboost). The specific columns returned depend on the input type.
 }
 \examples{
+# Data.frame example using bundled dataset
+edgelist(courses)
+
 # RandomForest example
 if (requireNamespace("randomForest", quietly = TRUE)) {
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 10)

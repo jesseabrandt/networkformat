@@ -26,12 +26,7 @@ test_that("edgelist.randomForest includes split variable names", {
 })
 
 test_that("edgelist.data.frame method returns data frame with source and target", {
-  df <- data.frame(
-    course = c("stat101", "stat102", "stat202", "math102", "data202", "math101"),
-    prereq = c("math101", "stat101", "stat101", NA, NA, NA),
-    crosslist = c(NA, "math102", "data202", "stat102", "stat202", NA)
-  )
-  el <- edgelist(df)
+  el <- edgelist(courses)
 
   expect_s3_class(el, "data.frame")
   expect_true(all(c("source", "target") %in% names(el)))
@@ -143,14 +138,37 @@ test_that("edgelist.data.frame handles NA values appropriately", {
 })
 
 test_that("edgelist.data.frame handles multiple target columns", {
-  df_multi <- data.frame(
-    course = c("stat101", "stat102"),
-    prereq1 = c("math101", "stat101"),
-    prereq2 = c("comp101", "math102")
-  )
-  el <- edgelist(df_multi, source_cols = 1, target_cols = c(2, 3))
+  el <- edgelist(courses, source_cols = 2, target_cols = c(3, 4))
 
   expect_s3_class(el, "data.frame")
-  expect_equal(nrow(el), 4) # 2 courses * 2 prerequisites each
+  expect_equal(nrow(el), 12) # 6 courses * 2 target columns
+  expect_true(all(c("source", "target") %in% names(el)))
+})
+
+# --- tidyselect tests ---
+
+test_that("edgelist.data.frame accepts bare column names", {
+  el <- edgelist(courses, source_cols = course, target_cols = prereq)
+
+  expect_s3_class(el, "data.frame")
+  expect_equal(nrow(el), 6)
+  expect_equal(el$source, courses$course)
+  expect_equal(el$target, courses$prereq)
+})
+
+test_that("edgelist.data.frame accepts string column names", {
+  el <- edgelist(courses, source_cols = "course", target_cols = "prereq")
+
+  expect_s3_class(el, "data.frame")
+  expect_equal(nrow(el), 6)
+  expect_equal(el$source, courses$course)
+  expect_equal(el$target, courses$prereq)
+})
+
+test_that("edgelist.data.frame accepts multiple bare target columns", {
+  el <- edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist))
+
+  expect_s3_class(el, "data.frame")
+  expect_equal(nrow(el), 12) # 6 courses * 2 target columns
   expect_true(all(c("source", "target") %in% names(el)))
 })

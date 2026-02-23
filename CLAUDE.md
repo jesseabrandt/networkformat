@@ -46,14 +46,19 @@ The package uses **S3 method dispatch** with two generic functions that dispatch
 
 ### `nodelist()` — extract node attributes
 
-| Method | Input Class | Status |
-|--------|-------------|--------|
-| `nodelist.data.frame` | data.frame | Complete (reorders columns, id_col first) |
-| `nodelist.randomForest` | randomForest | Stub (returns NULL) |
+| Method | Input Class | Output Columns | Status |
+|--------|-------------|---------------|--------|
+| `nodelist.data.frame` | data.frame | (reordered input, id_col first) | Complete |
+| `nodelist.tree` | tree | node, var, n, dev, yval, is_leaf | Complete |
+| `nodelist.randomForest` | randomForest | node, is_leaf, split_var, split_var_name, split_point, prediction, treenum | Complete |
+| `nodelist.gbm` | gbm | — | Stub (not implemented) |
+| `nodelist.xgb.Booster` | xgb.Booster | — | Stub (not implemented) |
+
+Node IDs in nodelist outputs match the from/to (tree) or source/target (randomForest) columns in the corresponding edgelist, so the two can be passed directly to `igraph::graph_from_data_frame()`.
 
 ### File organization
 
-Each S3 method lives in its own file: `R/edgelist.R` (generic + data.frame + default), `R/edgelist.randomForest.R`, `R/edgelist.tree.R`, `R/edgelist.xgb.Booster.R`, `R/nodelist.R` (generic + all node methods).
+Each S3 method lives in its own file: `R/edgelist.R` (generic), `R/edgelist.data.frame.R`, `R/edgelist.randomForest.R`, `R/edgelist.tree.R`, `R/nodelist.R` (generic), `R/nodelist.data.frame.R`, `R/nodelist.tree.R`, `R/nodelist.randomForest.R`, etc.
 
 ### Key algorithms
 
@@ -71,6 +76,6 @@ Each S3 method lives in its own file: `R/edgelist.R` (generic + data.frame + def
 ## Testing
 
 - Framework: testthat 3rd edition
-- Test files: `tests/testthat/test-edgelist.R` (11 tests), `tests/testthat/test-nodelist.R` (9 tests)
+- Test files: `tests/testthat/test-edgelist.R`, `tests/testthat/test-nodelist.R` (97 tests total)
 - Tests require `randomForest` and `tree` packages (listed in Suggests)
 - Documentation is roxygen2-generated — never edit `man/*.Rd` or `NAMESPACE` by hand

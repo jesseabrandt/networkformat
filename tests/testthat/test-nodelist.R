@@ -1,29 +1,19 @@
 # Test suite for nodelist() generic and methods
 
 test_that("nodelist.data.frame returns data.frame with reordered columns", {
-  df <- data.frame(
-    course = c("stat101", "stat102", "stat202", "math102", "data202", "math101"),
-    prereq = c("math101", "stat101", "stat101", NA, NA, NA),
-    crosslist = c(NA, "math102", "data202", "stat102", "stat202", NA)
-  )
-  nl <- nodelist(df)
+  nl <- nodelist(courses)
 
   expect_s3_class(nl, "data.frame")
-  expect_equal(names(nl)[1], "course")
-  expect_equal(ncol(nl), 3)
+  expect_equal(names(nl)[1], "dept")
+  expect_equal(ncol(nl), 6)
 })
 
 test_that("nodelist.data.frame respects id_col parameter", {
-  df <- data.frame(
-    name = c("Alice", "Bob", "Charlie"),
-    id = c(1, 2, 3),
-    age = c(25, 30, 35)
-  )
-  nl <- nodelist(df, id_col = 2)
+  nl <- nodelist(courses, id_col = 2)
 
   expect_s3_class(nl, "data.frame")
-  expect_equal(names(nl)[1], "id")
-  expect_equal(names(nl), c("id", "name", "age"))
+  expect_equal(names(nl)[1], "course")
+  expect_equal(names(nl), c("course", "dept", "prereq", "crosslist", "credits", "level"))
 })
 
 test_that("nodelist.data.frame maintains row order and data", {
@@ -38,17 +28,135 @@ test_that("nodelist.data.frame maintains row order and data", {
   expect_equal(nrow(nl), 3)
 })
 
-test_that("nodelist.randomForest returns message about implementation", {
+# --- nodelist.tree tests ---
+
+test_that("nodelist.tree returns expected columns", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+  nl <- nodelist(tr)
+
+  expect_s3_class(nl, "data.frame")
+  expect_true(all(c("node", "var", "n", "dev", "yval", "is_leaf") %in% names(nl)))
+})
+
+test_that("nodelist.tree node IDs match edgelist from/to", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+  nl <- nodelist(tr)
+  el <- edgelist(tr)
+
+  edge_nodes <- sort(unique(c(el$from, el$to)))
+  expect_true(all(edge_nodes %in% nl$node))
+  expect_equal(nl$node, seq_len(nrow(nl)))
+})
+
+test_that("nodelist.tree identifies leaves correctly", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+  nl <- nodelist(tr)
+
+  expect_true(all(nl$var[nl$is_leaf] == "<leaf>"))
+  expect_true(all(nl$var[!nl$is_leaf] != "<leaf>"))
+})
+
+test_that("nodelist.tree root node contains all observations", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+  nl <- nodelist(tr)
+
+  expect_equal(nl$n[1], 150)  # iris has 150 rows
+})
+
+test_that("nodelist.tree works for regression trees", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(mpg ~ cyl + disp + hp, data = mtcars)
+  nl <- nodelist(tr)
+
+  expect_s3_class(nl, "data.frame")
+  expect_type(nl$yval, "double")
+  expect_equal(nl$n[1], 32)  # mtcars has 32 rows
+})
+
+test_that("nodelist.tree yval is character for classification", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(Species ~ ., data = iris)
+  nl <- nodelist(tr)
+
+  expect_type(nl$yval, "character")
+  expect_true(all(nl$yval %in% c("setosa", "versicolor", "virginica")))
+})
+
+# --- nodelist.randomForest tests ---
+
+test_that("nodelist.randomForest returns expected columns", {
   skip_if_not_installed("randomForest")
   library(randomForest)
 
   rf <- randomForest(Species ~ ., data = iris, ntree = 2)
+  nl <- nodelist(rf)
 
-  expect_message(
-    result <- nodelist(rf),
-    "not fully implemented"
-  )
-  expect_null(result)
+  expect_s3_class(nl, "data.frame")
+  expect_true(all(c("node", "is_leaf", "split_var", "split_var_name",
+                     "split_point", "prediction", "treenum") %in% names(nl)))
+})
+
+test_that("nodelist.randomForest has correct number of trees", {
+  skip_if_not_installed("randomForest")
+  library(randomForest)
+
+  rf <- randomForest(Species ~ ., data = iris, ntree = 3)
+  nl <- nodelist(rf)
+
+  expect_equal(length(unique(nl$treenum)), 3)
+})
+
+test_that("nodelist.randomForest node IDs match edgelist per tree", {
+  skip_if_not_installed("randomForest")
+  library(randomForest)
+
+  rf <- randomForest(Species ~ ., data = iris, ntree = 2)
+  nl <- nodelist(rf)
+  el <- edgelist(rf)
+
+  for (tn in unique(nl$treenum)) {
+    el_nodes <- sort(unique(c(
+      el$source[el$treenum == tn],
+      el$target[el$treenum == tn]
+    )))
+    nl_nodes <- nl$node[nl$treenum == tn]
+    expect_true(all(el_nodes %in% nl_nodes))
+  }
+})
+
+test_that("nodelist.randomForest leaves have NA split attributes", {
+  skip_if_not_installed("randomForest")
+  library(randomForest)
+
+  rf <- randomForest(Species ~ ., data = iris, ntree = 2)
+  nl <- nodelist(rf)
+
+  leaves <- nl[nl$is_leaf, ]
+  expect_true(all(is.na(leaves$split_var)))
+  expect_true(all(is.na(leaves$split_var_name)))
+  expect_true(all(is.na(leaves$split_point)))
+})
+
+test_that("nodelist.randomForest works for regression", {
+  skip_if_not_installed("randomForest")
+  library(randomForest)
+
+  rf <- randomForest(mpg ~ cyl + disp + hp, data = mtcars, ntree = 2)
+  nl <- nodelist(rf)
+
+  expect_s3_class(nl, "data.frame")
+  expect_type(nl$prediction, "double")
+  expect_true(all(na.omit(nl$split_var_name) %in% c("cyl", "disp", "hp")))
 })
 
 test_that("nodelist.data.frame handles single column data frame", {
@@ -98,4 +206,28 @@ test_that("nodelist.data.frame with non-default id_col reorders correctly", {
   expect_equal(names(nl)[1], "id")
   expect_equal(names(nl), c("id", "attr1", "attr2", "attr3"))
   expect_equal(nl$id, 1:3)
+})
+
+# --- tidyselect tests ---
+
+test_that("nodelist.data.frame accepts bare column name", {
+  nl <- nodelist(courses, id_col = course)
+
+  expect_s3_class(nl, "data.frame")
+  expect_equal(names(nl)[1], "course")
+  expect_equal(names(nl), c("course", "dept", "prereq", "crosslist", "credits", "level"))
+})
+
+test_that("nodelist.data.frame accepts string column name", {
+  nl <- nodelist(courses, id_col = "course")
+
+  expect_s3_class(nl, "data.frame")
+  expect_equal(names(nl)[1], "course")
+})
+
+test_that("nodelist.data.frame errors when id_col selects multiple columns", {
+  expect_error(
+    nodelist(courses, id_col = c(course, prereq)),
+    "id_col must select exactly one column"
+  )
 })

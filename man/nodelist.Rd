@@ -21,12 +21,6 @@ object types including data.frames and tree models. The node list provides
 metadata about each node in the network.
 }
 \examples{
-# Data frame example
-courses <- data.frame(
-  id = c("stat101", "stat102", "math101"),
-  level = c(100, 100, 100),
-  credits = c(3, 4, 3)
-)
-node_list <- nodelist(courses)
-node_list
+# Node list with course as ID (column 2)
+nodelist(courses, id_col = 2)
 }
