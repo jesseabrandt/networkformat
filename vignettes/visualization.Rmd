@@ -98,10 +98,11 @@ tg_rf <- tg_rf %>%
     display_label = ifelse(
       is_leaf, label,
       paste0(split_var_name, "\n<", round(split_point, 1))
-    )
+    ),
+    node_size = ifelse(is_leaf, 4, 6)
   )
 
-# Palette: one color per predictor variable + green for leaves
+# Palette: one color per predictor variable + muted for leaves
 node_df <- as.data.frame(tg_rf, what = "vertices")
 predictor_vars <- sort(unique(na.omit(node_df$split_var_name)))
 var_colors <- c("#3B8EA5", "#D4A373", "#7B68AE", "#E07B54")
@@ -111,14 +112,18 @@ var_pal_rf <- c(
 )
 
 ggraph(tg_rf, layout = "tree") +
-  geom_edge_diagonal(colour = "grey55", width = 0.4) +
-  geom_node_label(
-    aes(label = display_label, fill = fill_var),
-    size = 2.2, colour = "white", fontface = "bold",
-    label.padding = unit(0.2, "lines"), label.r = unit(0.15, "lines")) +
-  scale_fill_manual(values = var_pal_rf, name = "Split variable") +
+  geom_edge_link(
+    arrow = arrow(length = unit(1.5, "mm"), type = "closed"),
+    end_cap = circle(3, "mm"),
+    colour = "grey70", width = 0.3) +
+  geom_node_point(aes(colour = fill_var, size = node_size),
+    show.legend = FALSE) +
+  geom_node_text(aes(label = display_label),
+    size = 2, vjust = -0.8, fontface = "bold") +
+  scale_colour_manual(values = var_pal_rf) +
+  scale_size_identity() +
   theme_graph(base_family = "sans") +
-  theme(legend.position = "bottom") +
+  theme(legend.position = "none") +
   labs(title = "Random forest (3 trees)",
        subtitle = "Each disconnected component is one tree")
 ```
@@ -141,13 +146,14 @@ tg1 <- as_tbl_graph(rf, treenum = 1) %>%
     )
   )
 
-ggraph(tg1, layout = "tree") +
-  geom_edge_diagonal(colour = "grey55", width = 0.4) +
+ggraph(tg1, layout = "dendrogram") +
+  geom_edge_elbow(colour = "grey65", width = 0.4) +
   geom_node_label(
-    aes(label = display_label, fill = fill_var),
-    size = 2.5, colour = "white", fontface = "bold",
-    label.padding = unit(0.25, "lines"), label.r = unit(0.2, "lines")) +
-  scale_fill_manual(values = var_pal_rf, name = "Split variable") +
+    aes(label = display_label, colour = fill_var),
+    fill = "white", size = 2.5, fontface = "bold",
+    label.padding = unit(0.25, "lines"), label.r = unit(0.2, "lines"),
+    label.size = 0.4) +
+  scale_colour_manual(values = var_pal_rf, name = "Split variable") +
   theme_graph(base_family = "sans") +
   theme(legend.position = "bottom") +
   labs(title = "Tree 1 from the random forest")
