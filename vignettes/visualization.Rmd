@@ -149,11 +149,14 @@ tg1 <- as_tbl_graph(rf, treenum = 1) %>%
 ggraph(tg1, layout = "dendrogram") +
   geom_edge_elbow(colour = "grey65", width = 0.4) +
   geom_node_label(
-    aes(label = display_label, colour = fill_var),
-    fill = "white", size = 2.5, fontface = "bold",
+    aes(label = display_label, fill = fill_var),
+    colour = "black", size = 2.5, fontface = "bold",
     label.padding = unit(0.25, "lines"), label.r = unit(0.2, "lines"),
-    label.size = 0.4) +
-  scale_colour_manual(values = var_pal_rf, name = "Split variable") +
+    label.size = 0.4, alpha = 0.2) +
+  geom_node_text(
+    aes(label = display_label),
+    colour = "black", size = 2.5, fontface = "bold") +
+  scale_fill_manual(values = var_pal_rf, name = "Split variable") +
   theme_graph(base_family = "sans") +
   theme(legend.position = "bottom") +
   labs(title = "Tree 1 from the random forest")
