@@ -37,7 +37,7 @@ test_that("nodelist.tree returns expected columns", {
   nl <- nodelist(tr)
 
   expect_s3_class(nl, "data.frame")
-  expect_true(all(c("node", "var", "n", "dev", "yval", "is_leaf") %in% names(nl)))
+  expect_true(all(c("node", "var", "n", "dev", "yval", "is_leaf", "label") %in% names(nl)))
 })
 
 test_that("nodelist.tree node IDs match edgelist from/to", {
@@ -92,6 +92,32 @@ test_that("nodelist.tree yval is character for classification", {
   expect_true(all(nl$yval %in% c("setosa", "versicolor", "virginica")))
 })
 
+# --- nodelist.tree label tests ---
+
+test_that("nodelist.tree label column has correct format", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+  nl <- nodelist(tr)
+
+  expect_true("label" %in% names(nl))
+  expect_type(nl$label, "character")
+
+  # Internal nodes should show "var\nn=count"
+  internal <- nl[!nl$is_leaf, ]
+  for (i in seq_len(nrow(internal))) {
+    expect_true(grepl(paste0("\\nn=", internal$n[i]), internal$label[i]))
+    expect_true(startsWith(internal$label[i], internal$var[i]))
+  }
+
+  # Leaf nodes should show "yval\nn=count"
+  leaves <- nl[nl$is_leaf, ]
+  for (i in seq_len(nrow(leaves))) {
+    expect_true(grepl(paste0("\\nn=", leaves$n[i]), leaves$label[i]))
+    expect_true(startsWith(leaves$label[i], as.character(leaves$yval[i])))
+  }
+})
+
 # --- nodelist.randomForest tests ---
 
 test_that("nodelist.randomForest returns expected columns", {
@@ -103,7 +129,7 @@ test_that("nodelist.randomForest returns expected columns", {
 
   expect_s3_class(nl, "data.frame")
   expect_true(all(c("node", "is_leaf", "split_var", "split_var_name",
-                     "split_point", "prediction", "treenum") %in% names(nl)))
+                     "split_point", "prediction", "treenum", "label") %in% names(nl)))
 })
 
 test_that("nodelist.randomForest has correct number of trees", {
@@ -158,6 +184,65 @@ test_that("nodelist.randomForest works for regression", {
   expect_type(nl$prediction, "double")
   expect_true(all(na.omit(nl$split_var_name) %in% c("cyl", "disp", "hp")))
 })
+
+# --- nodelist.randomForest label tests ---
+
+test_that("nodelist.randomForest label column exists", {
+  skip_if_not_installed("randomForest")
+  library(randomForest)
+
+  rf <- randomForest(Species ~ ., data = iris, ntree = 2)
+  nl <- nodelist(rf)
+
+  expect_true("label" %in% names(nl))
+  expect_type(nl$label, "character")
+
+  # Internal nodes should have split_var_name as label
+  internal <- nl[!nl$is_leaf, ]
+  expect_equal(internal$label, internal$split_var_name)
+
+  # Leaf nodes should have prediction as label
+  leaves <- nl[nl$is_leaf, ]
+  expect_equal(leaves$label, as.character(leaves$prediction))
+})
+
+# --- nodelist.randomForest treenum tests ---
+
+test_that("nodelist.randomForest treenum extracts specific trees", {
+  skip_if_not_installed("randomForest")
+  library(randomForest)
+
+  rf <- randomForest(Species ~ ., data = iris, ntree = 5)
+
+  nl1 <- nodelist(rf, treenum = 1)
+  expect_equal(unique(nl1$treenum), 1)
+
+  nl13 <- nodelist(rf, treenum = c(1, 3))
+  expect_equal(sort(unique(nl13$treenum)), c(1, 3))
+})
+
+test_that("nodelist.randomForest treenum NULL returns all trees", {
+  skip_if_not_installed("randomForest")
+  library(randomForest)
+
+  rf <- randomForest(Species ~ ., data = iris, ntree = 3)
+
+  nl_all <- nodelist(rf, treenum = NULL)
+  nl_default <- nodelist(rf)
+  expect_equal(nl_all, nl_default)
+})
+
+test_that("nodelist.randomForest treenum validates range", {
+  skip_if_not_installed("randomForest")
+  library(randomForest)
+
+  rf <- randomForest(Species ~ ., data = iris, ntree = 3)
+
+  expect_error(nodelist(rf, treenum = 0))
+  expect_error(nodelist(rf, treenum = 4))
+})
+
+# --- nodelist.data.frame tests ---
 
 test_that("nodelist.data.frame handles single column data frame", {
   df_single <- data.frame(id = c("A", "B", "C"))

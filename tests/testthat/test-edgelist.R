@@ -123,7 +123,7 @@ test_that("edgelist.tree validates tree structure", {
   expect_true(all(nchar(el$label) > 0))
 })
 
-test_that("edgelist.data.frame handles NA values appropriately", {
+test_that("edgelist.data.frame removes NAs by default (na.rm = TRUE)", {
   df_with_na <- data.frame(
     source = c("A", "B", NA, "D"),
     target = c("B", "C", "D", NA)
@@ -131,14 +131,36 @@ test_that("edgelist.data.frame handles NA values appropriately", {
   el <- edgelist(df_with_na)
 
   expect_s3_class(el, "data.frame")
+  expect_equal(nrow(el), 2)
+  expect_false(any(is.na(el$source)))
+  expect_false(any(is.na(el$target)))
+})
+
+test_that("edgelist.data.frame preserves NAs with na.rm = FALSE", {
+  df_with_na <- data.frame(
+    source = c("A", "B", NA, "D"),
+    target = c("B", "C", "D", NA)
+  )
+  el <- edgelist(df_with_na, na.rm = FALSE)
+
+  expect_s3_class(el, "data.frame")
   expect_equal(nrow(el), 4)
-  # NAs should be preserved in the output
   expect_true(any(is.na(el$source)))
   expect_true(any(is.na(el$target)))
 })
 
+test_that("edgelist.data.frame na.rm works with multiple target columns", {
+  el <- edgelist(courses, source_cols = course,
+                 target_cols = c(prereq, crosslist))
+
+  # NAs from missing prereqs/crosslists should be dropped
+  expect_false(any(is.na(el$source)))
+  expect_false(any(is.na(el$target)))
+  expect_true(nrow(el) < 12) # Some rows have NA crosslists
+})
+
 test_that("edgelist.data.frame handles multiple target columns", {
-  el <- edgelist(courses, source_cols = 2, target_cols = c(3, 4))
+  el <- edgelist(courses, source_cols = 2, target_cols = c(3, 4), na.rm = FALSE)
 
   expect_s3_class(el, "data.frame")
   expect_equal(nrow(el), 12) # 6 courses * 2 target columns
@@ -148,7 +170,7 @@ test_that("edgelist.data.frame handles multiple target columns", {
 # --- tidyselect tests ---
 
 test_that("edgelist.data.frame accepts bare column names", {
-  el <- edgelist(courses, source_cols = course, target_cols = prereq)
+  el <- edgelist(courses, source_cols = course, target_cols = prereq, na.rm = FALSE)
 
   expect_s3_class(el, "data.frame")
   expect_equal(nrow(el), 6)
@@ -157,7 +179,7 @@ test_that("edgelist.data.frame accepts bare column names", {
 })
 
 test_that("edgelist.data.frame accepts string column names", {
-  el <- edgelist(courses, source_cols = "course", target_cols = "prereq")
+  el <- edgelist(courses, source_cols = "course", target_cols = "prereq", na.rm = FALSE)
 
   expect_s3_class(el, "data.frame")
   expect_equal(nrow(el), 6)
@@ -166,7 +188,8 @@ test_that("edgelist.data.frame accepts string column names", {
 })
 
 test_that("edgelist.data.frame accepts multiple bare target columns", {
-  el <- edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist))
+  el <- edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist),
+                 na.rm = FALSE)
 
   expect_s3_class(el, "data.frame")
   expect_equal(nrow(el), 12) # 6 courses * 2 target columns
@@ -176,7 +199,7 @@ test_that("edgelist.data.frame accepts multiple bare target columns", {
 # --- attr_cols and metadata column tests ---
 
 test_that("edgelist.data.frame includes source_col and target_col metadata", {
-  el <- edgelist(courses, source_cols = course, target_cols = prereq)
+  el <- edgelist(courses, source_cols = course, target_cols = prereq, na.rm = FALSE)
 
   expect_true(all(c("source_col", "target_col") %in% names(el)))
   expect_true(all(el$source_col == "course"))
@@ -184,10 +207,10 @@ test_that("edgelist.data.frame includes source_col and target_col metadata", {
 })
 
 test_that("edgelist.data.frame default attr_cols keeps all remaining columns", {
-  el <- edgelist(courses, source_cols = course, target_cols = prereq)
+  el <- edgelist(courses, source_cols = course, target_cols = prereq, na.rm = FALSE)
 
   # courses has: dept, course, prereq, crosslist, credits, level
-  # source=course, target=prereq → remaining: dept, crosslist, credits, level
+  # source=course, target=prereq -> remaining: dept, crosslist, credits, level
   expect_true(all(c("dept", "crosslist", "credits", "level") %in% names(el)))
   expect_equal(el$dept, courses$dept)
   expect_equal(el$credits, courses$credits)
@@ -214,7 +237,7 @@ test_that("edgelist.data.frame attr_cols works with tidyselect helpers", {
   el <- edgelist(courses, source_cols = course, target_cols = prereq,
                  attr_cols = starts_with("c"))
 
-  # starts_with("c") matches: crosslist, credits (not course/prereq — already used? no, attr_cols is independent)
+  # starts_with("c") matches: crosslist, credits
   expect_true("crosslist" %in% names(el))
   expect_true("credits" %in% names(el))
   expect_false("dept" %in% names(el))
@@ -222,7 +245,8 @@ test_that("edgelist.data.frame attr_cols works with tidyselect helpers", {
 })
 
 test_that("edgelist.data.frame multi-target has correct target_col per block", {
-  el <- edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist))
+  el <- edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist),
+                 na.rm = FALSE)
 
   expect_equal(nrow(el), 12)
   # First 6 rows from prereq, next 6 from crosslist
@@ -264,15 +288,148 @@ test_that("edgelist.data.frame all-columns-consumed leaves no attr columns", {
   df <- data.frame(a = 1:3, b = 4:6)
   el <- edgelist(df, source_cols = a, target_cols = b)
 
-  # Both columns consumed — default attr_cols=NULL yields no extra columns
+  # Both columns consumed --- default attr_cols=NULL yields no extra columns
   expect_equal(names(el), c("source", "target", "source_col", "target_col"))
 })
 
 test_that("edgelist.data.frame attributes replicate across multi-target", {
   el <- edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist),
-                 attr_cols = credits)
+                 attr_cols = credits, na.rm = FALSE)
 
   # credits should be replicated identically in both blocks
   expect_equal(el$credits[1:6], courses$credits)
   expect_equal(el$credits[7:12], courses$credits)
+})
+
+# --- symmetric_cols tests ---
+
+test_that("edgelist.data.frame symmetric_cols adds directed column", {
+  el <- edgelist(courses, source_cols = course,
+                 target_cols = c(prereq, crosslist),
+                 symmetric_cols = crosslist, na.rm = FALSE)
+
+  expect_true("directed" %in% names(el))
+  # prereq edges should be directed
+  expect_true(all(el$directed[el$target_col == "prereq"]))
+  # crosslist edges should be undirected
+  expect_false(any(el$directed[el$target_col == "crosslist"]))
+})
+
+test_that("edgelist.data.frame no directed column when symmetric_cols omitted", {
+  el <- edgelist(courses, source_cols = course,
+                 target_cols = c(prereq, crosslist), na.rm = FALSE)
+
+  expect_false("directed" %in% names(el))
+})
+
+test_that("edgelist.data.frame symmetric_cols warns for non-target columns", {
+  expect_warning(
+    edgelist(courses, source_cols = course,
+             target_cols = prereq,
+             symmetric_cols = crosslist),
+    "symmetric_cols not found in target_cols"
+  )
+})
+
+test_that("edgelist.data.frame symmetric_cols works with na.rm", {
+  el <- edgelist(courses, source_cols = course,
+                 target_cols = c(prereq, crosslist),
+                 symmetric_cols = crosslist)
+
+  expect_true("directed" %in% names(el))
+  # NAs should be removed
+  expect_false(any(is.na(el$source)))
+  expect_false(any(is.na(el$target)))
+})
+
+# --- treenum argument tests ---
+
+test_that("edgelist.randomForest treenum extracts specific trees", {
+  skip_if_not_installed("randomForest")
+  library(randomForest)
+
+  rf <- randomForest(Species ~ ., data = iris, ntree = 5)
+
+  el1 <- edgelist(rf, treenum = 1)
+  expect_equal(unique(el1$treenum), 1)
+
+  el13 <- edgelist(rf, treenum = c(1, 3))
+  expect_equal(sort(unique(el13$treenum)), c(1, 3))
+})
+
+test_that("edgelist.randomForest treenum NULL returns all trees", {
+  skip_if_not_installed("randomForest")
+  library(randomForest)
+
+  rf <- randomForest(Species ~ ., data = iris, ntree = 3)
+
+  el_all <- edgelist(rf, treenum = NULL)
+  el_default <- edgelist(rf)
+  expect_equal(el_all, el_default)
+})
+
+test_that("edgelist.randomForest treenum validates range", {
+  skip_if_not_installed("randomForest")
+  library(randomForest)
+
+  rf <- randomForest(Species ~ ., data = iris, ntree = 3)
+
+  expect_error(edgelist(rf, treenum = 0))
+  expect_error(edgelist(rf, treenum = 4))
+})
+
+# --- edgelist.tree split parsing tests ---
+
+test_that("edgelist.tree returns parsed split columns", {
+  skip_if_not_installed("tree")
+  library(tree)
+
+  tr <- tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+  el <- edgelist(tr)
+
+  expect_true(all(c("split_var", "split_op", "split_point") %in% names(el)))
+  expect_type(el$split_var, "character")
+  expect_type(el$split_op, "character")
+  expect_type(el$split_point, "double")
+})
+
+test_that("edgelist.tree split_var matches variable in label", {
+  skip_if_not_installed("tree")
+  library(tree)
+
+  tr <- tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+  el <- edgelist(tr)
+
+  # Every label should start with the split_var
+  for (i in seq_len(nrow(el))) {
+    expect_true(startsWith(el$label[i], el$split_var[i]))
+  }
+})
+
+test_that("edgelist.tree numeric splits have correct op and point", {
+  skip_if_not_installed("tree")
+  library(tree)
+
+  tr <- tree(mpg ~ cyl + disp + hp, data = mtcars)
+  el <- edgelist(tr)
+
+  # All splits on numeric data should have op and point
+  numeric_rows <- !is.na(el$split_op)
+  expect_true(any(numeric_rows))
+  expect_true(all(el$split_op[numeric_rows] %in% c("<", ">=")))
+  expect_true(all(!is.na(el$split_point[numeric_rows])))
+  expect_true(all(el$split_point[numeric_rows] > 0))
+})
+
+test_that("edgelist.tree label column is unchanged", {
+  skip_if_not_installed("tree")
+  library(tree)
+
+  tr <- tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+  el <- edgelist(tr)
+
+  # label should still be non-empty strings
+  expect_true(all(nchar(el$label) > 0))
+  # label should contain the split var and a space
+  expect_true(all(grepl(" ", el$label)))
 })
