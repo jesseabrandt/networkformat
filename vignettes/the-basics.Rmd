@@ -138,33 +138,32 @@ node attributes.
 
 ## Building a course network
 
-`edgelist()` extracts one edge type at a time. Build prerequisites and
-crosslists separately, tag them, and combine:
+`edgelist()` with multiple target columns returns a `target_col` column that
+identifies the relationship type --- no manual tagging needed:
 
 ```{r df-workflow, eval = requireNamespace("igraph", quietly = TRUE), message = FALSE}
 library(igraph)
 
-courses <- edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist) ))
+all_edges <- edgelist(courses, source_cols = course,
+                      target_cols = c(prereq, crosslist),
+                      attr_cols = c())
+all_edges <- all_edges[complete.cases(all_edges), ]
 
-prereqs <- edgelist(courses, source_cols = course, target_cols = prereq)
-prereqs <- prereqs[complete.cases(prereqs), ]
-prereqs$type <- "prerequisite"
+# target_col already tells us the edge type
+all_edges$type <- all_edges$target_col
 
-crosslists <- edgelist(courses, source_cols = course, target_cols = crosslist)
-crosslists <- crosslists[complete.cases(crosslists), ]
-crosslists$type <- "crosslist"
 # Crosslists are symmetric — keep one direction per pair
-crosslists <- crosslists[as.character(crosslists$source) <
-                          as.character(crosslists$target), ]
+all_edges <- all_edges[!(all_edges$type == "crosslist" &
+                         as.character(all_edges$source) >=
+                         as.character(all_edges$target)), ]
 
-all_edges <- rbind(prereqs, crosslists)
-nodes     <- nodelist(courses, id_col = course)
+nodes <- nodelist(courses, id_col = course)
 
 g <- graph_from_data_frame(all_edges, vertices = nodes)
 ```
 
-`source_cols`, `target_cols`, and `id_col` accept bare column names, quoted
-strings, or numeric indices --- anything
+`source_cols`, `target_cols`, `attr_cols`, and `id_col` accept bare column
+names, quoted strings, or numeric indices --- anything
 [tidyselect](https://tidyselect.r-lib.org/reference/language.html) supports.
 
 ```{r df-print, eval = requireNamespace("igraph", quietly = TRUE)}
@@ -224,7 +223,7 @@ crosslisted courses share the same prerequisite.
 
 | Input class | Columns returned |
 |-------------|-----------------|
-| `data.frame` | `source`, `target` |
+| `data.frame` | `source`, `target`, `source_col`, `target_col`, `<attr_cols>` |
 | `tree` | `from`, `to`, `label` |
 | `randomForest` | `source`, `target`, `split_var`, `split_point`, `prediction`, `treenum`, `split_var_name` |
 

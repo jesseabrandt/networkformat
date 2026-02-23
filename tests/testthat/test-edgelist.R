@@ -172,3 +172,107 @@ test_that("edgelist.data.frame accepts multiple bare target columns", {
   expect_equal(nrow(el), 12) # 6 courses * 2 target columns
   expect_true(all(c("source", "target") %in% names(el)))
 })
+
+# --- attr_cols and metadata column tests ---
+
+test_that("edgelist.data.frame includes source_col and target_col metadata", {
+  el <- edgelist(courses, source_cols = course, target_cols = prereq)
+
+  expect_true(all(c("source_col", "target_col") %in% names(el)))
+  expect_true(all(el$source_col == "course"))
+  expect_true(all(el$target_col == "prereq"))
+})
+
+test_that("edgelist.data.frame default attr_cols keeps all remaining columns", {
+  el <- edgelist(courses, source_cols = course, target_cols = prereq)
+
+  # courses has: dept, course, prereq, crosslist, credits, level
+  # source=course, target=prereq → remaining: dept, crosslist, credits, level
+  expect_true(all(c("dept", "crosslist", "credits", "level") %in% names(el)))
+  expect_equal(el$dept, courses$dept)
+  expect_equal(el$credits, courses$credits)
+})
+
+test_that("edgelist.data.frame attr_cols = c() keeps only source, target, metadata", {
+  el <- edgelist(courses, source_cols = course, target_cols = prereq,
+                 attr_cols = c())
+
+  expect_equal(names(el), c("source", "target", "source_col", "target_col"))
+})
+
+test_that("edgelist.data.frame attr_cols selects specific columns", {
+  el <- edgelist(courses, source_cols = course, target_cols = prereq,
+                 attr_cols = c(dept, credits))
+
+  expect_true("dept" %in% names(el))
+  expect_true("credits" %in% names(el))
+  expect_false("crosslist" %in% names(el))
+  expect_false("level" %in% names(el))
+})
+
+test_that("edgelist.data.frame attr_cols works with tidyselect helpers", {
+  el <- edgelist(courses, source_cols = course, target_cols = prereq,
+                 attr_cols = starts_with("c"))
+
+  # starts_with("c") matches: crosslist, credits (not course/prereq — already used? no, attr_cols is independent)
+  expect_true("crosslist" %in% names(el))
+  expect_true("credits" %in% names(el))
+  expect_false("dept" %in% names(el))
+  expect_false("level" %in% names(el))
+})
+
+test_that("edgelist.data.frame multi-target has correct target_col per block", {
+  el <- edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist))
+
+  expect_equal(nrow(el), 12)
+  # First 6 rows from prereq, next 6 from crosslist
+  expect_true(all(el$target_col[1:6] == "prereq"))
+  expect_true(all(el$target_col[7:12] == "crosslist"))
+  # source_col is always "course"
+  expect_true(all(el$source_col == "course"))
+})
+
+test_that("edgelist.data.frame multi-source x multi-target Cartesian product", {
+  df <- data.frame(
+    a = c("x", "y"),
+    b = c("p", "q"),
+    c = c("m", "n"),
+    w = c(1, 2)
+  )
+  el <- edgelist(df, source_cols = c(a, b), target_cols = c(c), attr_cols = w)
+
+  # 2 source cols * 1 target col * 2 rows = 4 rows
+
+  expect_equal(nrow(el), 4)
+  expect_equal(el$source_col, c("a", "a", "b", "b"))
+  expect_true(all(el$target_col == "c"))
+  expect_equal(el$source, c("x", "y", "p", "q"))
+  expect_equal(el$target, c("m", "n", "m", "n"))
+  expect_equal(el$w, c(1, 2, 1, 2))
+})
+
+test_that("edgelist.data.frame handles zero-row input", {
+  df <- data.frame(from = character(0), to = character(0), w = numeric(0))
+  el <- edgelist(df)
+
+  expect_s3_class(el, "data.frame")
+  expect_equal(nrow(el), 0)
+  expect_true(all(c("source", "target", "source_col", "target_col") %in% names(el)))
+})
+
+test_that("edgelist.data.frame all-columns-consumed leaves no attr columns", {
+  df <- data.frame(a = 1:3, b = 4:6)
+  el <- edgelist(df, source_cols = a, target_cols = b)
+
+  # Both columns consumed — default attr_cols=NULL yields no extra columns
+  expect_equal(names(el), c("source", "target", "source_col", "target_col"))
+})
+
+test_that("edgelist.data.frame attributes replicate across multi-target", {
+  el <- edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist),
+                 attr_cols = credits)
+
+  # credits should be replicated identically in both blocks
+  expect_equal(el$credits[1:6], courses$credits)
+  expect_equal(el$credits[7:12], courses$credits)
+})

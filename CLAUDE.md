@@ -40,7 +40,7 @@ The package uses **S3 method dispatch** with two generic functions that dispatch
 |--------|-------------|---------------|--------|
 | `edgelist.randomForest` | randomForest | source, target, split_var, split_point, prediction, treenum, split_var_name | Complete |
 | `edgelist.tree` | tree | from, to, label | Complete |
-| `edgelist.data.frame` | data.frame | source, target | Complete |
+| `edgelist.data.frame` | data.frame | source, target, source_col, target_col, \<attr_cols\> | Complete |
 | `edgelist.xgb.Booster` | xgb.Booster | — | Stub (not implemented) |
 | `edgelist.default` | any other | — | Fallback error message |
 

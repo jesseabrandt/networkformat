@@ -4,7 +4,8 @@
 \alias{edgelist.data.frame}
 \title{Extract Edgelist from Data Frame}
 \usage{
-\method{edgelist}{data.frame}(input_object, source_cols = 1, target_cols = 2, ...)
+\method{edgelist}{data.frame}(input_object, source_cols = 1, target_cols = 2,
+  attr_cols = NULL, ...)
 }
 \arguments{
 \item{input_object}{A data.frame containing network information}
@@ -17,10 +18,22 @@
 \item{target_cols}{Column(s) for target nodes (default: 2). Same syntax as
   \code{source_cols}.}
 
+\item{attr_cols}{Columns to carry as edge attributes (default: \code{NULL}
+  keeps all columns not used as source or target). Pass an empty \code{c()}
+  to keep only source, target, and metadata columns. Accepts the same
+  tidyselect syntax as \code{source_cols}.}
+
 \item{...}{Additional arguments (currently unused)}
 }
 \value{
-A data.frame with two columns: 'source' and 'target', representing edges
+A data.frame with columns:
+\describe{
+  \item{source}{Source node values}
+  \item{target}{Target node values}
+  \item{source_col}{Name of the original column each source value came from}
+  \item{target_col}{Name of the original column each target value came from}
+  \item{...}{Additional attribute columns selected by \code{attr_cols}}
+}
 }
 \description{
 Converts a data.frame to network edgelist format by specifying which columns
@@ -28,15 +41,20 @@ represent source and target nodes. This is useful for creating edgelists from
 tabular data where node relationships are stored in columns.
 }
 \examples{
-# Course prerequisite network using bare column names
+# Basic usage — all non-source/target columns kept by default
 edgelist(courses, source_cols = course, target_cols = prereq)
 
-# Multiple target columns
+# Multiple target columns — target_col identifies the relationship type
 edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist))
 
-# Numeric indices still work (backward compatible)
-edgelist(courses, source_cols = 2, target_cols = 3)
+# Keep only the edgelist (no attribute columns)
+edgelist(courses, source_cols = course, target_cols = prereq, attr_cols = c())
 
-# String column names
-edgelist(courses, source_cols = "course", target_cols = "prereq")
+# Select specific attribute columns
+edgelist(courses, source_cols = course, target_cols = prereq,
+         attr_cols = c(dept, credits))
+
+# tidyselect helpers work too
+edgelist(courses, source_cols = course, target_cols = prereq,
+         attr_cols = starts_with("c"))
 }
