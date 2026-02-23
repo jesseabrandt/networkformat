@@ -9,3 +9,5 @@
 ^codecov\.yml$
 ^\.github$
 ^data-raw$
+^dev$
+^\.claude$

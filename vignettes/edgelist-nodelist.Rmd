@@ -1,0 +1,263 @@
+---
+title: "Working with edgelists and nodelists"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Working with edgelists and nodelists}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, message = FALSE}
+devtools::load_all()
+# library(networkformat)
+```
+
+`edgelist()` and `nodelist()` are the core functions of **networkformat**.
+They extract network structure from tree models and tabular data as plain
+data frames, giving you full control over filtering, transforming, and
+passing the results to igraph or any other tool.
+
+For quick visualization without touching the raw data, see
+`vignette("visualization")`.
+
+# Decision tree
+
+## edgelist()
+
+```{r tree-edges, eval = requireNamespace("tree", quietly = TRUE)}
+tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+edges <- edgelist(tr)
+edges
+```
+
+Columns:
+
+| Column | Description |
+|--------|-------------|
+| `from` | Parent node index |
+| `to` | Child node index |
+| `label` | Full split condition (e.g. `"Sepal.Length <5.45"`) |
+| `split_var` | Variable name |
+| `split_op` | `"<"` or `">="` (NA for categorical splits) |
+| `split_point` | Numeric threshold (NA for categorical) |
+
+The parsed columns let you filter or restyle without regex:
+
+```{r tree-filter, eval = requireNamespace("tree", quietly = TRUE)}
+# All edges that split on Sepal.Length
+edges[edges$split_var == "Sepal.Length", ]
+
+# Thresholds above 5
+edges[!is.na(edges$split_point) & edges$split_point > 5, ]
+```
+
+## nodelist()
+
+```{r tree-nodes, eval = requireNamespace("tree", quietly = TRUE)}
+nodes <- nodelist(tr)
+nodes
+```
+
+Columns:
+
+| Column | Description |
+|--------|-------------|
+| `node` | Node ID (matches edgelist `from`/`to`) |
+| `var` | Split variable, or `"<leaf>"` |
+| `n` | Observation count |
+| `dev` | Deviance |
+| `yval` | Predicted value |
+| `is_leaf` | Logical |
+| `label` | Display label: `"<var>\nn=<n>"` or `"<yval>\nn=<n>"` |
+
+The `label` column is ready for plotting --- no manual `ifelse()` needed.
+
+## Pairing edges and nodes for igraph
+
+Node IDs line up, so you can pass them straight to
+`igraph::graph_from_data_frame()`:
+
+```{r tree-igraph, eval = requireNamespace("tree", quietly = TRUE) && requireNamespace("igraph", quietly = TRUE)}
+library(igraph)
+g <- graph_from_data_frame(
+  edges, directed = TRUE,
+  vertices = data.frame(name = nodes$node, nodes[-1])
+)
+vcount(g)
+ecount(g)
+```
+
+Or use `as_igraph(tr)` for the same result in one step.
+
+# Random forest
+
+## edgelist()
+
+```{r rf-edges, eval = requireNamespace("randomForest", quietly = TRUE), message = FALSE}
+library(randomForest)
+rf <- randomForest(Species ~ ., data = iris, ntree = 3, maxnodes = 5)
+
+# All trees
+rf_edges <- edgelist(rf)
+head(rf_edges)
+```
+
+Columns:
+
+| Column | Description |
+|--------|-------------|
+| `source` | Parent node index |
+| `target` | Child node index |
+| `split_var` | Numeric variable index |
+| `split_point` | Split threshold |
+| `prediction` | Predicted value at parent |
+| `treenum` | Tree number |
+| `split_var_name` | Human-readable variable name |
+
+### The `treenum` argument
+
+Extract specific trees without subsetting:
+
+```{r rf-treenum, eval = requireNamespace("randomForest", quietly = TRUE)}
+# Single tree
+t1 <- edgelist(rf, treenum = 1)
+nrow(t1)
+
+# Trees 1 and 3
+t13 <- edgelist(rf, treenum = c(1, 3))
+table(t13$treenum)
+```
+
+## nodelist()
+
+```{r rf-nodes, eval = requireNamespace("randomForest", quietly = TRUE)}
+rf_nodes <- nodelist(rf, treenum = 1)
+rf_nodes
+```
+
+Columns:
+
+| Column | Description |
+|--------|-------------|
+| `node` | Node ID (matches edgelist `source`/`target`) |
+| `is_leaf` | Logical |
+| `split_var` | Numeric variable index (NA for leaves) |
+| `split_var_name` | Variable name (NA for leaves) |
+| `split_point` | Split threshold (NA for leaves) |
+| `prediction` | Predicted value |
+| `treenum` | Tree number |
+| `label` | `split_var_name` for internal nodes, `prediction` for leaves |
+
+# Data frame
+
+## edgelist()
+
+When your data is already tabular, `edgelist()` reshapes it into
+source-target format. Columns are specified with
+[tidyselect](https://tidyselect.r-lib.org/reference/language.html)
+syntax --- bare names, strings, numbers, or helpers like `starts_with()`.
+
+```{r df-basic}
+courses
+
+edgelist(courses, source_cols = course, target_cols = prereq)
+```
+
+### Multiple target columns
+
+When you pass multiple `target_cols`, each produces a block of edges.
+The `target_col` column identifies which relationship each edge came from:
+
+```{r df-multi}
+edgelist(courses, source_cols = course,
+         target_cols = c(prereq, crosslist))
+```
+
+### `na.rm` --- handling missing values
+
+By default, rows where source or target is NA are removed. Set
+`na.rm = FALSE` to keep them:
+
+```{r df-narm}
+# Default: NAs removed
+nrow(edgelist(courses, source_cols = course,
+              target_cols = c(prereq, crosslist)))
+
+# Keep NAs
+nrow(edgelist(courses, source_cols = course,
+              target_cols = c(prereq, crosslist),
+              na.rm = FALSE))
+```
+
+### `attr_cols` --- selecting edge attributes
+
+By default, all columns not used as source or target are carried along.
+Use `attr_cols` to select specific columns, or `c()` for none:
+
+```{r df-attrs}
+# Only source, target, metadata
+edgelist(courses, source_cols = course, target_cols = prereq,
+         attr_cols = c())
+
+# Specific columns
+edgelist(courses, source_cols = course, target_cols = prereq,
+         attr_cols = c(dept, credits))
+```
+
+### `symmetric_cols` --- marking undirected relationships
+
+Some target columns represent symmetric relationships (crosslists,
+co-authorships). Use `symmetric_cols` to add a `directed` column:
+
+```{r df-sym}
+edgelist(courses, source_cols = course,
+         target_cols = c(prereq, crosslist),
+         attr_cols = c(),
+         symmetric_cols = crosslist)
+```
+
+Prerequisite edges get `directed = TRUE`; crosslist edges get
+`directed = FALSE`. This is useful for setting edge styles (arrows vs.
+dashed lines) without manual tagging.
+
+## nodelist()
+
+For data frames, `nodelist()` simply reorders columns so the ID column
+comes first --- convenient for `igraph::graph_from_data_frame()`:
+
+```{r df-nodelist}
+nodelist(courses, id_col = course)
+```
+
+# Output reference
+
+## edgelist()
+
+| Input class | Columns returned |
+|-------------|-----------------|
+| `data.frame` | `source`, `target`, `source_col`, `target_col`, [`directed`], `<attr_cols>` |
+| `tree` | `from`, `to`, `label`, `split_var`, `split_op`, `split_point` |
+| `randomForest` | `source`, `target`, `split_var`, `split_point`, `prediction`, `treenum`, `split_var_name` |
+
+## nodelist()
+
+| Input class | Columns returned |
+|-------------|-----------------|
+| `data.frame` | Reordered input (ID column first) |
+| `tree` | `node`, `var`, `n`, `dev`, `yval`, `is_leaf`, `label` |
+| `randomForest` | `node`, `is_leaf`, `split_var`, `split_var_name`, `split_point`, `prediction`, `treenum`, `label` |
+
+## as_igraph() / as_tbl_graph()
+
+| Input class | `treenum` | Returns |
+|-------------|-----------|---------|
+| `tree` | --- | single graph |
+| `randomForest` | `1` (default) | single graph (one tree) |
+| `randomForest` | `NULL` | single graph (all trees as disconnected components) |

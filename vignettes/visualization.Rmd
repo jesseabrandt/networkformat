@@ -1,0 +1,212 @@
+---
+title: "Visualizing models as networks"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Visualizing models as networks}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, message = FALSE}
+devtools::load_all()
+# library(networkformat)
+library(ggraph)
+library(tidygraph)
+```
+
+**networkformat** converts tree-based models and tabular data into graph
+objects for visualization with ggraph. The main entry points are:
+
+- `as_igraph(x)` --- convert a model to an igraph object
+- `as_tbl_graph(x)` --- convert to a tidygraph tbl_graph (for use with ggraph)
+
+For more control over the underlying data, see
+`vignette("edgelist-nodelist")`.
+
+# Decision tree
+
+```{r tree-fit, eval = requireNamespace("tree", quietly = TRUE)}
+tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+tg <- as_tbl_graph(tr)
+```
+
+The graph carries all the attributes you need for plotting --- node labels,
+split variables, leaf predictions, observation counts, and parsed edge
+thresholds.
+
+```{r tree-plot, eval = requireNamespace("tree", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 10, fig.height = 7}
+# Add a fill column: split variable for internal nodes, predicted class for leaves
+tg <- tg %>%
+  mutate(fill_var = ifelse(is_leaf, yval, var))
+
+# Build a palette: one color per variable + one per class
+node_df <- as.data.frame(tg, what = "vertices")
+vars <- setdiff(unique(node_df$var), "<leaf>")
+classes <- unique(node_df$yval[node_df$is_leaf])
+var_pal <- c(
+  setNames(c("#3B8EA5", "#D4A373"), vars[seq_len(min(length(vars), 2))]),
+  setNames(c("#66c2a5", "#fc8d62", "#8da0cb"), classes[seq_len(min(length(classes), 3))])
+)
+
+ggraph(tg, layout = "tree") +
+  geom_edge_diagonal(colour = "grey60", width = 0.5) +
+  geom_edge_diagonal(
+    aes(label = ifelse(is.na(split_point), "", paste0(split_op, split_point))),
+    angle_calc = "along", label_dodge = unit(3, "mm"),
+    label_size = 2.5, label_colour = "grey30", colour = NA) +
+  geom_node_label(
+    aes(label = label, fill = fill_var),
+    size = 2.5, colour = "white", fontface = "bold",
+    label.padding = unit(0.25, "lines"), label.r = unit(0.2, "lines")) +
+  scale_fill_manual(values = var_pal, name = NULL) +
+  theme_graph(base_family = "sans") +
+  theme(legend.position = "bottom") +
+  labs(title = "Iris classification tree",
+       subtitle = "Split on Sepal.Length and Sepal.Width")
+```
+
+Internal nodes are colored by the split variable. Leaf nodes show the
+predicted class. Edge labels show the split condition (e.g. `<5.45`).
+
+# Random forest
+
+`as_tbl_graph(rf, treenum = NULL)` combines all trees into a single graph
+with disconnected components --- one per tree. Each node carries a `treenum`
+attribute so you can distinguish them.
+
+```{r rf-fit, eval = requireNamespace("randomForest", quietly = TRUE), message = FALSE}
+library(randomForest)
+rf <- randomForest(Species ~ ., data = iris, ntree = 3, maxnodes = 5)
+
+# All 3 trees in one graph
+tg_rf <- as_tbl_graph(rf, treenum = NULL)
+```
+
+```{r rf-plot, eval = requireNamespace("randomForest", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 12, fig.height = 6}
+# Add display columns directly to the graph
+tg_rf <- tg_rf %>%
+  mutate(
+    fill_var = ifelse(is_leaf, "leaf", split_var_name),
+    display_label = ifelse(
+      is_leaf, label,
+      paste0(split_var_name, "\n<", round(split_point, 1))
+    )
+  )
+
+# Palette: one color per predictor variable + green for leaves
+node_df <- as.data.frame(tg_rf, what = "vertices")
+predictor_vars <- sort(unique(na.omit(node_df$split_var_name)))
+var_colors <- c("#3B8EA5", "#D4A373", "#7B68AE", "#E07B54")
+var_pal_rf <- c(
+  setNames(var_colors[seq_along(predictor_vars)], predictor_vars),
+  leaf = "#8fbc8f"
+)
+
+ggraph(tg_rf, layout = "tree") +
+  geom_edge_diagonal(colour = "grey55", width = 0.4) +
+  geom_node_label(
+    aes(label = display_label, fill = fill_var),
+    size = 2.2, colour = "white", fontface = "bold",
+    label.padding = unit(0.2, "lines"), label.r = unit(0.15, "lines")) +
+  scale_fill_manual(values = var_pal_rf, name = "Split variable") +
+  theme_graph(base_family = "sans") +
+  theme(legend.position = "bottom") +
+  labs(title = "Random forest (3 trees)",
+       subtitle = "Each disconnected component is one tree")
+```
+
+All three trees are visible in a single plot. Nodes are colored by the
+split variable they use; leaf nodes are green. Internal node labels show the
+variable and threshold.
+
+## Single tree from a forest
+
+For a closer look at one tree:
+
+```{r rf-single, eval = requireNamespace("randomForest", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 8, fig.height = 5}
+tg1 <- as_tbl_graph(rf, treenum = 1) %>%
+  mutate(
+    fill_var = ifelse(is_leaf, "leaf", split_var_name),
+    display_label = ifelse(
+      is_leaf, label,
+      paste0(split_var_name, "\n<", round(split_point, 1))
+    )
+  )
+
+ggraph(tg1, layout = "tree") +
+  geom_edge_diagonal(colour = "grey55", width = 0.4) +
+  geom_node_label(
+    aes(label = display_label, fill = fill_var),
+    size = 2.5, colour = "white", fontface = "bold",
+    label.padding = unit(0.25, "lines"), label.r = unit(0.2, "lines")) +
+  scale_fill_manual(values = var_pal_rf, name = "Split variable") +
+  theme_graph(base_family = "sans") +
+  theme(legend.position = "bottom") +
+  labs(title = "Tree 1 from the random forest")
+```
+
+# Course network (data frame)
+
+Tabular data works too. Here, `courses` is a data frame with prerequisite
+and crosslist columns that define two kinds of edges:
+
+```{r courses-workflow, eval = requireNamespace("igraph", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 8, fig.height = 5.5, message = FALSE}
+library(igraph)
+
+all_edges <- edgelist(courses, source_cols = course,
+                      target_cols = c(prereq, crosslist),
+                      attr_cols = c(),
+                      symmetric_cols = crosslist)
+
+# Crosslists are symmetric --- keep one direction per pair
+all_edges <- all_edges[!(all_edges$directed == FALSE &
+                         as.character(all_edges$source) >=
+                         as.character(all_edges$target)), ]
+
+nodes <- nodelist(courses, id_col = course)
+g <- graph_from_data_frame(all_edges, vertices = nodes)
+tg <- as_tbl_graph(g)
+
+coords <- matrix(c(
+    0,     0,      # stat101
+   -0.75,  1,      # stat102
+    0.75,  1,      # stat202
+    0,    -1.2,    # math101
+   -0.3,   1,      # math102
+    0.3,   1       # data202
+), ncol = 2, byrow = TRUE)
+
+dept_pal <- c(STAT = "#5B8DB8", MATH = "#E07B54", DATA = "#6BAF6B")
+
+ggraph(tg, layout = "manual", x = coords[,1], y = coords[,2]) +
+  geom_edge_link(
+    aes(filter = (directed == TRUE)),
+    arrow = arrow(length = unit(2.5, "mm"), type = "closed"),
+    end_cap = circle(14, "mm"), start_cap = circle(14, "mm"),
+    edge_width = 0.5, colour = "grey45") +
+  geom_edge_link(
+    aes(filter = (directed == FALSE)),
+    end_cap = circle(14, "mm"), start_cap = circle(14, "mm"),
+    edge_width = 0.4, colour = "#B07CC6", linetype = "dashed") +
+  geom_node_label(
+    aes(label = name, fill = dept),
+    colour = "white", fontface = "bold", size = 3.5,
+    label.padding = unit(0.35, "lines"), label.r = unit(0.25, "lines")) +
+  scale_fill_manual(values = dept_pal, name = "Department") +
+  coord_cartesian(clip = "off", xlim = c(-1.15, 1.15)) +
+  theme_graph(base_family = "sans") +
+  theme(legend.position = "bottom",
+        plot.margin = ggplot2::margin(5, 15, 5, 15)) +
+  labs(title = "Course network",
+       subtitle = "Solid arrows = prerequisites  |  Dashed lines = crosslists")
+```
+
+For details on arguments like `source_cols`, `target_cols`, `na.rm`, and
+`symmetric_cols`, see `vignette("edgelist-nodelist")`.
