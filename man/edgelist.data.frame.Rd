@@ -5,7 +5,7 @@
 \title{Extract Edgelist from Data Frame}
 \usage{
 \method{edgelist}{data.frame}(input_object, source_cols = 1, target_cols = 2,
-  attr_cols = NULL, ...)
+  attr_cols = NULL, na.rm = TRUE, symmetric_cols = NULL, ...)
 }
 \arguments{
 \item{input_object}{A data.frame containing network information}
@@ -23,6 +23,17 @@
   to keep only source, target, and metadata columns. Accepts the same
   tidyselect syntax as \code{source_cols}.}
 
+\item{na.rm}{Logical; if \code{TRUE} (the default), rows where \code{source}
+  or \code{target} is \code{NA} are removed.  Set to \code{FALSE} to
+  preserve all rows including those with missing endpoints.}
+
+\item{symmetric_cols}{Target column names that represent undirected
+  (symmetric) relationships.  When non-\code{NULL}, a \code{directed}
+  column is added: \code{FALSE} for edges from target columns named in
+  \code{symmetric_cols}, \code{TRUE} otherwise.  Accepts the same
+  tidyselect syntax as \code{target_cols}; names must be a subset of
+  \code{target_cols}.}
+
 \item{...}{Additional arguments (currently unused)}
 }
 \value{
@@ -32,6 +43,9 @@ A data.frame with columns:
   \item{target}{Target node values}
   \item{source_col}{Name of the original column each source value came from}
   \item{target_col}{Name of the original column each target value came from}
+  \item{directed}{(only when \code{symmetric_cols} is provided) Logical:
+    \code{FALSE} for edges from symmetric target columns, \code{TRUE}
+    otherwise}
   \item{...}{Additional attribute columns selected by \code{attr_cols}}
 }
 }
@@ -41,20 +55,18 @@ represent source and target nodes. This is useful for creating edgelists from
 tabular data where node relationships are stored in columns.
 }
 \examples{
-# Basic usage — all non-source/target columns kept by default
+# Basic usage --- all non-source/target columns kept by default
 edgelist(courses, source_cols = course, target_cols = prereq)
 
-# Multiple target columns — target_col identifies the relationship type
+# Multiple target columns --- target_col identifies the relationship type
 edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist))
 
-# Keep only the edgelist (no attribute columns)
-edgelist(courses, source_cols = course, target_cols = prereq, attr_cols = c())
+# Preserve NA edges
+edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist),
+         na.rm = FALSE)
 
-# Select specific attribute columns
-edgelist(courses, source_cols = course, target_cols = prereq,
-         attr_cols = c(dept, credits))
-
-# tidyselect helpers work too
-edgelist(courses, source_cols = course, target_cols = prereq,
-         attr_cols = starts_with("c"))
+# Mark symmetric (undirected) target columns
+edgelist(courses, source_cols = course,
+         target_cols = c(prereq, crosslist),
+         symmetric_cols = crosslist)
 }
