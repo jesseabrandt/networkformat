@@ -3,7 +3,7 @@
 #' Converts a tree model object (from the tree package) into a network edgelist
 #' representation. Uses a parent-stack algorithm to traverse the binary tree
 #' structure and construct parent-child relationships. Each edge is labeled
-#' with the split condition.
+#' with the split condition and parsed into component columns.
 #'
 #' @param input_object A tree model object from the tree package
 #' @param ... Additional arguments (currently unused)
@@ -13,6 +13,11 @@
 #'     \item{from}{Parent node index}
 #'     \item{to}{Child node index}
 #'     \item{label}{Split condition label (variable and threshold)}
+#'     \item{split_var}{Variable name used for the split}
+#'     \item{split_op}{Operator: \code{"<"} or \code{">="} for numeric splits,
+#'       \code{NA} for categorical splits}
+#'     \item{split_point}{Numeric threshold for the split (\code{NA} for
+#'       categorical splits)}
 #'   }
 #' @export
 #'
@@ -25,18 +30,14 @@
 #'   tree_edges <- edgelist(tree_model)
 #'   head(tree_edges)
 #'
-#'   # View edge labels (split conditions)
-#'   tree_edges$label
-#'
-#'   # Visualize with base R (if desired)
-#'   # plot(tree_model)
-#'   # text(tree_model)
+#'   # Parsed split components
+#'   tree_edges[, c("split_var", "split_op", "split_point")]
 #' }
 edgelist.tree <- function(input_object, ...){
   df <- input_object$frame
 
   #initialize empty edge list
-  edges <- data.frame(from = integer(0), to = integer(0))#efficiency?
+  edges <- data.frame(from = integer(0), to = integer(0))
   n <- nrow(df)
 
 
@@ -79,18 +80,36 @@ edgelist.tree <- function(input_object, ...){
   }
 
 
-  ### NOW add labels
-  edges$label <- NA
+  ### NOW add labels and parsed split columns
+  edges$label <- NA_character_
+  edges$split_var <- NA_character_
+  edges$split_op <- NA_character_
+  edges$split_point <- NA_real_
+
   for (i in 1:nrow(edges)) {
     parent_node <- edges$from[i]
     child_node <- edges$to[i]
-    var <- df$var[parent_node]
-    split <- df$splits[parent_node]
+    var <- as.character(df$var[parent_node])
 
-    edges$label[i] <- ifelse(child_node %% 2 == 0,
-                             paste(var, df$splits[parent_node,1]),
-                             paste(var, df$splits[parent_node,2]))
+    # Left child (even index) gets column 1, right child (odd) gets column 2
+    split_str <- ifelse(child_node %% 2 == 0,
+                        df$splits[parent_node, 1],
+                        df$splits[parent_node, 2])
 
+    edges$label[i] <- paste(var, split_str)
+    edges$split_var[i] <- var
+
+    # Parse operator and threshold from the split string
+    # Numeric splits look like "<5.45" or ">=3.35"
+    # Categorical splits look like ":abc" or ":adf"
+    if (grepl("^<", split_str)) {
+      edges$split_op[i] <- "<"
+      edges$split_point[i] <- as.numeric(sub("^<", "", split_str))
+    } else if (grepl("^>=", split_str)) {
+      edges$split_op[i] <- ">="
+      edges$split_point[i] <- as.numeric(sub("^>=", "", split_str))
+    }
+    # else: categorical split — op and point remain NA
   }
   return(edges)
 }

@@ -17,28 +17,26 @@ A data.frame with the following columns:
     \item{from}{Parent node index}
     \item{to}{Child node index}
     \item{label}{Split condition label (variable and threshold)}
+    \item{split_var}{Variable name used for the split}
+    \item{split_op}{Operator: \code{"<"} or \code{">="} for numeric splits,
+      \code{NA} for categorical splits}
+    \item{split_point}{Numeric threshold for the split (\code{NA} for
+      categorical splits)}
   }
 }
 \description{
 Converts a tree model object (from the tree package) into a network edgelist
 representation. Uses a parent-stack algorithm to traverse the binary tree
 structure and construct parent-child relationships. Each edge is labeled
-with the split condition.
+with the split condition and parsed into component columns.
 }
 \examples{
 if (requireNamespace("tree", quietly = TRUE)) {
-  # Fit a classification tree
   tree_model <- tree::tree(Species ~ ., data = iris)
-
-  # Extract edgelist
   tree_edges <- edgelist(tree_model)
   head(tree_edges)
 
-  # View edge labels (split conditions)
-  tree_edges$label
-
-  # Visualize with base R (if desired)
-  # plot(tree_model)
-  # text(tree_model)
+  # Parsed split components
+  tree_edges[, c("split_var", "split_op", "split_point")]
 }
 }
