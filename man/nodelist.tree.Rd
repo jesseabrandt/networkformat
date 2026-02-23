@@ -21,6 +21,8 @@ A data.frame with one row per node and the following columns:
   \item{yval}{Predicted value (numeric for regression, character for
     classification)}
   \item{is_leaf}{Logical: \code{TRUE} for terminal nodes}
+  \item{label}{Display label: \code{"<var>\\nn=<n>"} for internal nodes,
+    \code{"<yval>\\nn=<n>"} for leaves}
 }
 }
 \description{
@@ -34,8 +36,7 @@ if (requireNamespace("tree", quietly = TRUE)) {
   tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
   nodelist(tr)
 
-  # Pair with edgelist for igraph
-  edges <- edgelist(tr)
-  nodes <- nodelist(tr)
+  # Labels ready for plotting
+  nodelist(tr)$label
 }
 }

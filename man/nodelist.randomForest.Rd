@@ -4,11 +4,15 @@
 \alias{nodelist.randomForest}
 \title{Extract Node List from RandomForest Model}
 \usage{
-\method{nodelist}{randomForest}(input_object, ...)
+\method{nodelist}{randomForest}(input_object, treenum = NULL, ...)
 }
 \arguments{
 \item{input_object}{A randomForest model object from the
   \pkg{randomForest} package}
+
+\item{treenum}{Integer vector of tree numbers to extract (default:
+  \code{NULL} extracts all trees). Values must be between 1 and
+  \code{input_object$ntree}.}
 
 \item{...}{Additional arguments (currently unused)}
 }
@@ -27,6 +31,8 @@ A data.frame with one row per node (across all trees) and the
   \item{prediction}{Predicted value (numeric for regression, integer
     class index for classification)}
   \item{treenum}{Integer identifying which tree the node belongs to}
+  \item{label}{Display label: split variable name for internal nodes,
+    predicted value for leaves}
 }
 }
 \description{
@@ -43,9 +49,7 @@ if (requireNamespace("randomForest", quietly = TRUE)) {
   nodes <- nodelist(rf)
   head(nodes)
 
-  # Pair with edgelist for a single tree
-  edges <- edgelist(rf)
-  tree1_edges <- subset(edges, treenum == 1)
-  tree1_nodes <- subset(nodes, treenum == 1)
+  # Extract a single tree
+  nodes1 <- nodelist(rf, treenum = 1)
 }
 }

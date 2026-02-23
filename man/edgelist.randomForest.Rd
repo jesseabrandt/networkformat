@@ -4,10 +4,14 @@
 \alias{edgelist.randomForest}
 \title{Extract Edgelist from RandomForest Model}
 \usage{
-\method{edgelist}{randomForest}(input_object, ...)
+\method{edgelist}{randomForest}(input_object, treenum = NULL, ...)
 }
 \arguments{
 \item{input_object}{A randomForest model object from the randomForest package}
+
+\item{treenum}{Integer vector of tree numbers to extract (default:
+  \code{NULL} extracts all trees). Values must be between 1 and
+  \code{input_object$ntree}.}
 
 \item{...}{Additional arguments (currently unused)}
 }
@@ -31,7 +35,6 @@ including split variable, split point, and prediction values.
 }
 \examples{
 if (requireNamespace("randomForest", quietly = TRUE)) {
-  # Fit a small random forest
   rf_model <- randomForest::randomForest(
     Species ~ .,
     data = iris,
@@ -39,15 +42,12 @@ if (requireNamespace("randomForest", quietly = TRUE)) {
     maxnodes = 10
   )
 
-  # Extract edgelist
+  # Extract all trees
   rf_edges <- edgelist(rf_model)
   head(rf_edges)
 
-  # Examine split variables
-  table(rf_edges$split_var_name)
-
-  # Filter to first tree only
-  tree1_edges <- subset(rf_edges, treenum == 1)
-  nrow(tree1_edges)
+  # Extract specific trees
+  rf_edges_1 <- edgelist(rf_model, treenum = 1)
+  rf_edges_13 <- edgelist(rf_model, treenum = c(1, 3))
 }
 }

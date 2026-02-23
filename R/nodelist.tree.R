@@ -17,6 +17,8 @@
 #'     \item{yval}{Predicted value (numeric for regression, character for
 #'       classification)}
 #'     \item{is_leaf}{Logical: \code{TRUE} for terminal nodes}
+#'     \item{label}{Display label: \code{"<var>\\nn=<n>"} for internal nodes,
+#'       \code{"<yval>\\nn=<n>"} for leaves}
 #'   }
 #' @export
 #'
@@ -25,21 +27,24 @@
 #'   tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
 #'   nodelist(tr)
 #'
-#'   # Pair with edgelist for igraph
-#'   edges <- edgelist(tr)
-#'   nodes <- nodelist(tr)
+#'   # Labels ready for plotting
+#'   nodelist(tr)$label
 #' }
 nodelist.tree <- function(input_object, ...) {
   frame <- input_object$frame
   is_leaf <- frame$var == "<leaf>"
+  yval <- if (is.factor(frame$yval)) as.character(frame$yval) else frame$yval
 
   data.frame(
     node    = seq_len(nrow(frame)),
     var     = as.character(frame$var),
     n       = frame$n,
     dev     = frame$dev,
-    yval    = if (is.factor(frame$yval)) as.character(frame$yval) else frame$yval,
+    yval    = yval,
     is_leaf = is_leaf,
+    label   = ifelse(is_leaf,
+                     paste0(yval, "\nn=", frame$n),
+                     paste0(as.character(frame$var), "\nn=", frame$n)),
     stringsAsFactors = FALSE
   )
 }

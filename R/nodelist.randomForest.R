@@ -9,6 +9,9 @@
 #'
 #' @param input_object A randomForest model object from the
 #'   \pkg{randomForest} package
+#' @param treenum Integer vector of tree numbers to extract (default:
+#'   \code{NULL} extracts all trees). Values must be between 1 and
+#'   \code{input_object$ntree}.
 #' @param ... Additional arguments (currently unused)
 #'
 #' @returns A data.frame with one row per node (across all trees) and the
@@ -25,6 +28,8 @@
 #'     \item{prediction}{Predicted value (numeric for regression, integer
 #'       class index for classification)}
 #'     \item{treenum}{Integer identifying which tree the node belongs to}
+#'     \item{label}{Display label: split variable name for internal nodes,
+#'       predicted value for leaves}
 #'   }
 #' @export
 #'
@@ -34,31 +39,40 @@
 #'   nodes <- nodelist(rf)
 #'   head(nodes)
 #'
-#'   # Pair with edgelist for a single tree
-#'   edges <- edgelist(rf)
-#'   tree1_edges <- subset(edges, treenum == 1)
-#'   tree1_nodes <- subset(nodes, treenum == 1)
+#'   # Extract a single tree
+#'   nodes1 <- nodelist(rf, treenum = 1)
 #' }
-nodelist.randomForest <- function(input_object, ...) {
+nodelist.randomForest <- function(input_object, treenum = NULL, ...) {
   var_names <- names(input_object$forest$ncat)
 
-  convert_tree <- function(treenum) {
-    tree_df <- as.data.frame(randomForest::getTree(input_object, treenum))
+  tree_indices <- if (is.null(treenum)) {
+    seq_len(input_object$ntree)
+  } else {
+    stopifnot(all(treenum >= 1), all(treenum <= input_object$ntree))
+    as.integer(treenum)
+  }
+
+  convert_tree <- function(tn) {
+    tree_df <- as.data.frame(randomForest::getTree(input_object, tn))
     is_leaf <- tree_df$`left daughter` == 0
     split_var <- tree_df$`split var`
+    split_var_name <- ifelse(is_leaf, NA_character_, var_names[split_var])
 
     data.frame(
       node           = seq_len(nrow(tree_df)),
       is_leaf        = is_leaf,
       split_var      = ifelse(is_leaf, NA_real_, split_var),
-      split_var_name = ifelse(is_leaf, NA_character_, var_names[split_var]),
+      split_var_name = split_var_name,
       split_point    = ifelse(is_leaf, NA_real_, tree_df$`split point`),
       prediction     = tree_df$prediction,
-      treenum        = treenum,
+      treenum        = tn,
+      label          = ifelse(is_leaf,
+                              as.character(tree_df$prediction),
+                              split_var_name),
       stringsAsFactors = FALSE
     )
   }
 
-  node_list <- lapply(seq_len(input_object$ntree), convert_tree)
+  node_list <- lapply(tree_indices, convert_tree)
   do.call(rbind, node_list)
 }
