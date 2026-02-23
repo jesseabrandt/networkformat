@@ -21,13 +21,14 @@ library(ggraph)
 library(tidygraph)
 ```
 
-**networkformat** converts tree-based models and tabular data into graph
-objects for visualization with ggraph. The main entry points are:
+**networkformat** converts tree-based models into graph objects for
+visualization with ggraph. The main entry points are:
 
 - `as_igraph(x)` --- convert a model to an igraph object
 - `as_tbl_graph(x)` --- convert to a tidygraph tbl_graph (for use with ggraph)
 
-For more control over the underlying data, see
+For working with raw edgelists and nodelists --- including data frame
+inputs like course prerequisite networks --- see
 `vignette("edgelist-nodelist")`.
 
 # Decision tree
@@ -151,62 +152,3 @@ ggraph(tg1, layout = "tree") +
   theme(legend.position = "bottom") +
   labs(title = "Tree 1 from the random forest")
 ```
-
-# Course network (data frame)
-
-Tabular data works too. Here, `courses` is a data frame with prerequisite
-and crosslist columns that define two kinds of edges:
-
-```{r courses-workflow, eval = requireNamespace("igraph", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 8, fig.height = 5.5, message = FALSE}
-library(igraph)
-
-all_edges <- edgelist(courses, source_cols = course,
-                      target_cols = c(prereq, crosslist),
-                      attr_cols = c(),
-                      symmetric_cols = crosslist)
-
-# Crosslists are symmetric --- keep one direction per pair
-all_edges <- all_edges[!(all_edges$directed == FALSE &
-                         as.character(all_edges$source) >=
-                         as.character(all_edges$target)), ]
-
-nodes <- nodelist(courses, id_col = course)
-g <- graph_from_data_frame(all_edges, vertices = nodes)
-tg <- as_tbl_graph(g)
-
-coords <- matrix(c(
-    0,     0,      # stat101
-   -0.75,  1,      # stat102
-    0.75,  1,      # stat202
-    0,    -1.2,    # math101
-   -0.3,   1,      # math102
-    0.3,   1       # data202
-), ncol = 2, byrow = TRUE)
-
-dept_pal <- c(STAT = "#5B8DB8", MATH = "#E07B54", DATA = "#6BAF6B")
-
-ggraph(tg, layout = "manual", x = coords[,1], y = coords[,2]) +
-  geom_edge_link(
-    aes(filter = (directed == TRUE)),
-    arrow = arrow(length = unit(2.5, "mm"), type = "closed"),
-    end_cap = circle(14, "mm"), start_cap = circle(14, "mm"),
-    edge_width = 0.5, colour = "grey45") +
-  geom_edge_link(
-    aes(filter = (directed == FALSE)),
-    end_cap = circle(14, "mm"), start_cap = circle(14, "mm"),
-    edge_width = 0.4, colour = "#B07CC6", linetype = "dashed") +
-  geom_node_label(
-    aes(label = name, fill = dept),
-    colour = "white", fontface = "bold", size = 3.5,
-    label.padding = unit(0.35, "lines"), label.r = unit(0.25, "lines")) +
-  scale_fill_manual(values = dept_pal, name = "Department") +
-  coord_cartesian(clip = "off", xlim = c(-1.15, 1.15)) +
-  theme_graph(base_family = "sans") +
-  theme(legend.position = "bottom",
-        plot.margin = ggplot2::margin(5, 15, 5, 15)) +
-  labs(title = "Course network",
-       subtitle = "Solid arrows = prerequisites  |  Dashed lines = crosslists")
-```
-
-For details on arguments like `source_cols`, `target_cols`, `na.rm`, and
-`symmetric_cols`, see `vignette("edgelist-nodelist")`.
