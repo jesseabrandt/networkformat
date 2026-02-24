@@ -28,10 +28,32 @@ you have to write bespoke reshaping code every time.
 models and tabular data, putting everything in the format that the rest of
 the R network ecosystem expects.
 
+# Quick example
+
+Five lines from model to plot:
+
+```{r quick-example, eval = requireNamespace("tree", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 9, fig.height = 6, message = FALSE}
+pkgload::load_all()
+# library(networkformat)
+library(tidygraph)
+library(ggraph)
+
+tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+tg <- as_tbl_graph(tr)
+
+ggraph(tg, layout = "tree") +
+  geom_edge_diagonal(colour = "grey60") +
+  geom_node_label(aes(label = label, fill = ifelse(is_leaf, yval, var)),
+                  size = 2.5, colour = "white", fontface = "bold") +
+  scale_fill_brewer(palette = "Set2", name = NULL) +
+  theme_graph(base_family = "sans") +
+  labs(title = "Iris classification tree")
+```
+
 # The R network ecosystem
 
 Once your data is in edgelist/nodelist form, a large ecosystem of packages
-is available:
+is available, including:
 
 **igraph** --- the workhorse graph library for R. Handles graph construction,
 shortest paths, centrality, community detection, clustering, and much more.
@@ -42,7 +64,11 @@ approaches.
 **tidygraph** --- a tidy interface built on top of igraph. Lets you
 manipulate graphs with dplyr verbs (`mutate`, `filter`, `arrange`) while
 keeping the underlying igraph structure. If you're comfortable with the
-tidyverse, this is the natural way to work with graphs.
+tidyverse, this is the natural way to work with graphs. Note that tidygraph
+provides `as_tbl_graph.data.frame()`, which auto-detects edge data frames
+with `from`/`to` or `source`/`target` columns --- so once you have an
+edgelist from networkformat, you can pass it directly to tidygraph without
+building an igraph first.
 
 **ggraph** --- a ggplot2 extension for graph visualization, designed to work
 with tidygraph/igraph objects. Supports tree layouts, force-directed layouts,
@@ -66,10 +92,15 @@ whatever your analysis requires.
 | `randomForest` | yes | yes | yes |
 | `data.frame` | yes | yes | --- |
 
+For data frames, tidygraph's `as_tbl_graph()` already handles the
+conversion from edge data frames to graph objects, so networkformat does
+not duplicate that method.
+
 ## In progress
 
 | Model | Status |
 |-------|--------|
+| `rpart` | Stub |
 | `xgboost` (`xgb.Booster`) | Stub |
 | `gbm` | Stub |
 

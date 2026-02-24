@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, message = FALSE}
-devtools::load_all()
+pkgload::load_all()
 # library(networkformat)
 ```
 
@@ -90,11 +90,32 @@ g <- graph_from_data_frame(
   edges, directed = TRUE,
   vertices = data.frame(name = nodes$node, nodes[-1])
 )
-vcount(g)
-ecount(g)
+cat("Nodes:", vcount(g), " Edges:", ecount(g), "\n")
 ```
 
 Or use `as_igraph(tr)` for the same result in one step.
+
+## Visualizing the edgelist pipeline
+
+The full workflow --- `edgelist()` -> `nodelist()` -> `graph_from_data_frame()` -> ggraph --- gives you control at every step:
+
+```{r tree-viz, eval = requireNamespace("tree", quietly = TRUE) && requireNamespace("igraph", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 9, fig.height = 6, message = FALSE}
+library(ggraph)
+library(tidygraph)
+
+tg <- as_tbl_graph(g)
+
+ggraph(tg, layout = "tree") +
+  geom_edge_diagonal(colour = "grey60", width = 0.5) +
+  geom_node_label(
+    aes(label = label, fill = ifelse(is_leaf, yval, var)),
+    size = 2.5, colour = "white", fontface = "bold",
+    label.padding = unit(0.25, "lines"), label.r = unit(0.2, "lines")) +
+  scale_fill_brewer(palette = "Set2", name = NULL) +
+  theme_graph(base_family = "sans") +
+  theme(legend.position = "bottom") +
+  labs(title = "Iris tree (built from edgelist + nodelist)")
+```
 
 # Random forest
 
@@ -167,7 +188,7 @@ syntax --- bare names, strings, numbers, or helpers like `starts_with()`.
 ```{r df-basic}
 courses
 
-edgelist(courses, source_cols = course, target_cols = prereq)
+edgelist(courses, source_cols = course, target_cols = (prereq))
 ```
 
 ### Multiple target columns
@@ -177,7 +198,7 @@ The `target_col` column identifies which relationship each edge came from:
 
 ```{r df-multi}
 edgelist(courses, source_cols = course,
-         target_cols = c(prereq, crosslist))
+         target_cols = c(prereq, prereq2, crosslist))
 ```
 
 ### `na.rm` --- handling missing values
@@ -188,11 +209,11 @@ By default, rows where source or target is NA are removed. Set
 ```{r df-narm}
 # Default: NAs removed
 nrow(edgelist(courses, source_cols = course,
-              target_cols = c(prereq, crosslist)))
+              target_cols = c(prereq, prereq2, crosslist)))
 
 # Keep NAs
 nrow(edgelist(courses, source_cols = course,
-              target_cols = c(prereq, crosslist),
+              target_cols = c(prereq, prereq2, crosslist),
               na.rm = FALSE))
 ```
 
@@ -218,7 +239,7 @@ co-authorships). Use `symmetric_cols` to add a `directed` column:
 
 ```{r df-sym}
 edgelist(courses, source_cols = course,
-         target_cols = c(prereq, crosslist),
+         target_cols = c(prereq, prereq2, crosslist),
          attr_cols = c(),
          symmetric_cols = crosslist)
 ```
@@ -236,17 +257,37 @@ comes first --- convenient for `igraph::graph_from_data_frame()`:
 nodelist(courses, id_col = course)
 ```
 
+## Note on tidygraph
+
+tidygraph provides its own `as_tbl_graph.data.frame()` method that
+auto-detects edge data frames (columns named `from`/`to` or
+`source`/`target`). If your edgelist output uses those column names,
+you can pass it directly:
+
+```{r tidygraph-note, eval = FALSE}
+edges <- edgelist(courses, source_cols = course, target_cols = prereq)
+# Rename to from/to for tidygraph auto-detection
+names(edges)[1:2] <- c("from", "to")
+tg <- tidygraph::as_tbl_graph(edges)
+```
+
+networkformat does not add its own `as_tbl_graph.data.frame()` method
+since tidygraph already covers this case.
+
 ## Putting it together: course network
 
-```{r courses-plot, eval = requireNamespace("igraph", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 8, fig.height = 5.5, message = FALSE}
+```{r courses-plot, eval = requireNamespace("igraph", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 10, fig.height = 7, message = FALSE}
 library(igraph)
 library(ggraph)
 library(tidygraph)
 
 all_edges <- edgelist(courses, source_cols = course,
-                      target_cols = c(prereq, crosslist),
+                      target_cols = c(prereq, prereq2, crosslist),
                       attr_cols = c(),
                       symmetric_cols = crosslist)
+
+# Reverse prereq arrows so they point from prereq → dependent course
+all_edges[c("source", "target")] <- all_edges[c("target", "source")]
 
 # Crosslists are symmetric --- keep one direction per pair
 all_edges <- all_edges[!(all_edges$directed == FALSE &
@@ -257,38 +298,48 @@ nodes <- nodelist(courses, id_col = course)
 g <- graph_from_data_frame(all_edges, vertices = nodes)
 tg <- as_tbl_graph(g)
 
-coords <- matrix(c(
-    0,     0,      # stat101
-   -0.75,  1,      # stat102
-    0.75,  1,      # stat202
-    0,    -1.2,    # math101
-   -0.3,   1,      # math102
-    0.3,   1       # data202
-), ncol = 2, byrow = TRUE)
+dept_pal <- c(STAT = "#5B8DB8", MATH = "#E07B54", DATA = "#6BAF6B", CS = "#9B6BB0")
 
-dept_pal <- c(STAT = "#5B8DB8", MATH = "#E07B54", DATA = "#6BAF6B")
-
-ggraph(tg, layout = "manual", x = coords[,1], y = coords[,2]) +
-  geom_edge_link(
+ggraph(tg, layout = "sugiyama") +
+  geom_edge_diagonal(
     aes(filter = (directed == TRUE)),
-    arrow = arrow(length = unit(2.5, "mm"), type = "closed"),
-    end_cap = circle(14, "mm"), start_cap = circle(14, "mm"),
+    arrow = arrow(length = unit(2, "mm"), type = "closed"),
+    end_cap = circle(8, "mm"), start_cap = circle(8, "mm"),
     edge_width = 0.5, colour = "grey45") +
-  geom_edge_link(
+  geom_edge_arc(
     aes(filter = (directed == FALSE)),
-    end_cap = circle(14, "mm"), start_cap = circle(14, "mm"),
-    edge_width = 0.4, colour = "#B07CC6", linetype = "dashed") +
+    end_cap = circle(6, "mm"), start_cap = circle(6, "mm"),
+    edge_width = 0.8, colour = "#9B59B6", linetype = "dashed",
+    strength = 0.3) +
   geom_node_label(
     aes(label = name, fill = dept),
-    colour = "white", fontface = "bold", size = 3.5,
-    label.padding = unit(0.35, "lines"), label.r = unit(0.25, "lines")) +
+    colour = "white", fontface = "bold", size = 3,
+    label.padding = unit(0.3, "lines"), label.r = unit(0.2, "lines")) +
   scale_fill_manual(values = dept_pal, name = "Department") +
-  coord_cartesian(clip = "off", xlim = c(-1.15, 1.15)) +
   theme_graph(base_family = "sans") +
-  theme(legend.position = "bottom",
-        plot.margin = ggplot2::margin(5, 15, 5, 15)) +
-  labs(title = "Course network",
-       subtitle = "Solid arrows = prerequisites  |  Dashed lines = crosslists")
+  theme(legend.position = "bottom") +
+  labs(title = "Course prerequisite network",
+       subtitle = "Solid arrows = prerequisites  |  Dashed curves = crosslists")
+```
+
+### Graph statistics
+
+Once the data is in igraph, you can compute standard graph metrics:
+
+```{r courses-stats, eval = requireNamespace("igraph", quietly = TRUE)}
+cat("Nodes:", vcount(g), "\n")
+cat("Edges:", ecount(g), "\n")
+cat("Components:", count_components(g), "\n")
+
+# In-degree: how many prerequisites each course has
+deg_in <- degree(g, mode = "in")
+cat("\nMost prerequisites:\n")
+print(sort(deg_in[deg_in > 0], decreasing = TRUE))
+
+# Out-degree: how many courses depend on this one
+deg_out <- degree(g, mode = "out")
+cat("\nMost depended-on:\n")
+print(sort(deg_out[deg_out > 0], decreasing = TRUE))
 ```
 
 # Output reference

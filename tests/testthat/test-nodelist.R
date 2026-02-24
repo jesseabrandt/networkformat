@@ -5,7 +5,7 @@ test_that("nodelist.data.frame returns data.frame with reordered columns", {
 
   expect_s3_class(nl, "data.frame")
   expect_equal(names(nl)[1], "dept")
-  expect_equal(ncol(nl), 6)
+  expect_equal(ncol(nl), 7)
 })
 
 test_that("nodelist.data.frame respects id_col parameter", {
@@ -13,7 +13,7 @@ test_that("nodelist.data.frame respects id_col parameter", {
 
   expect_s3_class(nl, "data.frame")
   expect_equal(names(nl)[1], "course")
-  expect_equal(names(nl), c("course", "dept", "prereq", "crosslist", "credits", "level"))
+  expect_equal(names(nl), c("course", "dept", "prereq", "prereq2", "crosslist", "credits", "level"))
 })
 
 test_that("nodelist.data.frame maintains row order and data", {
@@ -300,7 +300,7 @@ test_that("nodelist.data.frame accepts bare column name", {
 
   expect_s3_class(nl, "data.frame")
   expect_equal(names(nl)[1], "course")
-  expect_equal(names(nl), c("course", "dept", "prereq", "crosslist", "credits", "level"))
+  expect_equal(names(nl), c("course", "dept", "prereq", "prereq2", "crosslist", "credits", "level"))
 })
 
 test_that("nodelist.data.frame accepts string column name", {

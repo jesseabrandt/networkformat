@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, message = FALSE}
-devtools::load_all()
+pkgload::load_all()
 # library(networkformat)
 library(ggraph)
 library(tidygraph)
@@ -27,9 +27,9 @@ visualization with ggraph. The main entry points are:
 - `as_igraph(x)` --- convert a model to an igraph object
 - `as_tbl_graph(x)` --- convert to a tidygraph tbl_graph (for use with ggraph)
 
-For working with raw edgelists and nodelists --- including data frame
-inputs like course prerequisite networks --- see
-`vignette("edgelist-nodelist")`.
+If you want to work with the raw edgelists and nodelists directly ---
+filtering edges, computing graph statistics, or building custom igraph
+objects --- see `vignette("edgelist-nodelist")`.
 
 # Decision tree
 
@@ -41,6 +41,11 @@ tg <- as_tbl_graph(tr)
 The graph carries all the attributes you need for plotting --- node labels,
 split variables, leaf predictions, observation counts, and parsed edge
 thresholds.
+
+```{r tree-stats, eval = requireNamespace("tree", quietly = TRUE) && requireNamespace("igraph", quietly = TRUE)}
+cat("Nodes:", igraph::vcount(tg), " Edges:", igraph::ecount(tg),
+    " Depth:", max(igraph::distances(tg, mode = "out")[1, ]), "\n")
+```
 
 ```{r tree-plot, eval = requireNamespace("tree", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 10, fig.height = 7}
 # Add a fill column: split variable for internal nodes, predicted class for leaves
@@ -90,16 +95,20 @@ rf <- randomForest(Species ~ ., data = iris, ntree = 3, maxnodes = 5)
 tg_rf <- as_tbl_graph(rf, treenum = NULL)
 ```
 
-```{r rf-plot, eval = requireNamespace("randomForest", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 12, fig.height = 6}
+```{r rf-stats, eval = requireNamespace("randomForest", quietly = TRUE) && requireNamespace("igraph", quietly = TRUE)}
+cat("Nodes:", igraph::vcount(tg_rf), " Edges:", igraph::ecount(tg_rf),
+    " Components:", igraph::count_components(tg_rf), "\n")
+```
+
+```{r rf-plot, eval = requireNamespace("randomForest", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 14, fig.height = 7}
 # Add display columns directly to the graph
 tg_rf <- tg_rf %>%
   mutate(
     fill_var = ifelse(is_leaf, "leaf", split_var_name),
     display_label = ifelse(
       is_leaf, label,
-      paste0(split_var_name, "\n<", round(split_point, 1))
-    ),
-    node_size = ifelse(is_leaf, 4, 6)
+      paste0(split_var_name, "\n< ", round(split_point, 1))
+    )
   )
 
 # Palette: one color per predictor variable + muted for leaves
@@ -114,16 +123,16 @@ var_pal_rf <- c(
 ggraph(tg_rf, layout = "tree") +
   geom_edge_link(
     arrow = arrow(length = unit(1.5, "mm"), type = "closed"),
-    end_cap = circle(3, "mm"),
+    end_cap = circle(5, "mm"),
     colour = "grey70", width = 0.3) +
-  geom_node_point(aes(colour = fill_var, size = node_size),
-    show.legend = FALSE) +
-  geom_node_text(aes(label = display_label),
-    size = 2, vjust = -0.8, fontface = "bold") +
-  scale_colour_manual(values = var_pal_rf) +
-  scale_size_identity() +
+  geom_node_label(
+    aes(label = display_label, fill = fill_var),
+    size = 2.5, colour = "black", fontface = "bold",
+    label.padding = unit(0.2, "lines"), label.r = unit(0.15, "lines"),
+    alpha = 0.85) +
+  scale_fill_manual(values = var_pal_rf, name = "Split variable") +
   theme_graph(base_family = "sans") +
-  theme(legend.position = "none") +
+  theme(legend.position = "bottom") +
   labs(title = "Random forest (3 trees)",
        subtitle = "Each disconnected component is one tree")
 ```
@@ -142,7 +151,7 @@ tg1 <- as_tbl_graph(rf, treenum = 1) %>%
     fill_var = ifelse(is_leaf, "leaf", split_var_name),
     display_label = ifelse(
       is_leaf, label,
-      paste0(split_var_name, "\n<", round(split_point, 1))
+      paste0(split_var_name, "\n< ", round(split_point, 1))
     )
   )
 
@@ -161,3 +170,58 @@ ggraph(tg1, layout = "dendrogram") +
   theme(legend.position = "bottom") +
   labs(title = "Tree 1 from the random forest")
 ```
+
+# Course prerequisite network
+
+networkformat also handles tabular data. The bundled `courses` dataset
+contains `r nrow(courses)` courses across `r length(unique(courses$dept))`
+departments, with prerequisite and crosslist relationships.
+
+```{r courses-net, eval = requireNamespace("igraph", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 10, fig.height = 7, message = FALSE}
+library(igraph)
+
+all_edges <- edgelist(courses, source_cols = course,
+                      target_cols = c(prereq, prereq2, crosslist),
+                      attr_cols = c(),
+                      symmetric_cols = crosslist)
+
+# Reverse prereq arrows so they point from prereq → dependent course
+all_edges[c("source", "target")] <- all_edges[c("target", "source")]
+
+# Crosslists are symmetric --- keep one direction per pair
+all_edges <- all_edges[!(all_edges$directed == FALSE &
+                         as.character(all_edges$source) >=
+                         as.character(all_edges$target)), ]
+
+nodes <- nodelist(courses, id_col = course)
+g <- graph_from_data_frame(all_edges, vertices = nodes)
+tg_courses <- as_tbl_graph(g)
+
+cat("Nodes:", vcount(g), " Edges:", ecount(g), "\n")
+
+dept_pal <- c(STAT = "#5B8DB8", MATH = "#E07B54", DATA = "#6BAF6B", CS = "#9B6BB0")
+
+ggraph(tg_courses, layout = "sugiyama") +
+  geom_edge_diagonal(
+    aes(filter = (directed == TRUE)),
+    arrow = arrow(length = unit(2, "mm"), type = "closed"),
+    end_cap = circle(8, "mm"), start_cap = circle(8, "mm"),
+    edge_width = 0.5, colour = "grey45") +
+  geom_edge_arc(
+    aes(filter = (directed == FALSE)),
+    end_cap = circle(6, "mm"), start_cap = circle(6, "mm"),
+    edge_width = 0.8, colour = "#9B59B6", linetype = "dashed",
+    strength = 0.3) +
+  geom_node_label(
+    aes(label = name, fill = dept),
+    colour = "white", fontface = "bold", size = 3,
+    label.padding = unit(0.3, "lines"), label.r = unit(0.2, "lines")) +
+  scale_fill_manual(values = dept_pal, name = "Department") +
+  theme_graph(base_family = "sans") +
+  theme(legend.position = "bottom") +
+  labs(title = "Course prerequisite network",
+       subtitle = "Solid arrows = prerequisites  |  Dashed curves = crosslists")
+```
+
+For the full data frame workflow --- column selection, `na.rm`, `attr_cols`,
+`symmetric_cols`, and graph statistics --- see `vignette("edgelist-nodelist")`.

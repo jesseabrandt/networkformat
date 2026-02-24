@@ -30,7 +30,7 @@ test_that("edgelist.data.frame method returns data frame with source and target"
 
   expect_s3_class(el, "data.frame")
   expect_true(all(c("source", "target") %in% names(el)))
-  expect_equal(nrow(el), 6)
+  expect_equal(nrow(el), 13)
 })
 
 test_that("edgelist.data.frame handles custom source and target columns", {
@@ -156,14 +156,14 @@ test_that("edgelist.data.frame na.rm works with multiple target columns", {
   # NAs from missing prereqs/crosslists should be dropped
   expect_false(any(is.na(el$source)))
   expect_false(any(is.na(el$target)))
-  expect_true(nrow(el) < 12) # Some rows have NA crosslists
+  expect_true(nrow(el) < nrow(courses) * 2) # Some rows have NA crosslists
 })
 
 test_that("edgelist.data.frame handles multiple target columns", {
-  el <- edgelist(courses, source_cols = 2, target_cols = c(3, 4), na.rm = FALSE)
+  el <- edgelist(courses, source_cols = 2, target_cols = c(3, 5), na.rm = FALSE)
 
   expect_s3_class(el, "data.frame")
-  expect_equal(nrow(el), 12) # 6 courses * 2 target columns
+  expect_equal(nrow(el), nrow(courses) * 2)
   expect_true(all(c("source", "target") %in% names(el)))
 })
 
@@ -173,7 +173,7 @@ test_that("edgelist.data.frame accepts bare column names", {
   el <- edgelist(courses, source_cols = course, target_cols = prereq, na.rm = FALSE)
 
   expect_s3_class(el, "data.frame")
-  expect_equal(nrow(el), 6)
+  expect_equal(nrow(el), nrow(courses))
   expect_equal(el$source, courses$course)
   expect_equal(el$target, courses$prereq)
 })
@@ -182,7 +182,7 @@ test_that("edgelist.data.frame accepts string column names", {
   el <- edgelist(courses, source_cols = "course", target_cols = "prereq", na.rm = FALSE)
 
   expect_s3_class(el, "data.frame")
-  expect_equal(nrow(el), 6)
+  expect_equal(nrow(el), nrow(courses))
   expect_equal(el$source, courses$course)
   expect_equal(el$target, courses$prereq)
 })
@@ -192,7 +192,7 @@ test_that("edgelist.data.frame accepts multiple bare target columns", {
                  na.rm = FALSE)
 
   expect_s3_class(el, "data.frame")
-  expect_equal(nrow(el), 12) # 6 courses * 2 target columns
+  expect_equal(nrow(el), nrow(courses) * 2)
   expect_true(all(c("source", "target") %in% names(el)))
 })
 
@@ -209,9 +209,9 @@ test_that("edgelist.data.frame includes source_col and target_col metadata", {
 test_that("edgelist.data.frame default attr_cols keeps all remaining columns", {
   el <- edgelist(courses, source_cols = course, target_cols = prereq, na.rm = FALSE)
 
-  # courses has: dept, course, prereq, crosslist, credits, level
-  # source=course, target=prereq -> remaining: dept, crosslist, credits, level
-  expect_true(all(c("dept", "crosslist", "credits", "level") %in% names(el)))
+  # courses has: dept, course, prereq, prereq2, crosslist, credits, level
+  # source=course, target=prereq -> remaining: dept, prereq2, crosslist, credits, level
+  expect_true(all(c("dept", "prereq2", "crosslist", "credits", "level") %in% names(el)))
   expect_equal(el$dept, courses$dept)
   expect_equal(el$credits, courses$credits)
 })
@@ -248,10 +248,11 @@ test_that("edgelist.data.frame multi-target has correct target_col per block", {
   el <- edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist),
                  na.rm = FALSE)
 
-  expect_equal(nrow(el), 12)
-  # First 6 rows from prereq, next 6 from crosslist
-  expect_true(all(el$target_col[1:6] == "prereq"))
-  expect_true(all(el$target_col[7:12] == "crosslist"))
+  n <- nrow(courses)
+  expect_equal(nrow(el), n * 2)
+  # First n rows from prereq, next n from crosslist
+  expect_true(all(el$target_col[seq_len(n)] == "prereq"))
+  expect_true(all(el$target_col[(n + 1):(n * 2)] == "crosslist"))
   # source_col is always "course"
   expect_true(all(el$source_col == "course"))
 })
@@ -297,8 +298,9 @@ test_that("edgelist.data.frame attributes replicate across multi-target", {
                  attr_cols = credits, na.rm = FALSE)
 
   # credits should be replicated identically in both blocks
-  expect_equal(el$credits[1:6], courses$credits)
-  expect_equal(el$credits[7:12], courses$credits)
+  n <- nrow(courses)
+  expect_equal(el$credits[seq_len(n)], courses$credits)
+  expect_equal(el$credits[(n + 1):(n * 2)], courses$credits)
 })
 
 # --- symmetric_cols tests ---
