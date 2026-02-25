@@ -13,11 +13,11 @@
 #'   \code{source_cols}.
 #' @param attr_cols Columns to carry as edge attributes (default: \code{NULL}
 #'   keeps all columns not used as source or target). Pass an empty \code{c()}
-#'   to keep only source, target, and metadata columns. Accepts the same
+#'   to keep only from, to, and metadata columns. Accepts the same
 #'   \href{https://tidyselect.r-lib.org/reference/language.html}{tidyselect}
 #'   syntax as \code{source_cols}.
 #' @param na.rm Logical; if \code{TRUE} (the default), rows where
-#'   \code{source} or \code{target} is \code{NA} are removed from the
+#'   \code{from} or \code{to} is \code{NA} are removed from the
 #'   result.  Set to \code{FALSE} to preserve the old behavior of
 #'   keeping all rows.
 #' @param symmetric_cols Target column names that represent undirected
@@ -26,14 +26,19 @@
 #'   in \code{symmetric_cols}, \code{TRUE} otherwise.  Accepts the same
 #'   tidyselect syntax as \code{target_cols}; names must be a subset of
 #'   \code{target_cols}.
+#' @param dedupe Logical; if \code{TRUE} (the default) and
+#'   \code{symmetric_cols} is non-\code{NULL}, duplicate undirected edges
+#'   are removed by keeping only rows where \code{from <= to}
+#'   (lexicographic comparison). Set to \code{FALSE} to preserve both
+#'   directions.
 #' @param ... Additional arguments (currently unused)
 #'
 #' @returns A data.frame with columns:
 #' \describe{
-#'   \item{source}{Source node values}
-#'   \item{target}{Target node values}
-#'   \item{source_col}{Name of the original column each source value came from}
-#'   \item{target_col}{Name of the original column each target value came from}
+#'   \item{from}{Source node values}
+#'   \item{to}{Target node values}
+#'   \item{from_col}{Name of the original column each source value came from}
+#'   \item{to_col}{Name of the original column each target value came from}
 #'   \item{directed}{(only when \code{symmetric_cols} is provided) Logical:
 #'     \code{FALSE} for edges from symmetric target columns, \code{TRUE}
 #'     otherwise}
@@ -45,7 +50,7 @@
 #' # Basic usage --- all non-source/target columns kept by default
 #' edgelist(courses, source_cols = course, target_cols = prereq)
 #'
-#' # Multiple target columns --- target_col identifies the relationship type
+#' # Multiple target columns --- to_col identifies the relationship type
 #' edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist))
 #'
 #' # Keep only the edgelist (no attribute columns)
@@ -66,7 +71,7 @@
 #'          symmetric_cols = crosslist)
 edgelist.data.frame <- function(input_object, source_cols = 1, target_cols = 2,
                                  attr_cols = NULL, na.rm = TRUE,
-                                 symmetric_cols = NULL, ...) {
+                                 symmetric_cols = NULL, dedupe = TRUE, ...) {
   source_pos <- tidyselect::eval_select(rlang::enquo(source_cols), input_object)
   target_pos <- tidyselect::eval_select(rlang::enquo(target_cols), input_object)
 
@@ -81,6 +86,12 @@ edgelist.data.frame <- function(input_object, source_cols = 1, target_cols = 2,
   } else {
     # Explicit selection (may be empty via c())
     attr_pos <- tidyselect::eval_select(attr_quo, input_object)
+    # Warn if attr_cols overlap with source/target columns
+    overlap <- intersect(names(attr_pos), c(names(source_pos), names(target_pos)))
+    if (length(overlap) > 0) {
+      warning("attr_cols overlaps with source/target columns: ",
+              paste(overlap, collapse = ", "))
+    }
   }
 
   # Resolve symmetric_cols
@@ -111,10 +122,10 @@ edgelist.data.frame <- function(input_object, source_cols = 1, target_cols = 2,
     for (ti in seq_along(target_pos)) {
       k <- k + 1L
       block <- data.frame(
-        source     = input_object[[source_pos[si]]],
-        target     = input_object[[target_pos[ti]]],
-        source_col = rep(source_names[si], n),
-        target_col = rep(target_names[ti], n),
+        from     = input_object[[source_pos[si]]],
+        to       = input_object[[target_pos[ti]]],
+        from_col = rep(source_names[si], n),
+        to_col   = rep(target_names[ti], n),
         stringsAsFactors = FALSE
       )
       # Add directed column when symmetric_cols is provided
@@ -132,9 +143,16 @@ edgelist.data.frame <- function(input_object, source_cols = 1, target_cols = 2,
   df <- do.call(rbind, blocks)
   rownames(df) <- NULL
 
-  # Remove rows with NA source or target
+  # Remove rows with NA from or to
   if (isTRUE(na.rm)) {
-    df <- df[!is.na(df$source) & !is.na(df$target), , drop = FALSE]
+    df <- df[!is.na(df$from) & !is.na(df$to), , drop = FALSE]
+    rownames(df) <- NULL
+  }
+
+  # Deduplicate symmetric edges: keep only from <= to (lexicographic)
+  if (isTRUE(dedupe) && has_symmetric) {
+    keep <- df$directed | (as.character(df$from) <= as.character(df$to))
+    df <- df[keep, , drop = FALSE]
     rownames(df) <- NULL
   }
 

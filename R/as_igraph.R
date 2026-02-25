@@ -24,9 +24,7 @@ as_igraph.tree <- function(x, ...) {
   }
   edges <- edgelist(x)
   nodes <- nodelist(x)
-  vertices <- data.frame(name = nodes$node, nodes[setdiff(names(nodes), "node")],
-                         stringsAsFactors = FALSE)
-  igraph::graph_from_data_frame(edges, directed = TRUE, vertices = vertices)
+  igraph::graph_from_data_frame(edges, directed = TRUE, vertices = nodes)
 }
 
 #' @rdname as_igraph
@@ -50,10 +48,7 @@ as_igraph.randomForest <- function(x, treenum = 1L, ...) {
   if (length(tree_indices) == 1L) {
     e <- edgelist(x, treenum = tree_indices)
     n <- nodelist(x, treenum = tree_indices)
-    vertices <- data.frame(name = n$node, n[setdiff(names(n), c("node", "treenum"))],
-                           stringsAsFactors = FALSE)
-    e$treenum <- NULL
-    return(igraph::graph_from_data_frame(e, directed = TRUE, vertices = vertices))
+    return(igraph::graph_from_data_frame(e, directed = TRUE, vertices = n))
   }
 
   # Multiple trees: combine into single graph with disconnected components
@@ -61,14 +56,10 @@ as_igraph.randomForest <- function(x, treenum = 1L, ...) {
   all_nodes <- nodelist(x, treenum = tree_indices)
 
   # Make node IDs unique across trees by prefixing with treenum
-  all_edges$source <- paste0(all_edges$treenum, ".", all_edges$source)
-  all_edges$target <- paste0(all_edges$treenum, ".", all_edges$target)
+  all_edges$from <- paste0(all_edges$treenum, ".", all_edges$from)
+  all_edges$to   <- paste0(all_edges$treenum, ".", all_edges$to)
 
-  vertices <- data.frame(
-    name = paste0(all_nodes$treenum, ".", all_nodes$node),
-    all_nodes[setdiff(names(all_nodes), "node")],
-    stringsAsFactors = FALSE
-  )
+  all_nodes$name <- paste0(all_nodes$treenum, ".", all_nodes$name)
 
-  igraph::graph_from_data_frame(all_edges, directed = TRUE, vertices = vertices)
+  igraph::graph_from_data_frame(all_edges, directed = TRUE, vertices = all_nodes)
 }

@@ -16,8 +16,8 @@ knitr::opts_chunk$set(
 # networkformat
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/yourusername/networkformat/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/yourusername/networkformat/actions/workflows/R-CMD-check.yaml)
-[![Codecov test coverage](https://codecov.io/gh/yourusername/networkformat/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/networkformat?branch=main)
+[![R-CMD-check](https://github.com/jesseabrandt/networkformat/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jesseabrandt/networkformat/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/jesseabrandt/networkformat/branch/main/graph/badge.svg)](https://codecov.io/gh/jesseabrandt/networkformat?branch=main)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
@@ -29,7 +29,7 @@ You can install the development version of networkformat from GitHub:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("yourusername/networkformat")
+devtools::install_github("jesseabrandt/networkformat")
 ```
 
 ## Core Concepts
@@ -67,11 +67,11 @@ table(rf_edges$split_var_name)  # Most important variables
 ```
 
 The edgelist contains:
-- `source` and `target`: Node indices within each tree
+- `from` and `to`: Node indices within each tree
 - `split_var` and `split_var_name`: Variable used for splitting
 - `split_point`: Threshold value for the split
 - `treenum`: Tree identifier within the forest
-- `prediction`: Value at the node
+- `prediction`: Value at the child node
 
 ### Tree Models
 
@@ -116,7 +116,7 @@ library(igraph)
 
 # Create graph from edgelist
 rf_edges_tree1 <- subset(rf_edges, treenum == 1)
-g <- graph_from_data_frame(rf_edges_tree1[, c("source", "target")], directed = TRUE)
+g <- graph_from_data_frame(rf_edges_tree1[, c("from", "to")], directed = TRUE)
 
 # Add attributes
 V(g)$label <- V(g)$name
@@ -159,7 +159,7 @@ ggraph(tree_graph, layout = 'tree') +
 library(tidygraph)
 
 rf_edges_all <- edgelist(rf_model)
-g_forest <- graph_from_data_frame(rf_edges_all[, c("source", "target", "treenum")],
+g_forest <- graph_from_data_frame(rf_edges_all[, c("from", "to", "treenum")],
                                    directed = TRUE)
 
 # Node centrality (which nodes are most central?)
@@ -171,8 +171,8 @@ tree_depths <- rf_edges_all %>%
   group_by(treenum) %>%
   summarise(
     n_edges = n(),
-    n_nodes = length(unique(c(source, target))),
-    max_depth = max(source)  # Approximation
+    n_nodes = length(unique(c(from, to))),
+    max_depth = max(from)  # Approximation
   )
 
 print(tree_depths)
@@ -198,7 +198,7 @@ data.frame(
   n_edges = c(nrow(edges_tree), nrow(edges_rf) / 10),
   n_nodes = c(
     length(unique(c(edges_tree$from, edges_tree$to))),
-    length(unique(c(edges_rf$source, edges_rf$target))) / 10
+    length(unique(c(edges_rf$from, edges_rf$to))) / 10
   )
 )
 ```
@@ -211,7 +211,7 @@ To add support for a new tree-based model class:
 
 1. Create a new file `R/edgelist.newmodel.R`
 2. Implement the S3 method `edgelist.newmodel()`
-3. Extract tree structure into data.frame with source/target columns
+3. Extract tree structure into data.frame with `from`/`to` columns
 4. Add tests in `tests/testthat/test-edgelist.R`
 
 See `R/edgelist.randomForest.R` as a reference implementation.
@@ -240,7 +240,7 @@ citation("networkformat")
 
 ## License
 
-MIT © Network Format Developers
+MIT © Jesse Brandt
 
 ---
 

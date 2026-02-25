@@ -37,7 +37,7 @@ test_that("nodelist.tree returns expected columns", {
   nl <- nodelist(tr)
 
   expect_s3_class(nl, "data.frame")
-  expect_true(all(c("node", "var", "n", "dev", "yval", "is_leaf", "label") %in% names(nl)))
+  expect_true(all(c("name", "var", "n", "dev", "yval", "is_leaf", "label") %in% names(nl)))
 })
 
 test_that("nodelist.tree node IDs match edgelist from/to", {
@@ -48,8 +48,8 @@ test_that("nodelist.tree node IDs match edgelist from/to", {
   el <- edgelist(tr)
 
   edge_nodes <- sort(unique(c(el$from, el$to)))
-  expect_true(all(edge_nodes %in% nl$node))
-  expect_equal(nl$node, seq_len(nrow(nl)))
+  expect_true(all(edge_nodes %in% nl$name))
+  expect_equal(nl$name, seq_len(nrow(nl)))
 })
 
 test_that("nodelist.tree identifies leaves correctly", {
@@ -122,21 +122,19 @@ test_that("nodelist.tree label column has correct format", {
 
 test_that("nodelist.randomForest returns expected columns", {
   skip_if_not_installed("randomForest")
-  library(randomForest)
 
-  rf <- randomForest(Species ~ ., data = iris, ntree = 2)
+  rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
   nl <- nodelist(rf)
 
   expect_s3_class(nl, "data.frame")
-  expect_true(all(c("node", "is_leaf", "split_var", "split_var_name",
+  expect_true(all(c("name", "is_leaf", "split_var", "split_var_name",
                      "split_point", "prediction", "treenum", "label") %in% names(nl)))
 })
 
 test_that("nodelist.randomForest has correct number of trees", {
   skip_if_not_installed("randomForest")
-  library(randomForest)
 
-  rf <- randomForest(Species ~ ., data = iris, ntree = 3)
+  rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
   nl <- nodelist(rf)
 
   expect_equal(length(unique(nl$treenum)), 3)
@@ -144,27 +142,25 @@ test_that("nodelist.randomForest has correct number of trees", {
 
 test_that("nodelist.randomForest node IDs match edgelist per tree", {
   skip_if_not_installed("randomForest")
-  library(randomForest)
 
-  rf <- randomForest(Species ~ ., data = iris, ntree = 2)
+  rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
   nl <- nodelist(rf)
   el <- edgelist(rf)
 
   for (tn in unique(nl$treenum)) {
     el_nodes <- sort(unique(c(
-      el$source[el$treenum == tn],
-      el$target[el$treenum == tn]
+      el$from[el$treenum == tn],
+      el$to[el$treenum == tn]
     )))
-    nl_nodes <- nl$node[nl$treenum == tn]
+    nl_nodes <- nl$name[nl$treenum == tn]
     expect_true(all(el_nodes %in% nl_nodes))
   }
 })
 
 test_that("nodelist.randomForest leaves have NA split attributes", {
   skip_if_not_installed("randomForest")
-  library(randomForest)
 
-  rf <- randomForest(Species ~ ., data = iris, ntree = 2)
+  rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
   nl <- nodelist(rf)
 
   leaves <- nl[nl$is_leaf, ]
@@ -175,9 +171,8 @@ test_that("nodelist.randomForest leaves have NA split attributes", {
 
 test_that("nodelist.randomForest works for regression", {
   skip_if_not_installed("randomForest")
-  library(randomForest)
 
-  rf <- randomForest(mpg ~ cyl + disp + hp, data = mtcars, ntree = 2)
+  rf <- randomForest::randomForest(mpg ~ cyl + disp + hp, data = mtcars, ntree = 2)
   nl <- nodelist(rf)
 
   expect_s3_class(nl, "data.frame")
@@ -189,9 +184,8 @@ test_that("nodelist.randomForest works for regression", {
 
 test_that("nodelist.randomForest label column exists", {
   skip_if_not_installed("randomForest")
-  library(randomForest)
 
-  rf <- randomForest(Species ~ ., data = iris, ntree = 2)
+  rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
   nl <- nodelist(rf)
 
   expect_true("label" %in% names(nl))
@@ -210,9 +204,8 @@ test_that("nodelist.randomForest label column exists", {
 
 test_that("nodelist.randomForest treenum extracts specific trees", {
   skip_if_not_installed("randomForest")
-  library(randomForest)
 
-  rf <- randomForest(Species ~ ., data = iris, ntree = 5)
+  rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 5)
 
   nl1 <- nodelist(rf, treenum = 1)
   expect_equal(unique(nl1$treenum), 1)
@@ -223,9 +216,8 @@ test_that("nodelist.randomForest treenum extracts specific trees", {
 
 test_that("nodelist.randomForest treenum NULL returns all trees", {
   skip_if_not_installed("randomForest")
-  library(randomForest)
 
-  rf <- randomForest(Species ~ ., data = iris, ntree = 3)
+  rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
 
   nl_all <- nodelist(rf, treenum = NULL)
   nl_default <- nodelist(rf)
@@ -234,12 +226,20 @@ test_that("nodelist.randomForest treenum NULL returns all trees", {
 
 test_that("nodelist.randomForest treenum validates range", {
   skip_if_not_installed("randomForest")
-  library(randomForest)
 
-  rf <- randomForest(Species ~ ., data = iris, ntree = 3)
+  rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
 
-  expect_error(nodelist(rf, treenum = 0))
-  expect_error(nodelist(rf, treenum = 4))
+  expect_error(nodelist(rf, treenum = 0), "treenum must be between")
+  expect_error(nodelist(rf, treenum = 4), "treenum must be between")
+})
+
+# --- nodelist.default tests ---
+
+test_that("nodelist.default raises error for unsupported types", {
+  expect_error(
+    nodelist(list(a = 1, b = 2)),
+    "does not support"
+  )
 })
 
 # --- nodelist.data.frame tests ---

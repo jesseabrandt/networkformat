@@ -14,7 +14,7 @@
 \value{
 A data.frame with one row per node and the following columns:
 \describe{
-  \item{node}{Integer node ID (matches edgelist from/to)}
+  \item{name}{Integer node ID (matches edgelist from/to)}
   \item{var}{Split variable name, or \code{"<leaf>"} for terminal nodes}
   \item{n}{Number of observations routed to this node}
   \item{dev}{Deviance (impurity) at this node}

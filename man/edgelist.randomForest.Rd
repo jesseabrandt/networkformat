@@ -18,11 +18,11 @@
 \value{
 A data.frame with the following columns:
   \describe{
-    \item{source}{Parent node index within the tree}
-    \item{target}{Child node index (left or right daughter)}
+    \item{from}{Parent node index within the tree}
+    \item{to}{Child node index (left or right daughter)}
     \item{split_var}{Numeric index of the variable used for splitting}
     \item{split_point}{Threshold value for the split}
-    \item{prediction}{Prediction value at the parent node}
+    \item{prediction}{Prediction value at the child node}
     \item{treenum}{Tree number within the forest}
     \item{split_var_name}{Character vector with human-readable variable names}
   }

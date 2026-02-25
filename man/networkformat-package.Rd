@@ -11,18 +11,13 @@ Provides S3 methods to convert decision tree models from popular machine learnin
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/yourusername/networkformat}
-  \item Report bugs at \url{https://github.com/yourusername/networkformat/issues}
+  \item \url{https://github.com/jesseabrandt/networkformat}
+  \item Report bugs at \url{https://github.com/jesseabrandt/networkformat/issues}
 }
 
 }
 \author{
-\strong{Maintainer}: John Doe \email{john.doe@example.com} (\href{https://orcid.org/0000-0000-0000-0001}{ORCID})
-
-Other contributors:
-\itemize{
-  \item Jane Smith \email{jane.smith@example.com} [contributor]
-}
+\strong{Maintainer}: Jesse Brandt \email{jesseabrandt@users.noreply.github.com} (\href{https://orcid.org/0009-0005-7462-075X}{ORCID})
 
 }
 \keyword{internal}

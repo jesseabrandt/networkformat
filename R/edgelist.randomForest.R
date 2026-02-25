@@ -13,11 +13,11 @@
 #'
 #' @returns A data.frame with the following columns:
 #'   \describe{
-#'     \item{source}{Parent node index within the tree}
-#'     \item{target}{Child node index (left or right daughter)}
+#'     \item{from}{Parent node index within the tree}
+#'     \item{to}{Child node index (left or right daughter)}
 #'     \item{split_var}{Numeric index of the variable used for splitting}
 #'     \item{split_point}{Threshold value for the split}
-#'     \item{prediction}{Prediction value at the parent node}
+#'     \item{prediction}{Prediction value at the child node}
 #'     \item{treenum}{Tree number within the forest}
 #'     \item{split_var_name}{Character vector with human-readable variable names}
 #'   }
@@ -44,23 +44,28 @@ edgelist.randomForest <- function(input_object, treenum = NULL, ...){
   tree_indices <- if (is.null(treenum)) {
     seq_len(input_object$ntree)
   } else {
-    stopifnot(all(treenum >= 1), all(treenum <= input_object$ntree))
+    if (!all(treenum >= 1 & treenum <= input_object$ntree)) {
+      stop("treenum must be between 1 and ", input_object$ntree,
+           "; got: ", paste(treenum, collapse = ", "))
+    }
     as.integer(treenum)
   }
 
   convert_tree <- function(tn){
     tree1 <- randomForest::getTree(input_object, tn)
     tree1 <- as.data.frame(tree1)
-    tree1$index <- c(1:nrow(tree1))
+    tree1$index <- seq_len(nrow(tree1))
 
     parent_index <- tree1$`left daughter` != 0
-    edgelist <- data.frame(source = c(tree1[parent_index,"index"], tree1[parent_index,"index"]),
-                           target = c(tree1[parent_index,"left daughter"], tree1[parent_index,"right daughter"]),
-                           split_var = c(tree1[parent_index,"split var"], tree1[parent_index,"split var"]),
-                           split_point = c(tree1[parent_index,"split point"], tree1[parent_index,"split point"]),
-                           prediction = c(tree1[parent_index,"prediction"], tree1[parent_index,"prediction"]),
-                           treenum = tn)
-    return(edgelist)
+    edges_df <- data.frame(
+      from        = c(tree1[parent_index, "index"], tree1[parent_index, "index"]),
+      to          = c(tree1[parent_index, "left daughter"], tree1[parent_index, "right daughter"]),
+      split_var   = c(tree1[parent_index, "split var"], tree1[parent_index, "split var"]),
+      split_point = c(tree1[parent_index, "split point"], tree1[parent_index, "split point"]),
+      prediction  = c(tree1[tree1[parent_index, "left daughter"], "prediction"],
+                       tree1[tree1[parent_index, "right daughter"], "prediction"]),
+      treenum     = tn)
+    return(edges_df)
   }
   forest_edge <- lapply(tree_indices, convert_tree)
   forest_df <- do.call(rbind, forest_edge)

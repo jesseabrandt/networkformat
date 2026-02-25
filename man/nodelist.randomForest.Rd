@@ -20,8 +20,8 @@
 A data.frame with one row per node (across all trees) and the
   following columns:
 \describe{
-  \item{node}{Integer node ID within the tree (matches edgelist
-    source/target)}
+  \item{name}{Integer node ID within the tree (matches edgelist
+    from/to)}
   \item{is_leaf}{Logical: \code{TRUE} for terminal nodes}
   \item{split_var}{Numeric index of the split variable (\code{NA} for
     leaves)}
@@ -38,7 +38,7 @@ A data.frame with one row per node (across all trees) and the
 \description{
 Extracts node-level attributes from every tree in a
 \code{randomForest} model.
-Node IDs match the \code{source}/\code{target} indices produced by
+Node IDs match the \code{from}/\code{to} indices produced by
 \code{\link{edgelist.randomForest}}, so the two outputs can be
 passed directly to \code{igraph::graph_from_data_frame()} (after
 filtering to a single \code{treenum}).

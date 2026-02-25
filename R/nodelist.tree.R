@@ -10,7 +10,7 @@
 #'
 #' @returns A data.frame with one row per node and the following columns:
 #'   \describe{
-#'     \item{node}{Integer node ID (matches edgelist from/to)}
+#'     \item{name}{Integer node ID (matches edgelist from/to)}
 #'     \item{var}{Split variable name, or \code{"<leaf>"} for terminal nodes}
 #'     \item{n}{Number of observations routed to this node}
 #'     \item{dev}{Deviance (impurity) at this node}
@@ -36,7 +36,7 @@ nodelist.tree <- function(input_object, ...) {
   yval <- if (is.factor(frame$yval)) as.character(frame$yval) else frame$yval
 
   data.frame(
-    node    = seq_len(nrow(frame)),
+    name    = seq_len(nrow(frame)),
     var     = as.character(frame$var),
     n       = frame$n,
     dev     = frame$dev,

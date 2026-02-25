@@ -35,32 +35,29 @@
 #' }
 edgelist.tree <- function(input_object, ...){
   df <- input_object$frame
-
-  #initialize empty edge list
-  edges <- data.frame(from = integer(0), to = integer(0))
   n <- nrow(df)
 
+  # Pre-allocate edge vectors (a binary tree with n nodes has n-1 edges)
+  n_edges <- n - 1L
+  edge_from <- integer(n_edges)
+  edge_to   <- integer(n_edges)
+  edge_idx  <- 0L
 
-  # construct edges labelled w rownums
-
-  df$index <- c(1:n)
-
+  df$index <- seq_len(n)
   is_leaf <- df$var == "<leaf>"
 
   parent_stack <- c()
   children_count <- c()
 
-  for (i in 1:n){
+  for (i in seq_len(n)){
     # If we have a parent waiting for children
     if (length(parent_stack) > 0) {
       parent_row <- parent_stack[length(parent_stack)]
       parent_idx <- df$index[parent_row]
 
-
-      edges <- rbind(edges, data.frame(
-        from = parent_idx,
-        to = i
-      ))
+      edge_idx <- edge_idx + 1L
+      edge_from[edge_idx] <- parent_idx
+      edge_to[edge_idx]   <- i
 
       # Increment children count for this parent
       children_count[length(children_count)] <- children_count[length(children_count)] + 1
@@ -79,6 +76,7 @@ edgelist.tree <- function(input_object, ...){
     }
   }
 
+  edges <- data.frame(from = edge_from, to = edge_to)
 
   ### NOW add labels and parsed split columns
   edges$label <- NA_character_
@@ -86,7 +84,7 @@ edgelist.tree <- function(input_object, ...){
   edges$split_op <- NA_character_
   edges$split_point <- NA_real_
 
-  for (i in 1:nrow(edges)) {
+  for (i in seq_len(nrow(edges))) {
     parent_node <- edges$from[i]
     child_node <- edges$to[i]
     var <- as.character(df$var[parent_node])
@@ -96,7 +94,12 @@ edgelist.tree <- function(input_object, ...){
                         df$splits[parent_node, 1],
                         df$splits[parent_node, 2])
 
-    edges$label[i] <- paste(var, split_str)
+    # Categorical splits start with ":" — use paste0 to avoid extra space
+    if (grepl("^:", split_str)) {
+      edges$label[i] <- paste0(var, split_str)
+    } else {
+      edges$label[i] <- paste(var, split_str)
+    }
     edges$split_var[i] <- var
 
     # Parse operator and threshold from the split string

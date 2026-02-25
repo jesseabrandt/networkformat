@@ -5,7 +5,7 @@
 \title{Extract Edgelist from Data Frame}
 \usage{
 \method{edgelist}{data.frame}(input_object, source_cols = 1, target_cols = 2,
-  attr_cols = NULL, na.rm = TRUE, symmetric_cols = NULL, ...)
+  attr_cols = NULL, na.rm = TRUE, symmetric_cols = NULL, dedupe = TRUE, ...)
 }
 \arguments{
 \item{input_object}{A data.frame containing network information}
@@ -20,12 +20,14 @@
 
 \item{attr_cols}{Columns to carry as edge attributes (default: \code{NULL}
   keeps all columns not used as source or target). Pass an empty \code{c()}
-  to keep only source, target, and metadata columns. Accepts the same
-  tidyselect syntax as \code{source_cols}.}
+  to keep only from, to, and metadata columns. Accepts the same
+  \href{https://tidyselect.r-lib.org/reference/language.html}{tidyselect}
+  syntax as \code{source_cols}.}
 
-\item{na.rm}{Logical; if \code{TRUE} (the default), rows where \code{source}
-  or \code{target} is \code{NA} are removed.  Set to \code{FALSE} to
-  preserve all rows including those with missing endpoints.}
+\item{na.rm}{Logical; if \code{TRUE} (the default), rows where
+  \code{from} or \code{to} is \code{NA} are removed from the
+  result.  Set to \code{FALSE} to preserve the old behavior of
+  keeping all rows.}
 
 \item{symmetric_cols}{Target column names that represent undirected
   (symmetric) relationships.  When non-\code{NULL}, a \code{directed}
@@ -34,15 +36,21 @@
   tidyselect syntax as \code{target_cols}; names must be a subset of
   \code{target_cols}.}
 
+\item{dedupe}{Logical; if \code{TRUE} (the default) and
+  \code{symmetric_cols} is non-\code{NULL}, duplicate undirected edges
+  are removed by keeping only rows where \code{from <= to}
+  (lexicographic comparison). Set to \code{FALSE} to preserve both
+  directions.}
+
 \item{...}{Additional arguments (currently unused)}
 }
 \value{
 A data.frame with columns:
 \describe{
-  \item{source}{Source node values}
-  \item{target}{Target node values}
-  \item{source_col}{Name of the original column each source value came from}
-  \item{target_col}{Name of the original column each target value came from}
+  \item{from}{Source node values}
+  \item{to}{Target node values}
+  \item{from_col}{Name of the original column each source value came from}
+  \item{to_col}{Name of the original column each target value came from}
   \item{directed}{(only when \code{symmetric_cols} is provided) Logical:
     \code{FALSE} for edges from symmetric target columns, \code{TRUE}
     otherwise}
@@ -58,10 +66,18 @@ tabular data where node relationships are stored in columns.
 # Basic usage --- all non-source/target columns kept by default
 edgelist(courses, source_cols = course, target_cols = prereq)
 
-# Multiple target columns --- target_col identifies the relationship type
+# Multiple target columns --- to_col identifies the relationship type
 edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist))
 
-# Preserve NA edges
+# Keep only the edgelist (no attribute columns)
+edgelist(courses, source_cols = course, target_cols = prereq, attr_cols = c())
+
+# Select specific attribute columns
+edgelist(courses, source_cols = course, target_cols = prereq,
+         attr_cols = c(dept, credits))
+
+# NA removal (default) vs preservation
+edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist))
 edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist),
          na.rm = FALSE)
 

@@ -15,8 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, message = FALSE}
-pkgload::load_all()
-# library(networkformat)
+library(networkformat)
 library(ggraph)
 library(tidygraph)
 ```
@@ -88,8 +87,7 @@ with disconnected components --- one per tree. Each node carries a `treenum`
 attribute so you can distinguish them.
 
 ```{r rf-fit, eval = requireNamespace("randomForest", quietly = TRUE), message = FALSE}
-library(randomForest)
-rf <- randomForest(Species ~ ., data = iris, ntree = 3, maxnodes = 5)
+rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3, maxnodes = 5)
 
 # All 3 trees in one graph
 tg_rf <- as_tbl_graph(rf, treenum = NULL)
@@ -185,13 +183,9 @@ all_edges <- edgelist(courses, source_cols = course,
                       attr_cols = c(),
                       symmetric_cols = crosslist)
 
-# Reverse prereq arrows so they point from prereq → dependent course
-all_edges[c("source", "target")] <- all_edges[c("target", "source")]
-
-# Crosslists are symmetric --- keep one direction per pair
-all_edges <- all_edges[!(all_edges$directed == FALSE &
-                         as.character(all_edges$source) >=
-                         as.character(all_edges$target)), ]
+# Reverse prereq arrows so they point from prereq -> dependent course
+directed_rows <- all_edges$directed
+all_edges[directed_rows, c("from", "to")] <- all_edges[directed_rows, c("to", "from")]
 
 nodes <- nodelist(courses, id_col = course)
 g <- graph_from_data_frame(all_edges, vertices = nodes)

@@ -64,6 +64,8 @@ test_that("as_igraph.randomForest treenum=1 returns single igraph", {
 
   expect_true(igraph::is_igraph(g))
   expect_true(igraph::is_directed(g))
+  # Single tree should have treenum attribute on vertices
+  expect_true("treenum" %in% igraph::vertex_attr_names(g))
 })
 
 test_that("as_igraph.randomForest treenum=NULL returns combined graph", {

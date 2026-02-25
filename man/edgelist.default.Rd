@@ -12,13 +12,13 @@
 \item{...}{Additional arguments (currently unused)}
 }
 \value{
-NULL (invisibly). Prints a message to console.
+Never returns; always raises an error.
 }
 \description{
 Default method that is called when no specific method is implemented for
-the input object type. Prints an informative message to the user.
+the input object type. Raises an error with the supported class list.
 }
 \examples{
 # Attempting to extract edgelist from unsupported object type
-edgelist(list(a = 1, b = 2))
+try(edgelist(list(a = 1, b = 2)))
 }

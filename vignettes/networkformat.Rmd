@@ -24,7 +24,7 @@ parent-child relationships. To visualize or analyze these models as graphs,
 you have to write bespoke reshaping code every time.
 
 **networkformat** does that reshaping for you. It extracts standard
-**edgelists** (source-target pairs) and **nodelists** (node attributes) from
+**edgelists** (from-to pairs) and **nodelists** (node attributes) from
 models and tabular data, putting everything in the format that the rest of
 the R network ecosystem expects.
 
@@ -33,8 +33,7 @@ the R network ecosystem expects.
 Five lines from model to plot:
 
 ```{r quick-example, eval = requireNamespace("tree", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 9, fig.height = 6, message = FALSE}
-pkgload::load_all()
-# library(networkformat)
+library(networkformat)
 library(tidygraph)
 library(ggraph)
 
@@ -48,6 +47,21 @@ ggraph(tg, layout = "tree") +
   scale_fill_brewer(palette = "Set2", name = NULL) +
   theme_graph(base_family = "sans") +
   labs(title = "Iris classification tree")
+```
+
+# Tabular data
+
+networkformat also works with plain data frames. The bundled `courses`
+dataset has prerequisite and crosslisting relationships:
+
+```{r df-quick}
+library(networkformat)
+
+# Prerequisite edgelist
+edgelist(courses, source_cols = course, target_cols = prereq)
+
+# Node list with course as ID
+nodelist(courses, id_col = course)
 ```
 
 # The R network ecosystem
@@ -66,9 +80,9 @@ manipulate graphs with dplyr verbs (`mutate`, `filter`, `arrange`) while
 keeping the underlying igraph structure. If you're comfortable with the
 tidyverse, this is the natural way to work with graphs. Note that tidygraph
 provides `as_tbl_graph.data.frame()`, which auto-detects edge data frames
-with `from`/`to` or `source`/`target` columns --- so once you have an
-edgelist from networkformat, you can pass it directly to tidygraph without
-building an igraph first.
+with `from`/`to` columns --- so once you have an edgelist from
+networkformat, you can pass it directly to tidygraph without building an
+igraph first.
 
 **ggraph** --- a ggplot2 extension for graph visualization, designed to work
 with tidygraph/igraph objects. Supports tree layouts, force-directed layouts,

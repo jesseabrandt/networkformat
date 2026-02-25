@@ -15,8 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, message = FALSE}
-pkgload::load_all()
-# library(networkformat)
+library(networkformat)
 ```
 
 `edgelist()` and `nodelist()` are the core functions of **networkformat**.
@@ -69,7 +68,7 @@ Columns:
 
 | Column | Description |
 |--------|-------------|
-| `node` | Node ID (matches edgelist `from`/`to`) |
+| `name` | Node ID (matches edgelist `from`/`to`) |
 | `var` | Split variable, or `"<leaf>"` |
 | `n` | Observation count |
 | `dev` | Deviance |
@@ -86,10 +85,7 @@ Node IDs line up, so you can pass them straight to
 
 ```{r tree-igraph, eval = requireNamespace("tree", quietly = TRUE) && requireNamespace("igraph", quietly = TRUE)}
 library(igraph)
-g <- graph_from_data_frame(
-  edges, directed = TRUE,
-  vertices = data.frame(name = nodes$node, nodes[-1])
-)
+g <- graph_from_data_frame(edges, directed = TRUE, vertices = nodes)
 cat("Nodes:", vcount(g), " Edges:", ecount(g), "\n")
 ```
 
@@ -97,33 +93,14 @@ Or use `as_igraph(tr)` for the same result in one step.
 
 ## Visualizing the edgelist pipeline
 
-The full workflow --- `edgelist()` -> `nodelist()` -> `graph_from_data_frame()` -> ggraph --- gives you control at every step:
-
-```{r tree-viz, eval = requireNamespace("tree", quietly = TRUE) && requireNamespace("igraph", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 9, fig.height = 6, message = FALSE}
-library(ggraph)
-library(tidygraph)
-
-tg <- as_tbl_graph(g)
-
-ggraph(tg, layout = "tree") +
-  geom_edge_diagonal(colour = "grey60", width = 0.5) +
-  geom_node_label(
-    aes(label = label, fill = ifelse(is_leaf, yval, var)),
-    size = 2.5, colour = "white", fontface = "bold",
-    label.padding = unit(0.25, "lines"), label.r = unit(0.2, "lines")) +
-  scale_fill_brewer(palette = "Set2", name = NULL) +
-  theme_graph(base_family = "sans") +
-  theme(legend.position = "bottom") +
-  labs(title = "Iris tree (built from edgelist + nodelist)")
-```
+The full workflow --- `edgelist()` -> `nodelist()` -> `graph_from_data_frame()` -> ggraph --- gives you control at every step. For a complete visualization example, see `vignette("visualization")`.
 
 # Random forest
 
 ## edgelist()
 
 ```{r rf-edges, eval = requireNamespace("randomForest", quietly = TRUE), message = FALSE}
-library(randomForest)
-rf <- randomForest(Species ~ ., data = iris, ntree = 3, maxnodes = 5)
+rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3, maxnodes = 5)
 
 # All trees
 rf_edges <- edgelist(rf)
@@ -134,11 +111,11 @@ Columns:
 
 | Column | Description |
 |--------|-------------|
-| `source` | Parent node index |
-| `target` | Child node index |
+| `from` | Parent node index |
+| `to` | Child node index |
 | `split_var` | Numeric variable index |
 | `split_point` | Split threshold |
-| `prediction` | Predicted value at parent |
+| `prediction` | Predicted value at child node |
 | `treenum` | Tree number |
 | `split_var_name` | Human-readable variable name |
 
@@ -167,7 +144,7 @@ Columns:
 
 | Column | Description |
 |--------|-------------|
-| `node` | Node ID (matches edgelist `source`/`target`) |
+| `name` | Node ID (matches edgelist `from`/`to`) |
 | `is_leaf` | Logical |
 | `split_var` | Numeric variable index (NA for leaves) |
 | `split_var_name` | Variable name (NA for leaves) |
@@ -181,7 +158,7 @@ Columns:
 ## edgelist()
 
 When your data is already tabular, `edgelist()` reshapes it into
-source-target format. Columns are specified with
+from-to format. Columns are specified with
 [tidyselect](https://tidyselect.r-lib.org/reference/language.html)
 syntax --- bare names, strings, numbers, or helpers like `starts_with()`.
 
@@ -194,7 +171,7 @@ edgelist(courses, source_cols = course, target_cols = (prereq))
 ### Multiple target columns
 
 When you pass multiple `target_cols`, each produces a block of edges.
-The `target_col` column identifies which relationship each edge came from:
+The `to_col` column identifies which relationship each edge came from:
 
 ```{r df-multi}
 edgelist(courses, source_cols = course,
@@ -203,7 +180,7 @@ edgelist(courses, source_cols = course,
 
 ### `na.rm` --- handling missing values
 
-By default, rows where source or target is NA are removed. Set
+By default, rows where from or to is NA are removed. Set
 `na.rm = FALSE` to keep them:
 
 ```{r df-narm}
@@ -223,7 +200,7 @@ By default, all columns not used as source or target are carried along.
 Use `attr_cols` to select specific columns, or `c()` for none:
 
 ```{r df-attrs}
-# Only source, target, metadata
+# Only from, to, metadata
 edgelist(courses, source_cols = course, target_cols = prereq,
          attr_cols = c())
 
@@ -235,7 +212,8 @@ edgelist(courses, source_cols = course, target_cols = prereq,
 ### `symmetric_cols` --- marking undirected relationships
 
 Some target columns represent symmetric relationships (crosslists,
-co-authorships). Use `symmetric_cols` to add a `directed` column:
+co-authorships). Use `symmetric_cols` to add a `directed` column and
+automatically deduplicate symmetric edges:
 
 ```{r df-sym}
 edgelist(courses, source_cols = course,
@@ -245,8 +223,8 @@ edgelist(courses, source_cols = course,
 ```
 
 Prerequisite edges get `directed = TRUE`; crosslist edges get
-`directed = FALSE`. This is useful for setting edge styles (arrows vs.
-dashed lines) without manual tagging.
+`directed = FALSE`. Symmetric edges are automatically deduped (only
+`from <= to` kept). Set `dedupe = FALSE` to preserve both directions.
 
 ## nodelist()
 
@@ -260,14 +238,12 @@ nodelist(courses, id_col = course)
 ## Note on tidygraph
 
 tidygraph provides its own `as_tbl_graph.data.frame()` method that
-auto-detects edge data frames (columns named `from`/`to` or
-`source`/`target`). If your edgelist output uses those column names,
-you can pass it directly:
+auto-detects edge data frames with `from`/`to` columns. Since
+networkformat already uses `from`/`to`, you can pass an edgelist
+directly to tidygraph:
 
 ```{r tidygraph-note, eval = FALSE}
 edges <- edgelist(courses, source_cols = course, target_cols = prereq)
-# Rename to from/to for tidygraph auto-detection
-names(edges)[1:2] <- c("from", "to")
 tg <- tidygraph::as_tbl_graph(edges)
 ```
 
@@ -276,50 +252,24 @@ since tidygraph already covers this case.
 
 ## Putting it together: course network
 
-```{r courses-plot, eval = requireNamespace("igraph", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 10, fig.height = 7, message = FALSE}
+For a complete course network visualization, see `vignette("visualization")`.
+
+Here we build the graph and compute statistics:
+
+```{r courses-graph, eval = requireNamespace("igraph", quietly = TRUE), message = FALSE}
 library(igraph)
-library(ggraph)
-library(tidygraph)
 
 all_edges <- edgelist(courses, source_cols = course,
                       target_cols = c(prereq, prereq2, crosslist),
                       attr_cols = c(),
                       symmetric_cols = crosslist)
 
-# Reverse prereq arrows so they point from prereq → dependent course
-all_edges[c("source", "target")] <- all_edges[c("target", "source")]
-
-# Crosslists are symmetric --- keep one direction per pair
-all_edges <- all_edges[!(all_edges$directed == FALSE &
-                         as.character(all_edges$source) >=
-                         as.character(all_edges$target)), ]
+# Reverse prereq arrows so they point from prereq -> dependent course
+directed_rows <- all_edges$directed
+all_edges[directed_rows, c("from", "to")] <- all_edges[directed_rows, c("to", "from")]
 
 nodes <- nodelist(courses, id_col = course)
 g <- graph_from_data_frame(all_edges, vertices = nodes)
-tg <- as_tbl_graph(g)
-
-dept_pal <- c(STAT = "#5B8DB8", MATH = "#E07B54", DATA = "#6BAF6B", CS = "#9B6BB0")
-
-ggraph(tg, layout = "sugiyama") +
-  geom_edge_diagonal(
-    aes(filter = (directed == TRUE)),
-    arrow = arrow(length = unit(2, "mm"), type = "closed"),
-    end_cap = circle(8, "mm"), start_cap = circle(8, "mm"),
-    edge_width = 0.5, colour = "grey45") +
-  geom_edge_arc(
-    aes(filter = (directed == FALSE)),
-    end_cap = circle(6, "mm"), start_cap = circle(6, "mm"),
-    edge_width = 0.8, colour = "#9B59B6", linetype = "dashed",
-    strength = 0.3) +
-  geom_node_label(
-    aes(label = name, fill = dept),
-    colour = "white", fontface = "bold", size = 3,
-    label.padding = unit(0.3, "lines"), label.r = unit(0.2, "lines")) +
-  scale_fill_manual(values = dept_pal, name = "Department") +
-  theme_graph(base_family = "sans") +
-  theme(legend.position = "bottom") +
-  labs(title = "Course prerequisite network",
-       subtitle = "Solid arrows = prerequisites  |  Dashed curves = crosslists")
 ```
 
 ### Graph statistics
@@ -348,17 +298,17 @@ print(sort(deg_out[deg_out > 0], decreasing = TRUE))
 
 | Input class | Columns returned |
 |-------------|-----------------|
-| `data.frame` | `source`, `target`, `source_col`, `target_col`, [`directed`], `<attr_cols>` |
+| `data.frame` | `from`, `to`, `from_col`, `to_col`, [`directed`], `<attr_cols>` |
 | `tree` | `from`, `to`, `label`, `split_var`, `split_op`, `split_point` |
-| `randomForest` | `source`, `target`, `split_var`, `split_point`, `prediction`, `treenum`, `split_var_name` |
+| `randomForest` | `from`, `to`, `split_var`, `split_point`, `prediction`, `treenum`, `split_var_name` |
 
 ## nodelist()
 
 | Input class | Columns returned |
 |-------------|-----------------|
 | `data.frame` | Reordered input (ID column first) |
-| `tree` | `node`, `var`, `n`, `dev`, `yval`, `is_leaf`, `label` |
-| `randomForest` | `node`, `is_leaf`, `split_var`, `split_var_name`, `split_point`, `prediction`, `treenum`, `label` |
+| `tree` | `name`, `var`, `n`, `dev`, `yval`, `is_leaf`, `label` |
+| `randomForest` | `name`, `is_leaf`, `split_var`, `split_var_name`, `split_point`, `prediction`, `treenum`, `label` |
 
 ## as_igraph() / as_tbl_graph()
 

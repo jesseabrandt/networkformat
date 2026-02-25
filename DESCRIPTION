@@ -2,19 +2,14 @@ Package: networkformat
 Type: Package
 Title: Convert Machine Learning Tree Models to Network Edgelists
 Version: 0.0.0.9000
-Authors@R: c(
-    person(
-      "John", "Doe",
-      email = "john.doe@example.com",
+Authors@R: person(
+      "Jesse", "Brandt",
+      email = "jesseabrandt@users.noreply.github.com",
       role = c("aut", "cre"),
-      comment = c(ORCID = "0000-0000-0000-0001")
-    ),
-    person(
-      "Jane", "Smith",
-      email = "jane.smith@example.com",
-      role = "ctb"
+      comment = c(ORCID = "0009-0005-7462-075X")
     )
-  )
+Author: Jesse Brandt [aut, cre] (<https://orcid.org/0009-0005-7462-075X>)
+Maintainer: Jesse Brandt <jesseabrandt@users.noreply.github.com>
 Description: Provides S3 methods to convert decision tree models from popular
     machine learning packages ('randomForest', 'tree', 'xgboost') into network
     edgelist format for visualization and analysis. The package extracts
@@ -36,6 +31,8 @@ Suggests:
     randomForest,
     tree,
     xgboost,
+    gbm,
+    rpart,
     testthat (>= 3.0.0),
     covr,
     igraph,
@@ -44,6 +41,6 @@ Suggests:
     knitr,
     rmarkdown
 Config/testthat/edition: 3
-URL: https://github.com/yourusername/networkformat
-BugReports: https://github.com/yourusername/networkformat/issues
+URL: https://github.com/jesseabrandt/networkformat
+BugReports: https://github.com/jesseabrandt/networkformat/issues
 VignetteBuilder: knitr
