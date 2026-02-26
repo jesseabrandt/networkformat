@@ -2,23 +2,35 @@
 % Please edit documentation in R/nodelist.default.R
 \name{nodelist.default}
 \alias{nodelist.default}
-\title{Default Node List Extraction Method}
+\title{Extract Node List from a Vector or Unsupported Object}
 \usage{
 \method{nodelist}{default}(input_object, ...)
 }
 \arguments{
-\item{input_object}{An object for which no specific nodelist method exists}
+\item{input_object}{An atomic vector, or an object for which no specific
+  nodelist method exists.}
 
 \item{...}{Additional arguments (currently unused)}
 }
 \value{
-Never returns; always raises an error.
+A data.frame with columns \code{name} (unique values in order of
+  first appearance) and \code{n} (frequency count).  For unsupported types,
+  an error is raised.
 }
 \description{
-Default method that is called when no specific method is implemented for
-the input object type. Raises an error with the supported class list.
+When called on an atomic vector (character, numeric, integer, logical,
+factor), returns the unique values as a node list with a \code{name}
+column (preserving order of first appearance) and an \code{n} column
+giving the frequency of each value.  For all other unsupported types,
+an informative error is raised.
 }
 \examples{
-# Attempting to extract nodelist from unsupported object type
+# Character vector
+nodelist(c("A", "B", "C", "A", "B"))
+
+# Numeric vector
+nodelist(c(1, 2, 3, 2, 1))
+
+# Unsupported type
 try(nodelist(list(a = 1, b = 2)))
 }

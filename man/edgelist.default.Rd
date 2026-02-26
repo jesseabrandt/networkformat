@@ -2,23 +2,41 @@
 % Please edit documentation in R/edgelist.default.R
 \name{edgelist.default}
 \alias{edgelist.default}
-\title{Default Edge Extraction Method}
+\title{Extract Edgelist from a Vector or Unsupported Object}
 \usage{
-\method{edgelist}{default}(input_object, ...)
+\method{edgelist}{default}(input_object, weights = FALSE, ...)
 }
 \arguments{
-\item{input_object}{An object for which no specific edgelist method exists}
+\item{input_object}{An atomic vector, or an object for which no specific
+  edgelist method exists.}
+
+\item{weights}{Logical; if \code{TRUE}, duplicate edges are collapsed and a
+  \code{weight} column is added with the count of each unique
+  \code{(from, to)} pair.  Defaults to \code{FALSE}.}
 
 \item{...}{Additional arguments (currently unused)}
 }
 \value{
-Never returns; always raises an error.
+A data.frame with columns \code{from} and \code{to} (and
+  \code{weight} when \code{weights = TRUE}).  For unsupported types, an
+  error is raised.
 }
 \description{
-Default method that is called when no specific method is implemented for
-the input object type. Raises an error with the supported class list.
+When called on an atomic vector (character, numeric, integer, logical,
+factor), creates a sequential edgelist connecting each element to the next:
+element \code{i} is connected to element \code{i + 1}.  For all other
+unsupported types, an informative error is raised.
 }
 \examples{
-# Attempting to extract edgelist from unsupported object type
+# Character vector
+edgelist(c("A", "B", "C", "D"))
+
+# Numeric vector
+edgelist(1:5)
+
+# With duplicate counting
+edgelist(c("A", "B", "A", "B", "C"), weights = TRUE)
+
+# Unsupported type
 try(edgelist(list(a = 1, b = 2)))
 }
