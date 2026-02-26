@@ -13,9 +13,9 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 <!-- badges: end -->
 
 **networkformat** converts R objects into network edgelist/nodelist
-format for visualization and analysis with igraph, tidygraph, and
-ggraph. It works with tree-based ML models (`randomForest`, `tree`),
-data frames, and plain vectors.
+format for visualization and analysis with packages like igraph,
+tidygraph, and ggraph. It works with tree-based ML models
+(`randomForest`, `tree`), data frames, and vectors.
 
 ## Installation
 
