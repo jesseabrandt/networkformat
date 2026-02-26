@@ -8,37 +8,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
-```bash
-# Run all tests (sources files manually; no devtools in this environment)
-Rscript -e '
-for (f in list.files("R", pattern = "\\.R$", full.names = TRUE))
-  tryCatch(source(f), error = function(e) message("Skip ", f))
-load("data/courses.rda")
-testthat::test_file("tests/testthat/test-edgelist.R")
-testthat::test_file("tests/testthat/test-nodelist.R")
-'
+```r
+# Load package for interactive development
+devtools::load_all()
+
+# Run all tests
+devtools::test()
 
 # Run a single test file
-Rscript -e '
-for (f in list.files("R", pattern = "\\.R$", full.names = TRUE))
-  tryCatch(source(f), error = function(e) message("Skip ", f))
-load("data/courses.rda")
 testthat::test_file("tests/testthat/test-edgelist.R")
-'
 
-# Full package check (if devtools available)
-Rscript -e 'devtools::check()'
+# Regenerate documentation (man/ pages and NAMESPACE) after changing roxygen2 comments
+devtools::document()
 
-# Build the package
-R CMD build .
+# Render README
+rmarkdown::render("README.Rmd")
+
+# Full package check
+devtools::check()
 ```
 
-### Environment notes
-
-- R 4.2.2 is available but devtools/roxygen2 are **not installed**
-- Man pages and NAMESPACE must be edited by hand (mirror roxygen2 format)
 - `README.md` is generated from `README.Rmd` — do not edit `README.md` directly
-- Tests source all `R/*.R` files and `load("data/courses.rda")` before running
+- Documentation is roxygen2-generated — edit roxygen comments in `R/*.R`, then run `devtools::document()`
 
 ## Architecture
 
@@ -109,16 +100,14 @@ Each S3 method lives in its own file: `R/edgelist.R` (generic), `R/edgelist.data
 
 1. Create `R/edgelist.newclass.R` with `edgelist.newclass(input_object, ...)`
 2. Optionally create `R/nodelist.newclass.R`
-3. Add `S3method(edgelist,newclass)` to `NAMESPACE`
-4. Create a man page in `man/edgelist.newclass.Rd`
-5. Add tests in `tests/testthat/test-edgelist.R`
-6. Use `R/edgelist.randomForest.R` as reference
+3. Add `@export` roxygen tag and run `devtools::document()`
+4. Add tests in `tests/testthat/test-edgelist.R`
+5. Use `R/edgelist.randomForest.R` as reference
 
 ## Testing
 
 - Framework: testthat 3rd edition
 - Test files: `test-edgelist.R` (~165 tests), `test-nodelist.R` (~112 tests), `test-as_igraph.R`
-- `test-as_igraph.R` requires the package to be installed (uses `as_igraph` generic); skipped when sourcing manually
 - Tests for randomForest/tree use `skip_if_not_installed()`
 - The overlap warning in `test-edgelist.R` is expected (tests that `attr_cols` overlap triggers a warning)
 
