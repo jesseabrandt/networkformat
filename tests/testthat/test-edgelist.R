@@ -457,3 +457,152 @@ test_that("edgelist.data.frame warns when attr_cols overlaps source/target", {
     "attr_cols overlaps with source/target"
   )
 })
+
+# --- weights tests (data.frame) ---
+
+test_that("edgelist.data.frame weights = FALSE (default) has no weight column", {
+  el <- edgelist(courses)
+  expect_false("weight" %in% names(el))
+})
+
+test_that("edgelist.data.frame weights = TRUE adds weight column", {
+  df <- data.frame(
+    a = c("X", "X", "Y", "X"),
+    b = c("Y", "Y", "Z", "Z")
+  )
+  el <- edgelist(df, weights = TRUE)
+
+  expect_true("weight" %in% names(el))
+  expect_type(el$weight, "integer")
+  # X->Y appears twice, Y->Z once, X->Z once
+  expect_equal(nrow(el), 3)
+  expect_equal(el$weight[el$from == "X" & el$to == "Y"], 2L)
+  expect_equal(el$weight[el$from == "Y" & el$to == "Z"], 1L)
+})
+
+test_that("edgelist.data.frame weights applied after na.rm", {
+  df <- data.frame(
+    a = c("X", "X", NA),
+    b = c("Y", "Y", "Z")
+  )
+  el <- edgelist(df, weights = TRUE)
+
+  # NA row removed first, then X->Y collapsed
+  expect_equal(nrow(el), 1)
+  expect_equal(el$weight, 2L)
+})
+
+test_that("edgelist.data.frame weights applied after symmetric dedupe", {
+  df <- data.frame(
+    a = c("X", "Y", "X"),
+    b = c("Y", "X", "Y")
+  )
+  # Symmetric dedupe drops Y->X (Y > X), leaving 2 X->Y rows; weights collapses
+  el <- edgelist(df, symmetric_cols = b, weights = TRUE, attr_cols = c())
+
+  undirected <- el[!el$directed, ]
+  expect_equal(nrow(undirected), 1)
+  expect_equal(undirected$weight, 2L)
+})
+
+test_that("edgelist.data.frame weights keeps rows with different attributes", {
+  df <- data.frame(
+    a = c("X", "X"),
+    b = c("Y", "Y"),
+    w = c(10, 20)
+  )
+  el <- edgelist(df, weights = TRUE)
+
+  # Different w values -> distinct rows, each with weight 1
+  expect_equal(nrow(el), 2)
+  expect_equal(el$weight, c(1L, 1L))
+})
+
+test_that("edgelist.data.frame weights collapses fully identical rows", {
+  df <- data.frame(
+    a = c("X", "X", "X"),
+    b = c("Y", "Y", "Y"),
+    w = c(10, 10, 20)
+  )
+  el <- edgelist(df, weights = TRUE)
+
+  # Two identical rows (w=10) collapse; the w=20 row stays separate
+  expect_equal(nrow(el), 2)
+  expect_equal(el$weight[el$w == 10], 2L)
+  expect_equal(el$weight[el$w == 20], 1L)
+})
+
+# --- vector edgelist tests ---
+
+test_that("edgelist on character vector creates sequential edges", {
+  el <- edgelist(c("A", "B", "C", "D"))
+
+  expect_s3_class(el, "data.frame")
+  expect_equal(el$from, c("A", "B", "C"))
+  expect_equal(el$to, c("B", "C", "D"))
+  expect_equal(nrow(el), 3)
+})
+
+test_that("edgelist on numeric vector creates sequential edges", {
+  el <- edgelist(1:5)
+
+  expect_s3_class(el, "data.frame")
+  expect_equal(el$from, 1:4)
+  expect_equal(el$to, 2:5)
+})
+
+test_that("edgelist on integer vector works", {
+  el <- edgelist(c(10L, 20L, 30L))
+
+  expect_equal(el$from, c(10L, 20L))
+  expect_equal(el$to, c(20L, 30L))
+})
+
+test_that("edgelist on factor vector works", {
+  el <- edgelist(factor(c("a", "b", "c")))
+
+  expect_s3_class(el, "data.frame")
+  expect_equal(nrow(el), 2)
+})
+
+test_that("edgelist on length-2 vector returns one edge", {
+  el <- edgelist(c("A", "B"))
+
+  expect_equal(nrow(el), 1)
+  expect_equal(el$from, "A")
+  expect_equal(el$to, "B")
+})
+
+test_that("edgelist on length-1 vector errors", {
+  expect_error(edgelist(c("A")), "at least 2 elements")
+})
+
+test_that("edgelist on empty vector errors", {
+  expect_error(edgelist(character(0)), "at least 2 elements")
+})
+
+test_that("edgelist vector with weights collapses duplicates", {
+  el <- edgelist(c("A", "B", "A", "B", "C"), weights = TRUE)
+
+  expect_true("weight" %in% names(el))
+  # Edges: A->B, B->A, A->B, B->C; A->B appears 2x, B->A 1x, B->C 1x
+  expect_equal(nrow(el), 3)
+  expect_equal(el$weight[el$from == "A" & el$to == "B"], 2L)
+  expect_equal(el$weight[el$from == "B" & el$to == "A"], 1L)
+  expect_equal(el$weight[el$from == "B" & el$to == "C"], 1L)
+})
+
+test_that("edgelist vector without weights has no weight column", {
+  el <- edgelist(c("A", "B", "A", "B"))
+  expect_false("weight" %in% names(el))
+})
+
+test_that("edgelist vector with repeated adjacent pair and weights", {
+  el <- edgelist(c(1, 2, 1, 2, 1, 2), weights = TRUE)
+
+  # Edges: 1->2, 2->1, 1->2, 2->1, 1->2
+  # 1->2 appears 3x, 2->1 appears 2x
+  expect_equal(nrow(el), 2)
+  expect_equal(el$weight[el$from == 1 & el$to == 2], 3L)
+  expect_equal(el$weight[el$from == 2 & el$to == 1], 2L)
+})

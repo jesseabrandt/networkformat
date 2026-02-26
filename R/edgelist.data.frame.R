@@ -31,6 +31,12 @@
 #'   are removed by keeping only rows where \code{from <= to}
 #'   (lexicographic comparison). Set to \code{FALSE} to preserve both
 #'   directions.
+#' @param weights Logical; if \code{TRUE}, fully identical rows (same
+#'   \code{from}, \code{to}, and all attribute columns) are collapsed and
+#'   a \code{weight} column is added with the count.  Rows that share
+#'   \code{(from, to)} but differ in any attribute are kept separate.
+#'   Applied after NA removal and symmetric deduplication.  Defaults to
+#'   \code{FALSE}.
 #' @param ... Additional arguments (currently unused)
 #'
 #' @returns A data.frame with columns:
@@ -42,6 +48,8 @@
 #'   \item{directed}{(only when \code{symmetric_cols} is provided) Logical:
 #'     \code{FALSE} for edges from symmetric target columns, \code{TRUE}
 #'     otherwise}
+#'   \item{weight}{(only when \code{weights = TRUE}) Integer count of how
+#'     many times each unique \code{(from, to)} pair occurred}
 #'   \item{...}{Additional attribute columns selected by \code{attr_cols}}
 #' }
 #' @export
@@ -71,7 +79,8 @@
 #'          symmetric_cols = crosslist)
 edgelist.data.frame <- function(input_object, source_cols = 1, target_cols = 2,
                                  attr_cols = NULL, na.rm = TRUE,
-                                 symmetric_cols = NULL, dedupe = TRUE, ...) {
+                                 symmetric_cols = NULL, dedupe = TRUE,
+                                 weights = FALSE, ...) {
   source_pos <- tidyselect::eval_select(rlang::enquo(source_cols), input_object)
   target_pos <- tidyselect::eval_select(rlang::enquo(target_cols), input_object)
 
@@ -153,6 +162,16 @@ edgelist.data.frame <- function(input_object, source_cols = 1, target_cols = 2,
   if (isTRUE(dedupe) && has_symmetric) {
     keep <- df$directed | (as.character(df$from) <= as.character(df$to))
     df <- df[keep, , drop = FALSE]
+    rownames(df) <- NULL
+  }
+
+  # Collapse duplicate rows and add a weight column
+  if (isTRUE(weights)) {
+    keys <- do.call(paste, c(df, sep = "\x1f"))
+    tab <- table(keys)
+    first_idx <- !duplicated(keys)
+    df <- df[first_idx, , drop = FALSE]
+    df$weight <- as.integer(tab[keys[first_idx]])
     rownames(df) <- NULL
   }
 

@@ -5,7 +5,8 @@
 \title{Extract Edgelist from Data Frame}
 \usage{
 \method{edgelist}{data.frame}(input_object, source_cols = 1, target_cols = 2,
-  attr_cols = NULL, na.rm = TRUE, symmetric_cols = NULL, dedupe = TRUE, ...)
+  attr_cols = NULL, na.rm = TRUE, symmetric_cols = NULL, dedupe = TRUE,
+  weights = FALSE, ...)
 }
 \arguments{
 \item{input_object}{A data.frame containing network information}
@@ -42,6 +43,13 @@
   (lexicographic comparison). Set to \code{FALSE} to preserve both
   directions.}
 
+\item{weights}{Logical; if \code{TRUE}, fully identical rows (same
+  \code{from}, \code{to}, and all attribute columns) are collapsed and
+  a \code{weight} column is added with the count.  Rows that share
+  \code{(from, to)} but differ in any attribute are kept separate.
+  Applied after NA removal and symmetric deduplication.  Defaults to
+  \code{FALSE}.}
+
 \item{...}{Additional arguments (currently unused)}
 }
 \value{
@@ -54,6 +62,8 @@ A data.frame with columns:
   \item{directed}{(only when \code{symmetric_cols} is provided) Logical:
     \code{FALSE} for edges from symmetric target columns, \code{TRUE}
     otherwise}
+  \item{weight}{(only when \code{weights = TRUE}) Integer count of how
+    many times each unique \code{(from, to)} pair occurred}
   \item{...}{Additional attribute columns selected by \code{attr_cols}}
 }
 }

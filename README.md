@@ -4,189 +4,231 @@
 # networkformat
 
 <!-- badges: start -->
+
 [![R-CMD-check](https://github.com/jesseabrandt/networkformat/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jesseabrandt/networkformat/actions/workflows/R-CMD-check.yaml)
-[![Codecov test coverage](https://codecov.io/gh/jesseabrandt/networkformat/branch/main/graph/badge.svg)](https://codecov.io/gh/jesseabrandt/networkformat?branch=main)
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![Codecov test
+coverage](https://codecov.io/gh/jesseabrandt/networkformat/branch/main/graph/badge.svg)](https://codecov.io/gh/jesseabrandt/networkformat?branch=main)
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-The goal of **networkformat** is to convert machine learning tree models
-into network edgelist format, enabling network-based visualization and
-analysis of decision tree structures. The package provides S3 methods
-for popular tree-based models including `randomForest`, `tree`, and
-(planned) `xgboost`.
+**networkformat** converts R objects into network edgelist/nodelist
+format for visualization and analysis with igraph, tidygraph, and
+ggraph. It works with tree-based ML models (`randomForest`, `tree`),
+data frames, and plain vectors.
 
 ## Installation
-
-You can install the development version of networkformat from GitHub:
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("jesseabrandt/networkformat")
 ```
 
-## Core Concepts
-
-Tree-based machine learning models have an inherent hierarchical
-structure that can be represented as a network:
-
-- **Nodes** represent decision points (internal nodes) or predictions
-  (leaf nodes)
-- **Edges** represent parent-child relationships between nodes
-- **Edge attributes** capture split conditions, variable names, and
-  thresholds
-
-This representation enables:
-
-- Network visualization using `igraph` or `ggraph`
-- Network analysis metrics (centrality, depth, branching patterns)
-- Comparative analysis across different models or tree types
-
-## Usage
-
-### RandomForest Models
+## Quick start
 
 ``` r
 library(networkformat)
-library(randomForest)
 
-# Fit a random forest model
-rf_model <- randomForest(Species ~ ., data = iris, ntree = 5, maxnodes = 10)
+# Vectors --- sequential chain of edges
+edgelist(c("A", "B", "C", "D"))
+#>   from to
+#> 1    A  B
+#> 2    B  C
+#> 3    C  D
 
-# Extract edgelist
-rf_edges <- edgelist(rf_model)
-head(rf_edges)
+nodelist(c("A", "B", "A", "C"))
+#>   name n
+#> 1    A 2
+#> 2    B 1
+#> 3    C 1
 
-# Examine structure
-str(rf_edges)
-table(rf_edges$treenum)         # Number of edges per tree
-table(rf_edges$split_var_name)  # Most important variables
+# Data frames --- column pairs become edges
+edgelist(courses, source_cols = course, target_cols = prereq)
+
+# Tree models --- one-step graph conversion
+library(tree)
+tr <- tree(Species ~ ., data = iris)
+as_igraph(tr)
 ```
 
-The edgelist contains:
+## Supported inputs
 
-- `from` and `to`: Node indices within each tree
-- `split_var` and `split_var_name`: Variable used for splitting
-- `split_point`: Threshold value for the split
-- `treenum`: Tree identifier within the forest
-- `prediction`: Value at the child node
+| Input                              |          `edgelist()`           |         `nodelist()`         | `as_igraph()` / `as_tbl_graph()` |
+|------------------------------------|:-------------------------------:|:----------------------------:|:--------------------------------:|
+| **vector** (character, numeric, …) |   sequential edges `i -> i+1`   | unique values with frequency |                —                 |
+| **data.frame**                     |        column-pair edges        | reorder with `id_col` first  |                —                 |
+| **randomForest**                   |       parent-child splits       |   node attributes per tree   |    single or multi-tree graph    |
+| **tree**                           | parent-child splits with labels |       node attributes        |         full tree graph          |
 
-### Tree Models
+## Vectors
+
+Any atomic vector becomes a sequential edgelist: element `i` connects to
+element `i + 1`.
+
+``` r
+edgelist(c("intro", "basics", "advanced", "project"))
+#>       from       to
+#> 1    intro   basics
+#> 2   basics advanced
+#> 3 advanced  project
+
+# Collapse duplicate edges with a count
+edgelist(c("A", "B", "A", "B", "C"), weights = TRUE)
+#>   from to weight
+#> 1    A  B      2
+#> 2    B  A      1
+#> 3    B  C      1
+
+# Node list gives unique values and frequencies
+nodelist(c("A", "B", "A", "B", "C"))
+#>   name n
+#> 1    A 2
+#> 2    B 2
+#> 3    C 1
+```
+
+## Data frames
+
+Specify which columns are source/target nodes. All other columns are
+carried as edge attributes by default.
+
+``` r
+# Basic edgelist from two columns
+edgelist(courses, source_cols = course, target_cols = prereq)
+
+# Multiple target columns (Cartesian product of source x target)
+edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist))
+
+# Keep only specific attribute columns
+edgelist(courses, source_cols = course, target_cols = prereq,
+         attr_cols = c(dept, credits))
+
+# Symmetric (undirected) edges with deduplication
+edgelist(courses, source_cols = course,
+         target_cols = c(prereq, crosslist),
+         symmetric_cols = crosslist)
+
+# Collapse duplicate rows and count them
+edgelist(courses, source_cols = course, target_cols = prereq,
+         weights = TRUE)
+```
+
+Key parameters:
+
+- `na.rm = TRUE` (default) — remove edges where from or to is `NA`
+- `symmetric_cols` — mark target columns as undirected; adds a
+  `directed` column
+- `dedupe = TRUE` (default) — when using `symmetric_cols`, keep only one
+  direction (`from <= to`)
+- `weights = TRUE` — collapse identical rows and add a `weight` count
+  column
+
+## Tree models
+
+### randomForest
+
+``` r
+library(randomForest)
+
+rf <- randomForest(Species ~ ., data = iris, ntree = 5)
+
+# Edgelist for all trees
+el <- edgelist(rf)
+head(el)
+#> Columns: from, to, split_var, split_point, prediction, treenum, split_var_name
+
+# Extract specific trees
+el_1 <- edgelist(rf, treenum = 1)
+el_13 <- edgelist(rf, treenum = c(1, 3))
+
+# Node list
+nl <- nodelist(rf)
+head(nl)
+#> Columns: name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label
+```
+
+### tree
 
 ``` r
 library(tree)
 
-# Fit a classification tree
-tree_model <- tree(Species ~ Sepal.Length + Sepal.Width + Petal.Length, data = iris)
+tr <- tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
 
-# Extract edgelist
-tree_edges <- edgelist(tree_model)
-head(tree_edges)
+# Edgelist with parsed split components
+el <- edgelist(tr)
+head(el)
+#> Columns: from, to, label, split_var, split_op, split_point
 
-# View split conditions
-tree_edges$label
+# Node list
+nl <- nodelist(tr)
+head(nl)
+#> Columns: name, var, n, dev, yval, is_leaf, label
 ```
 
-The edgelist contains:
+## Graph conversion
 
-- `from` and `to`: Parent and child node indices
-- `label`: Human-readable split condition (e.g., "Petal.Length \< 2.5")
-
-### Data Frame Conversion
+Skip the edgelist/nodelist step and go straight to an igraph or
+tbl_graph:
 
 ``` r
-# Create a course prerequisite network
-courses <- data.frame(
-  course = c("STAT101", "STAT102", "STAT202", "MATH101", "MATH102"),
-  prereq = c(NA, "STAT101", "STAT102", NA, "MATH101")
-)
+library(tree)
 
-# Convert to edgelist
-course_edges <- edgelist(courses, source_cols = 2, target_cols = 1)
-head(course_edges)
+tr <- tree(Species ~ ., data = iris)
+
+# igraph
+g <- as_igraph(tr)
+
+# tidygraph
+tg <- as_tbl_graph(tr)
+
+# randomForest (single tree or multiple as disconnected components)
+library(randomForest)
+rf <- randomForest(Species ~ ., data = iris, ntree = 3)
+g_rf <- as_igraph(rf, treenum = 1)
 ```
 
-## Network Visualization
-
-### Using igraph
-
-``` r
-library(igraph)
-
-# Create graph from edgelist
-rf_edges_tree1 <- subset(rf_edges, treenum == 1)
-g <- graph_from_data_frame(rf_edges_tree1[, c("from", "to")], directed = TRUE)
-
-# Add attributes
-V(g)$label <- V(g)$name
-E(g)$split_var <- rf_edges_tree1$split_var_name
-
-# Plot
-plot(g,
-     layout = layout_as_tree(g, root = 1),
-     vertex.size = 20,
-     vertex.color = "lightblue",
-     edge.arrow.size = 0.5,
-     main = "RandomForest Tree 1 Structure")
-```
-
-### Using ggraph
+## Visualization
 
 ``` r
 library(ggraph)
 library(tidygraph)
+library(tree)
 
-# Convert to tbl_graph
-tree_graph <- as_tbl_graph(g) %>%
-  mutate(depth = node_distance_from(node_is_root()))
+tr <- tree(Species ~ ., data = iris)
 
-# Create visualization
-ggraph(tree_graph, layout = 'tree') +
-  geom_edge_link(arrow = arrow(length = unit(2, 'mm')),
-                 end_cap = circle(3, 'mm')) +
-  geom_node_point(aes(color = depth), size = 5) +
-  geom_node_text(aes(label = name), vjust = -0.5) +
-  scale_color_viridis_c() +
-  theme_graph() +
-  labs(title = "Decision Tree Network Structure")
+as_tbl_graph(tr) |>
+  ggraph(layout = "tree") +
+  geom_edge_link(arrow = arrow(length = unit(2, "mm")),
+                 end_cap = circle(3, "mm")) +
+  geom_node_point(aes(color = is_leaf), size = 4) +
+  geom_node_text(aes(label = label), size = 3, vjust = -0.8) +
+  theme_graph()
 ```
 
-## Extending the Package
+## Extending the package
 
-### Adding New Model Types
+To add support for a new model class:
 
-To add support for a new tree-based model class:
+1.  Create `R/edgelist.newclass.R` with
+    `edgelist.newclass(input_object, ...)`
+2.  Add `@export` roxygen tag
+3.  Run `devtools::document()` to update NAMESPACE
+4.  Add tests in `tests/testthat/`
+5.  See `R/edgelist.randomForest.R` as a reference
 
-1.  Create a new file `R/edgelist.newmodel.R`
-2.  Implement the S3 method `edgelist.newmodel()`
-3.  Extract tree structure into data.frame with `from`/`to` columns
-4.  Add tests in `tests/testthat/test-edgelist.R`
+## Related packages
 
-See `R/edgelist.randomForest.R` as a reference implementation.
-
-## Related Packages
-
-- **[randomForest](https://cran.r-project.org/package=randomForest)**:
-  Random forest classification and regression
-- **[tree](https://cran.r-project.org/package=tree)**: Classification
-  and regression trees
-- **[igraph](https://cran.r-project.org/package=igraph)**: Network
-  analysis and visualization
-- **[tidygraph](https://cran.r-project.org/package=tidygraph)**: Tidy
-  interface for graph manipulation
-- **[ggraph](https://cran.r-project.org/package=ggraph)**: Grammar of
+- [randomForest](https://cran.r-project.org/package=randomForest) —
+  random forest models
+- [tree](https://cran.r-project.org/package=tree) — classification and
+  regression trees
+- [igraph](https://cran.r-project.org/package=igraph) — network analysis
+  and visualization
+- [tidygraph](https://cran.r-project.org/package=tidygraph) — tidy graph
+  manipulation
+- [ggraph](https://cran.r-project.org/package=ggraph) — grammar of
   graphics for networks
-
-## Citation
-
-``` r
-citation("networkformat")
-```
 
 ## License
 
-MIT © Jesse Brandt
-
-------------------------------------------------------------------------
-
-**Note**: This package is in experimental development. APIs may change.
-Feedback and contributions welcome\!
+MIT

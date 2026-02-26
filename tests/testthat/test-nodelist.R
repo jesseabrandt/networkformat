@@ -316,3 +316,70 @@ test_that("nodelist.data.frame errors when id_col selects multiple columns", {
     "id_col must select exactly one column"
   )
 })
+
+# --- vector nodelist tests ---
+
+test_that("nodelist on character vector returns unique values with counts", {
+  nl <- nodelist(c("A", "B", "C", "A", "B"))
+
+  expect_s3_class(nl, "data.frame")
+  expect_equal(names(nl), c("name", "n"))
+  expect_equal(nl$name, c("A", "B", "C"))
+  expect_equal(nl$n, c(2L, 2L, 1L))
+})
+
+test_that("nodelist on numeric vector returns unique values with counts", {
+  nl <- nodelist(c(1, 2, 3, 2, 1))
+
+  expect_equal(nl$name, c(1, 2, 3))
+  expect_equal(nl$n, c(2L, 2L, 1L))
+})
+
+test_that("nodelist on integer vector works", {
+  nl <- nodelist(c(10L, 20L, 10L))
+
+  expect_equal(nl$name, c(10L, 20L))
+  expect_equal(nl$n, c(2L, 1L))
+})
+
+test_that("nodelist on vector preserves first-appearance order", {
+  nl <- nodelist(c("C", "A", "B", "A", "C"))
+
+  expect_equal(nl$name, c("C", "A", "B"))
+})
+
+test_that("nodelist on vector with all unique values has n = 1", {
+  nl <- nodelist(c("X", "Y", "Z"))
+
+  expect_equal(nl$n, c(1L, 1L, 1L))
+})
+
+test_that("nodelist on single-element vector works", {
+  nl <- nodelist(c("A"))
+
+  expect_equal(nrow(nl), 1)
+  expect_equal(nl$name, "A")
+  expect_equal(nl$n, 1L)
+})
+
+test_that("nodelist on empty vector returns zero-row data.frame", {
+  nl <- nodelist(character(0))
+
+  expect_s3_class(nl, "data.frame")
+  expect_equal(nrow(nl), 0)
+  expect_equal(names(nl), c("name", "n"))
+})
+
+test_that("nodelist on factor vector works", {
+  nl <- nodelist(factor(c("a", "b", "a")))
+
+  expect_equal(nrow(nl), 2)
+  expect_equal(nl$n, c(2L, 1L))
+})
+
+test_that("nodelist on logical vector works", {
+  nl <- nodelist(c(TRUE, FALSE, TRUE, TRUE))
+
+  expect_equal(nl$name, c(TRUE, FALSE))
+  expect_equal(nl$n, c(3L, 1L))
+})
