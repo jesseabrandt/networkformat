@@ -17,10 +17,14 @@ A data.frame representing an edgelist. The specific columns depend
 }
 \description{
 Generic function to extract a network edgelist from various object types.
-Methods exist for data.frames and tree-based model objects (randomForest,
-tree, xgboost). The specific columns returned depend on the input type.
+Methods exist for atomic vectors (sequential edges), data frames
+(column-pair edges), and tree-based model objects (\code{randomForest},
+\code{tree}).  The specific columns returned depend on the input type.
 }
 \examples{
+# Vector --- sequential edges
+edgelist(c("A", "B", "C", "D"))
+
 # Data.frame example using bundled dataset
 edgelist(courses)
 

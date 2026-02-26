@@ -1,6 +1,6 @@
 Package: networkformat
 Type: Package
-Title: Convert Machine Learning Tree Models to Network Edgelists
+Title: Convert R Objects to Network Edgelists and Nodelists
 Version: 0.0.0.9000
 Authors@R: person(
       "Jesse", "Brandt",
@@ -10,13 +10,12 @@ Authors@R: person(
     )
 Author: Jesse Brandt [aut, cre] (<https://orcid.org/0009-0005-7462-075X>)
 Maintainer: Jesse Brandt <jesseabrandt@users.noreply.github.com>
-Description: Provides S3 methods to convert decision tree models from popular
-    machine learning packages ('randomForest', 'tree', 'xgboost') into network
-    edgelist format for visualization and analysis. The package extracts
-    parent-child relationships from tree structures, enabling network-based
-    exploration and analysis using tools like 'igraph' and 'tidygraph'.
-    Supports extraction of both edge lists (parent-child relationships) and
-    node lists (with attributes) from trained models.
+Description: Converts R objects into network edgelist and nodelist format for
+    visualization and analysis with packages like 'igraph', 'tidygraph', and
+    'ggraph'. Works with atomic vectors (sequential edges), data frames
+    (column-pair edges with tidyselect), and tree-based model objects
+    ('randomForest', 'tree'). Also provides one-step graph construction
+    via as_igraph() and as_tbl_graph() methods for tree models.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

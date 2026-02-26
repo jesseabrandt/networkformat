@@ -2,14 +2,14 @@ citHeader("To cite networkformat in publications use:")
 
 bibentry(
   bibtype  = "Manual",
-  title    = "networkformat: Convert Machine Learning Tree Models to Network Edgelists",
+  title    = "networkformat: Convert R Objects to Network Edgelists and Nodelists",
   author   = person("Jesse", "Brandt"),
   year     = "2026",
   note     = "R package version 0.0.0.9000",
   url      = "https://github.com/jesseabrandt/networkformat",
   textVersion = paste(
     "Brandt, J. (2026).",
-    "networkformat: Convert Machine Learning Tree Models to Network Edgelists.",
+    "networkformat: Convert R Objects to Network Edgelists and Nodelists.",
     "R package version 0.0.0.9000.",
     "https://github.com/jesseabrandt/networkformat"
   )

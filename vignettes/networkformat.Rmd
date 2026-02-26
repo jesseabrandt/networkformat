@@ -16,21 +16,29 @@ knitr::opts_chunk$set(
 
 # Why networkformat?
 
-Decision trees, random forests, and other tree-based models are networks ---
-nodes connected by edges --- but they don't come in network format. The
-output of `randomForest::getTree()` is a matrix of daughter indices and split
-points. The `tree` package stores its structure in a frame with implicit
-parent-child relationships. To visualize or analyze these models as graphs,
-you have to write bespoke reshaping code every time.
+Many R objects contain network structure that isn't in network format.
+A vector of steps implies a sequence. A data frame with prerequisite
+columns encodes a dependency graph. A random forest stores trees as
+matrices of daughter indices. To visualize or analyze any of these as
+graphs, you normally write bespoke reshaping code every time.
 
 **networkformat** does that reshaping for you. It extracts standard
 **edgelists** (from-to pairs) and **nodelists** (node attributes) from
-models and tabular data, putting everything in the format that the rest of
-the R network ecosystem expects.
+vectors, data frames, and tree-based models, putting everything in the
+format that the rest of the R network ecosystem expects.
 
-# Quick example
+# Quick examples
 
-Five lines from model to plot:
+The simplest case --- a vector becomes a chain of edges:
+
+```{r vector-quick}
+library(networkformat)
+
+edgelist(c("start", "middle", "end"))
+nodelist(c("A", "B", "A", "C"))
+```
+
+Five lines from tree model to plot:
 
 ```{r quick-example, eval = requireNamespace("tree", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 9, fig.height = 6, message = FALSE}
 library(networkformat)
@@ -100,11 +108,12 @@ whatever your analysis requires.
 
 ## Currently available
 
-| Model / input | `edgelist()` | `nodelist()` | `as_igraph()` |
-|---------------|:---:|:---:|:---:|
+| Input | `edgelist()` | `nodelist()` | `as_igraph()` |
+|-------|:---:|:---:|:---:|
+| atomic vector | yes | yes | --- |
+| `data.frame` | yes | yes | --- |
 | `tree` | yes | yes | yes |
 | `randomForest` | yes | yes | yes |
-| `data.frame` | yes | yes | --- |
 
 For data frames, tidygraph's `as_tbl_graph()` already handles the
 conversion from edge data frames to graph objects, so networkformat does

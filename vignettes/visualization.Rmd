@@ -20,15 +20,17 @@ library(ggraph)
 library(tidygraph)
 ```
 
-**networkformat** converts tree-based models into graph objects for
-visualization with ggraph. The main entry points are:
+**networkformat** converts R objects into graph-ready format for
+visualization with ggraph. For tree models, the quickest path is:
 
 - `as_igraph(x)` --- convert a model to an igraph object
 - `as_tbl_graph(x)` --- convert to a tidygraph tbl_graph (for use with ggraph)
 
-If you want to work with the raw edgelists and nodelists directly ---
-filtering edges, computing graph statistics, or building custom igraph
-objects --- see `vignette("edgelist-nodelist")`.
+For vectors and data frames, use `edgelist()` and `nodelist()` to build
+the edge/node data, then pass them to igraph or tidygraph. If you want
+to work with the raw edgelists and nodelists directly --- filtering edges,
+computing graph statistics, or building custom igraph objects --- see
+`vignette("edgelist-nodelist")`.
 
 # Decision tree
 

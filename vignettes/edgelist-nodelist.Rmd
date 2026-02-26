@@ -19,9 +19,9 @@ library(networkformat)
 ```
 
 `edgelist()` and `nodelist()` are the core functions of **networkformat**.
-They extract network structure from tree models and tabular data as plain
-data frames, giving you full control over filtering, transforming, and
-passing the results to igraph or any other tool.
+They extract network structure from vectors, data frames, and tree models
+as plain data frames, giving you full control over filtering, transforming,
+and passing the results to igraph or any other tool.
 
 For quick visualization without touching the raw data, see
 `vignette("visualization")`.
@@ -298,7 +298,8 @@ print(sort(deg_out[deg_out > 0], decreasing = TRUE))
 
 | Input class | Columns returned |
 |-------------|-----------------|
-| `data.frame` | `from`, `to`, `from_col`, `to_col`, [`directed`], `<attr_cols>` |
+| atomic vector | `from`, `to`, [`weight`] |
+| `data.frame` | `from`, `to`, `from_col`, `to_col`, [`directed`], [`weight`], `<attr_cols>` |
 | `tree` | `from`, `to`, `label`, `split_var`, `split_op`, `split_point` |
 | `randomForest` | `from`, `to`, `split_var`, `split_point`, `prediction`, `treenum`, `split_var_name` |
 
@@ -306,6 +307,7 @@ print(sort(deg_out[deg_out > 0], decreasing = TRUE))
 
 | Input class | Columns returned |
 |-------------|-----------------|
+| atomic vector | `name`, `n` |
 | `data.frame` | Reordered input (ID column first) |
 | `tree` | `name`, `var`, `n`, `dev`, `yval`, `is_leaf`, `label` |
 | `randomForest` | `name`, `is_leaf`, `split_var`, `split_var_name`, `split_point`, `prediction`, `treenum`, `label` |

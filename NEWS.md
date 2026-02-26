@@ -1,25 +1,23 @@
 # networkformat 0.0.0.9000 (Development version)
 
-## New Features
+## Features
 
-* Initial release with S3 methods for extracting network edgelists from tree models
-* `edgelist()` generic function with methods for:
-  - `randomForest` objects
-  - `tree` objects
-  - `data.frame` objects
-  - Default method with informative message
-* `nodelist()` generic function for extracting node lists with attributes
-* Comprehensive test suite with edge case coverage
-* Detailed README with usage examples and visualization
+* `edgelist()` generic with methods for:
+  - Atomic vectors --- sequential edges connecting element `i` to `i + 1`
+  - `data.frame` --- column-pair edges with tidyselect, `na.rm`, `symmetric_cols`, `dedupe`, and `weights`
+  - `randomForest` --- parent-child splits with `treenum` filtering
+  - `tree` --- parent-child splits with parsed split components
+* `nodelist()` generic with methods for:
+  - Atomic vectors --- unique values with frequency counts
+  - `data.frame` --- reorder with `id_col` first
+  - `randomForest` --- node attributes per tree
+  - `tree` --- node attributes with labels
+* `as_igraph()` and `as_tbl_graph()` for one-step graph construction from `tree` and `randomForest` models
+* `weights` parameter for `edgelist.data.frame` and vector method --- collapses duplicate rows and adds a `weight` count column
+* Bundled `courses` dataset for examples
+* 3 vignettes: package introduction, edgelist/nodelist guide, visualization
+* Comprehensive test suite (275+ tests)
 
-## Work in Progress
+## Stubs (not yet implemented)
 
-* `edgelist.xgb.Booster()` method for XGBoost models (stub implementation)
-* `nodelist.randomForest()` and `nodelist.tree()` methods need full implementation
-* Vignettes for common workflows
-
-## Documentation
-
-* roxygen2 documentation for all exported functions
-* Examples demonstrating network visualization with igraph and ggraph
-* Package-level documentation
+* `edgelist()` / `nodelist()` for `xgb.Booster`, `gbm`, `rpart`

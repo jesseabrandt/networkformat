@@ -4,9 +4,9 @@
 \name{networkformat-package}
 \alias{networkformat}
 \alias{networkformat-package}
-\title{networkformat: Convert Machine Learning Tree Models to Network Edgelists}
+\title{networkformat: Convert R Objects to Network Edgelists and Nodelists}
 \description{
-Provides S3 methods to convert decision tree models from popular machine learning packages ('randomForest', 'tree', 'xgboost') into network edgelist format for visualization and analysis. The package extracts parent-child relationships from tree structures, enabling network-based exploration and analysis using tools like 'igraph' and 'tidygraph'. Supports extraction of both edge lists (parent-child relationships) and node lists (with attributes) from trained models.
+Converts R objects into network edgelist and nodelist format for visualization and analysis with packages like 'igraph', 'tidygraph', and 'ggraph'. Works with atomic vectors (sequential edges), data frames (column-pair edges with tidyselect), and tree-based model objects ('randomForest', 'tree'). Also provides one-step graph construction via as_igraph() and as_tbl_graph() methods for tree models.
 }
 \seealso{
 Useful links:
