@@ -2,13 +2,25 @@
 % Please edit documentation in R/nodelist.R
 \name{nodelist}
 \alias{nodelist}
-\title{Title}
+\title{Extract Node List from Various Objects}
 \usage{
 nodelist(input_object, ...)
 }
 \arguments{
-\item{...}{}
+\item{input_object}{An object containing node information (data.frame, tree model, etc.)}
+
+\item{...}{Additional arguments passed to specific methods}
+}
+\value{
+A data.frame where the first column is the node ID and subsequent
+  columns contain node attributes
 }
 \description{
-Title
+Generic function to extract a node list (with attributes) from various
+object types including data.frames and tree models. The node list provides
+metadata about each node in the network.
+}
+\examples{
+# Node list with course as ID (column 2)
+nodelist(courses, id_col = 2)
 }

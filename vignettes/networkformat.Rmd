@@ -1,0 +1,127 @@
+---
+title: "networkformat"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{networkformat}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Why networkformat?
+
+Decision trees, random forests, and other tree-based models are networks ---
+nodes connected by edges --- but they don't come in network format. The
+output of `randomForest::getTree()` is a matrix of daughter indices and split
+points. The `tree` package stores its structure in a frame with implicit
+parent-child relationships. To visualize or analyze these models as graphs,
+you have to write bespoke reshaping code every time.
+
+**networkformat** does that reshaping for you. It extracts standard
+**edgelists** (from-to pairs) and **nodelists** (node attributes) from
+models and tabular data, putting everything in the format that the rest of
+the R network ecosystem expects.
+
+# Quick example
+
+Five lines from model to plot:
+
+```{r quick-example, eval = requireNamespace("tree", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 9, fig.height = 6, message = FALSE}
+library(networkformat)
+library(tidygraph)
+library(ggraph)
+
+tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+tg <- as_tbl_graph(tr)
+
+ggraph(tg, layout = "tree") +
+  geom_edge_diagonal(colour = "grey60") +
+  geom_node_label(aes(label = label, fill = ifelse(is_leaf, yval, var)),
+                  size = 2.5, colour = "white", fontface = "bold") +
+  scale_fill_brewer(palette = "Set2", name = NULL) +
+  theme_graph(base_family = "sans") +
+  labs(title = "Iris classification tree")
+```
+
+# Tabular data
+
+networkformat also works with plain data frames. The bundled `courses`
+dataset has prerequisite and crosslisting relationships:
+
+```{r df-quick}
+library(networkformat)
+
+# Prerequisite edgelist
+edgelist(courses, source_cols = course, target_cols = prereq)
+
+# Node list with course as ID
+nodelist(courses, id_col = course)
+```
+
+# The R network ecosystem
+
+Once your data is in edgelist/nodelist form, a large ecosystem of packages
+is available, including:
+
+**igraph** --- the workhorse graph library for R. Handles graph construction,
+shortest paths, centrality, community detection, clustering, and much more.
+Also converts to **adjacency matrices** (`as_adjacency_matrix()`) and
+**incidence matrices** (`as_incidence_matrix()`) for linear algebra
+approaches.
+
+**tidygraph** --- a tidy interface built on top of igraph. Lets you
+manipulate graphs with dplyr verbs (`mutate`, `filter`, `arrange`) while
+keeping the underlying igraph structure. If you're comfortable with the
+tidyverse, this is the natural way to work with graphs. Note that tidygraph
+provides `as_tbl_graph.data.frame()`, which auto-detects edge data frames
+with `from`/`to` columns --- so once you have an edgelist from
+networkformat, you can pass it directly to tidygraph without building an
+igraph first.
+
+**ggraph** --- a ggplot2 extension for graph visualization, designed to work
+with tidygraph/igraph objects. Supports tree layouts, force-directed layouts,
+circular layouts, and more.
+
+**network** / **statnet** --- an alternative graph ecosystem focused on
+statistical network modeling (ERGMs, latent space models). igraph objects can
+be converted to network objects via `intergraph::asNetwork()`.
+
+networkformat gets your data into this ecosystem. From there, you can
+visualize, compute statistics, fit models, or convert to matrices ---
+whatever your analysis requires.
+
+# What's implemented
+
+## Currently available
+
+| Model / input | `edgelist()` | `nodelist()` | `as_igraph()` |
+|---------------|:---:|:---:|:---:|
+| `tree` | yes | yes | yes |
+| `randomForest` | yes | yes | yes |
+| `data.frame` | yes | yes | --- |
+
+For data frames, tidygraph's `as_tbl_graph()` already handles the
+conversion from edge data frames to graph objects, so networkformat does
+not duplicate that method.
+
+## In progress
+
+| Model | Status |
+|-------|--------|
+| `rpart` | Stub |
+| `xgboost` (`xgb.Booster`) | Stub |
+| `gbm` | Stub |
+
+# Getting started
+
+For visualizing tree models quickly, see `vignette("visualization")`.
+
+For working directly with edgelists and nodelists --- including all the
+available arguments and the data frame workflow --- see
+`vignette("edgelist-nodelist")`.

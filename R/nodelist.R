@@ -1,54 +1,17 @@
-#' Title
+#' Extract Node List from Various Objects
 #'
-#' @param input_object
-#' @param ...
+#' Generic function to extract a node list (with attributes) from various
+#' object types including data.frames and tree models. The node list provides
+#' metadata about each node in the network.
 #'
-#' @returns
+#' @param input_object An object containing node information (data.frame, tree model, etc.)
+#' @param ... Additional arguments passed to specific methods
+#'
+#' @returns A data.frame where the first column is the node ID and subsequent
+#'   columns contain node attributes
 #' @export
 #'
 #' @examples
+#' # Node list with course as ID (column 2)
+#' nodelist(courses, id_col = 2)
 nodelist <- function(input_object, ...){UseMethod("nodelist")}
-
-#' Title
-#'
-#' @param input_object
-#' @param id_col
-#' @param ...
-#'
-#' @returns
-#' @export
-#'
-#' @examples
-#' @importFrom dplyr relocate
-nodelist.data.frame <- function(input_object, id_col = 1){
-
-  relocate(input_object, {{id_col}})
-
-}
-
-#' Title
-#'
-#' @param input_object
-#' @param ...
-#'
-#' @returns
-#' @export
-#'
-#' @examples
-nodelist.random.forest <- function(input_object, ...){
-
-}
-
-
-#' Title
-#'
-#' @param input_object
-#' @param ...
-#'
-#' @returns
-#' @export
-#'
-#' @examples
-nodelist.default <- function(input_object, ...){
-  print("nodelist method not implemented for this object type")
-}

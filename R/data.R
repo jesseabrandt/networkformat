@@ -1,0 +1,24 @@
+#' Course prerequisite and crosslisting network
+#'
+#' A small dataset of university courses with prerequisite and
+#' crosslisting relationships, suitable for demonstrating \code{edgelist()}
+#' and \code{nodelist()}.
+#'
+#' @format A data.frame with 13 rows and 7 columns:
+#' \describe{
+#'   \item{dept}{Department code (STAT, MATH, DATA, CS)}
+#'   \item{course}{Course identifier, used as node ID}
+#'   \item{prereq}{Prerequisite course (NA if none)}
+#'   \item{prereq2}{Second prerequisite course (NA if none)}
+#'   \item{crosslist}{Crosslisted equivalent course (NA if none)}
+#'   \item{credits}{Number of credit hours (integer)}
+#'   \item{level}{Course level: 100, 200, or 300 (integer)}
+#' }
+#'
+#' @examples
+#' # Prerequisite edgelist (course -> prereq)
+#' edgelist(courses, source_cols = course, target_cols = prereq)
+#'
+#' # Node list with course as ID column
+#' nodelist(courses, id_col = course)
+"courses"

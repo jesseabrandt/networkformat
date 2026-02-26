@@ -1,26 +1,46 @@
 Package: networkformat
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Authors@R: c(
-    person(
-      "Jane", "Doe",
-      email = "jane@example.com",
-      role = c("aut", "cre")
+Title: Convert Machine Learning Tree Models to Network Edgelists
+Version: 0.0.0.9000
+Authors@R: person(
+      "Jesse", "Brandt",
+      email = "jesseabrandt@users.noreply.github.com",
+      role = c("aut", "cre"),
+      comment = c(ORCID = "0009-0005-7462-075X")
     )
-  )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
+Author: Jesse Brandt [aut, cre] (<https://orcid.org/0009-0005-7462-075X>)
+Maintainer: Jesse Brandt <jesseabrandt@users.noreply.github.com>
+Description: Provides S3 methods to convert decision tree models from popular
+    machine learning packages ('randomForest', 'tree', 'xgboost') into network
+    edgelist format for visualization and analysis. The package extracts
+    parent-child relationships from tree structures, enabling network-based
+    exploration and analysis using tools like 'igraph' and 'tidygraph'.
+    Supports extraction of both edge lists (parent-child relationships) and
+    node lists (with attributes) from trained models.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.3
-Suggests: 
-    knitr,
-    rmarkdown,
-    testthat (>= 3.0.0)
-Config/testthat/edition: 3
-VignetteBuilder: knitr
-Imports: 
-    dplyr,
+Depends:
+    R (>= 3.6.0)
+Imports:
+    methods,
+    rlang,
     tidyselect
+Suggests:
+    randomForest,
+    tree,
+    xgboost,
+    gbm,
+    rpart,
+    testthat (>= 3.0.0),
+    covr,
+    igraph,
+    tidygraph,
+    ggraph,
+    knitr,
+    rmarkdown
+Config/testthat/edition: 3
+URL: https://github.com/jesseabrandt/networkformat
+BugReports: https://github.com/jesseabrandt/networkformat/issues
+VignetteBuilder: knitr

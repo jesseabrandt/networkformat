@@ -1,53 +1,31 @@
-#' Extracts edgelist from various object types
+#' Extract Edgelist from Various Object Types
 #'
-#' @param input_object
-#' @param ...
+#' Generic function to extract a network edgelist from various object types.
+#' Methods exist for data.frames and tree-based model objects (randomForest,
+#' tree, xgboost). The specific columns returned depend on the input type.
 #'
-#' @returns data.frame representing edgelist
+#' @param input_object An object to extract an edgelist from
+#' @param ... Additional arguments passed to specific methods
+#'
+#' @returns A data.frame representing an edgelist. The specific columns depend
+#'   on the input object type.
 #' @export
 #'
 #' @examples
+#' # Data.frame example using bundled dataset
+#' edgelist(courses)
+#'
+#' # RandomForest example
+#' if (requireNamespace("randomForest", quietly = TRUE)) {
+#'   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 10)
+#'   edges_rf <- edgelist(rf)
+#'   head(edges_rf)
+#' }
+#'
+#' # Tree example
+#' if (requireNamespace("tree", quietly = TRUE)) {
+#'   tr <- tree::tree(Species ~ ., data = iris)
+#'   edges_tr <- edgelist(tr)
+#'   head(edges_tr)
+#' }
 edgelist <- function(input_object, ...) {UseMethod("edgelist")}
-
-
-#' Title
-#'
-#' @param input_object
-#' @param source_cols contains the column(s) in the input data.frame that represent the source nodes in the edgelist.
-#' @param target_cols contains the column(s) in the input data.frame that represent the target nodes in the edgelist.
-#' @param ...
-#'
-#' @details Edges will go from all source nodes to all target nodes. If you have multiple source columns that each have their respective target columns, you'll need to call this function twice and bind the results together.
-#'
-#' @returns
-#' @export
-#'
-#' @examples
-#' @importFrom tidyselect eval_select
-#' @importFrom rlang enquo
-edgelist.data.frame <- function(input_object, source_cols = c(1), target_cols = c(2), ...){
-
-  source_cols <- eval_select(enquo(source_cols), input_object)
-  target_cols <- eval_select(enquo(target_cols), input_object)
-
-  df <- data.frame(source = rep(unlist(input_object[,source_cols]), length(target_cols)),
-                   target = unlist(input_object[,target_cols]))
-  return(df)
-}
-
-#' Default Edgelist Function
-#'
-#' @param input_object object from which to extract edgelist
-#' @param ...
-#'
-#' @details This function does nothing. If you have an object type you want to extract an edgelist from, maybe write a method or email the package maintainer.
-#'
-#' @returns input_object, unchanged
-#' @export
-#'
-#' @examples
-edgelist.default <- function(input_object, ...){
-  print("edgelist method not implemented for this object type")
-  return(input_object)
-}
-

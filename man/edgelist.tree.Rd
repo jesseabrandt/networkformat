@@ -2,13 +2,41 @@
 % Please edit documentation in R/edgelist.tree.R
 \name{edgelist.tree}
 \alias{edgelist.tree}
-\title{Title}
+\title{Extract Edgelist from Tree Model}
 \usage{
 \method{edgelist}{tree}(input_object, ...)
 }
 \arguments{
-\item{...}{}
+\item{input_object}{A tree model object from the tree package}
+
+\item{...}{Additional arguments (currently unused)}
+}
+\value{
+A data.frame with the following columns:
+  \describe{
+    \item{from}{Parent node index}
+    \item{to}{Child node index}
+    \item{label}{Split condition label (variable and threshold)}
+    \item{split_var}{Variable name used for the split}
+    \item{split_op}{Operator: \code{"<"} or \code{">="} for numeric splits,
+      \code{NA} for categorical splits}
+    \item{split_point}{Numeric threshold for the split (\code{NA} for
+      categorical splits)}
+  }
 }
 \description{
-Title
+Converts a tree model object (from the tree package) into a network edgelist
+representation. Uses a parent-stack algorithm to traverse the binary tree
+structure and construct parent-child relationships. Each edge is labeled
+with the split condition and parsed into component columns.
+}
+\examples{
+if (requireNamespace("tree", quietly = TRUE)) {
+  tree_model <- tree::tree(Species ~ ., data = iris)
+  tree_edges <- edgelist(tree_model)
+  head(tree_edges)
+
+  # Parsed split components
+  tree_edges[, c("split_var", "split_op", "split_point")]
+}
 }

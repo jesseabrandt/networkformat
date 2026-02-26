@@ -1,39 +1,75 @@
-#' Title
+#' Extract Edgelist from RandomForest Model
 #'
-#' @param input_obj
+#' Converts a randomForest model object into a network edgelist representation
+#' by extracting parent-child relationships from all trees in the forest. Each
+#' edge represents a split in the decision tree, with additional attributes
+#' including split variable, split point, and prediction values.
 #'
-#' @returns data.frame representing edgelist.
+#' @param input_object A randomForest model object from the randomForest package
+#' @param treenum Integer vector of tree numbers to extract (default:
+#'   \code{NULL} extracts all trees). Values must be between 1 and
+#'   \code{input_object$ntree}.
+#' @param ... Additional arguments (currently unused)
+#'
+#' @returns A data.frame with the following columns:
+#'   \describe{
+#'     \item{from}{Parent node index within the tree}
+#'     \item{to}{Child node index (left or right daughter)}
+#'     \item{split_var}{Numeric index of the variable used for splitting}
+#'     \item{split_point}{Threshold value for the split}
+#'     \item{prediction}{Prediction value at the child node}
+#'     \item{treenum}{Tree number within the forest}
+#'     \item{split_var_name}{Character vector with human-readable variable names}
+#'   }
 #' @export
 #'
+#' @examples
+#' if (requireNamespace("randomForest", quietly = TRUE)) {
+#'   rf_model <- randomForest::randomForest(
+#'     Species ~ .,
+#'     data = iris,
+#'     ntree = 5,
+#'     maxnodes = 10
+#'   )
 #'
-edgelist.randomForest <- function(input_object, ...){#TODO: attach nodelist? check package installed?
-  convert_tree <- function(treenum){
-    tree1 <- randomForest::getTree(input_object, treenum)
+#'   # Extract all trees
+#'   rf_edges <- edgelist(rf_model)
+#'   head(rf_edges)
+#'
+#'   # Extract specific trees
+#'   rf_edges_1 <- edgelist(rf_model, treenum = 1)
+#'   rf_edges_13 <- edgelist(rf_model, treenum = c(1, 3))
+#' }
+edgelist.randomForest <- function(input_object, treenum = NULL, ...){
+  tree_indices <- if (is.null(treenum)) {
+    seq_len(input_object$ntree)
+  } else {
+    if (!all(treenum >= 1 & treenum <= input_object$ntree)) {
+      stop("treenum must be between 1 and ", input_object$ntree,
+           "; got: ", paste(treenum, collapse = ", "))
+    }
+    as.integer(treenum)
+  }
+
+  convert_tree <- function(tn){
+    tree1 <- randomForest::getTree(input_object, tn)
     tree1 <- as.data.frame(tree1)
-    tree1$index <- c(1:nrow(tree1))
+    tree1$index <- seq_len(nrow(tree1))
 
     parent_index <- tree1$`left daughter` != 0
-    edgelist <- data.frame(source = c(tree1[parent_index,"index"], tree1[parent_index,"index"]),
-                           target = c(tree1[parent_index,"left daughter"], tree1[parent_index,"right daughter"]),
-                           split_var = c(tree1[parent_index,"split var"], tree1[parent_index,"split var"]),
-                           split_point = c(tree1[parent_index,"split point"], tree1[parent_index,"split point"]),
-                           prediction = c(tree1[parent_index,"prediction"], tree1[parent_index,"prediction"]),
-                           treenum = treenum)
-    return(edgelist)
+    edges_df <- data.frame(
+      from        = c(tree1[parent_index, "index"], tree1[parent_index, "index"]),
+      to          = c(tree1[parent_index, "left daughter"], tree1[parent_index, "right daughter"]),
+      split_var   = c(tree1[parent_index, "split var"], tree1[parent_index, "split var"]),
+      split_point = c(tree1[parent_index, "split point"], tree1[parent_index, "split point"]),
+      prediction  = c(tree1[tree1[parent_index, "left daughter"], "prediction"],
+                       tree1[tree1[parent_index, "right daughter"], "prediction"]),
+      treenum     = tn)
+    return(edges_df)
   }
-  # edgelist$split_var |> unique()
-  # forest_edge <- data.frame()
-  # # is most efficient way adding to a list?
-  # for(i in 1:input_object$ntree){
-  #   forest_edge <- rbind(forest_edge, convert_tree(i))
-  #
-  # }
-  forest_edge <- lapply(c(1:input_object$ntree), \(i)(convert_tree(i)))
-  # forest_edge$split_var_name
+  forest_edge <- lapply(tree_indices, convert_tree)
   forest_df <- do.call(rbind, forest_edge)
-  forest_df$split_var_name <- factor(forest_df$split_var, labels = names(input_object$forest$ncat))
-  # do for all trees then attach varnames
+  var_names <- names(input_object$forest$ncat)
+  forest_df$split_var_name <- var_names[forest_df$split_var]
   return(forest_df)
 }
-
-

@@ -2,16 +2,52 @@
 % Please edit documentation in R/edgelist.randomForest.R
 \name{edgelist.randomForest}
 \alias{edgelist.randomForest}
-\title{Title}
+\title{Extract Edgelist from RandomForest Model}
 \usage{
-\method{edgelist}{randomForest}(input_object, ...)
+\method{edgelist}{randomForest}(input_object, treenum = NULL, ...)
 }
 \arguments{
-\item{input_obj}{}
+\item{input_object}{A randomForest model object from the randomForest package}
+
+\item{treenum}{Integer vector of tree numbers to extract (default:
+  \code{NULL} extracts all trees). Values must be between 1 and
+  \code{input_object$ntree}.}
+
+\item{...}{Additional arguments (currently unused)}
 }
 \value{
-data.frame representing edgelist.
+A data.frame with the following columns:
+  \describe{
+    \item{from}{Parent node index within the tree}
+    \item{to}{Child node index (left or right daughter)}
+    \item{split_var}{Numeric index of the variable used for splitting}
+    \item{split_point}{Threshold value for the split}
+    \item{prediction}{Prediction value at the child node}
+    \item{treenum}{Tree number within the forest}
+    \item{split_var_name}{Character vector with human-readable variable names}
+  }
 }
 \description{
-Title
+Converts a randomForest model object into a network edgelist representation
+by extracting parent-child relationships from all trees in the forest. Each
+edge represents a split in the decision tree, with additional attributes
+including split variable, split point, and prediction values.
+}
+\examples{
+if (requireNamespace("randomForest", quietly = TRUE)) {
+  rf_model <- randomForest::randomForest(
+    Species ~ .,
+    data = iris,
+    ntree = 5,
+    maxnodes = 10
+  )
+
+  # Extract all trees
+  rf_edges <- edgelist(rf_model)
+  head(rf_edges)
+
+  # Extract specific trees
+  rf_edges_1 <- edgelist(rf_model, treenum = 1)
+  rf_edges_13 <- edgelist(rf_model, treenum = c(1, 3))
+}
 }
