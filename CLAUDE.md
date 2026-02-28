@@ -84,7 +84,7 @@ Each S3 method lives in its own file: `R/edgelist.R` (generic), `R/edgelist.data
 
 - **vector (default)**: Sequential edges: element `i` connects to element `i + 1`, producing `n - 1` edges from a length-`n` vector.
 - **randomForest**: Iterates trees via `randomForest::getTree()`, identifies parent nodes (`left_daughter != 0`), creates edges to both children. `treenum` filters to specific trees.
-- **tree**: Parent-stack algorithm to reconstruct binary tree traversal. Generates human-readable split labels and parsed components (`split_var`, `split_op`, `split_point`).
+- **tree**: Binary heap node IDs from `rownames(frame)` (root=1, left=2k, right=2k+1). Parent-child edges derived via `id %/% 2`. Split labels and parsed components (`split_var`, `split_op`, `split_point`) from the `splits` matrix.
 - **data.frame**: Cartesian product of source/target column pairs. Builds edge blocks with `na.rm` filtering, optional `directed` column from `symmetric_cols`, direction-based dedup, and row-level dedup via `weights`.
 
 ### Dependencies

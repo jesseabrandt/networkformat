@@ -40,11 +40,11 @@ Columns:
 
 | Column | Description |
 |--------|-------------|
-| `from` | Parent node index |
-| `to` | Child node index |
+| `from` | Parent node ID (binary heap index) |
+| `to` | Child node ID (binary heap index) |
 | `label` | Full split condition (e.g. `"Sepal.Length <5.45"`) |
 | `split_var` | Variable name |
-| `split_op` | `"<"` or `">="` (NA for categorical splits) |
+| `split_op` | `"<"` or `">"` (NA for categorical splits) |
 | `split_point` | Numeric threshold (NA for categorical) |
 
 The parsed columns let you filter or restyle without regex:
