@@ -114,18 +114,13 @@ whatever your analysis requires.
 | `data.frame` | yes | yes | --- |
 | `tree` | yes | yes | yes |
 | `randomForest` | yes | yes | yes |
+| `rpart` | yes | yes | yes |
+| `xgb.Booster` (xgboost) | yes | yes | yes |
+| `gbm` | yes | yes | yes |
 
 For data frames, tidygraph's `as_tbl_graph()` already handles the
 conversion from edge data frames to graph objects, so networkformat does
 not duplicate that method.
-
-## In progress
-
-| Model | Status |
-|-------|--------|
-| `rpart` | Stub |
-| `xgboost` (`xgb.Booster`) | Stub |
-| `gbm` | Stub |
 
 # Getting started
 

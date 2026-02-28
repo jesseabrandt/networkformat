@@ -3,15 +3,25 @@
 \name{as_tbl_graph}
 \alias{as_tbl_graph.tree}
 \alias{as_tbl_graph.randomForest}
+\alias{as_tbl_graph.rpart}
+\alias{as_tbl_graph.xgb.Booster}
+\alias{as_tbl_graph.gbm}
 \title{Convert to tbl_graph}
 \usage{
 \method{as_tbl_graph}{tree}(x, ...)
 
 \method{as_tbl_graph}{randomForest}(x, treenum = 1L, ...)
+
+\method{as_tbl_graph}{rpart}(x, ...)
+
+\method{as_tbl_graph}{xgb.Booster}(x, treenum = 1L, ...)
+
+\method{as_tbl_graph}{gbm}(x, treenum = 1L, ...)
 }
 \arguments{
-\item{x}{An object to convert (currently \code{tree} or
-  \code{randomForest}).}
+\item{x}{An object to convert (currently \code{tree},
+  \code{randomForest}, \code{rpart}, \code{xgb.Booster}, or
+  \code{gbm}).}
 
 \item{...}{Additional arguments passed to \code{\link{as_igraph}}.}
 

@@ -63,3 +63,58 @@ as_igraph.randomForest <- function(x, treenum = 1L, ...) {
 
   igraph::graph_from_data_frame(all_edges, directed = TRUE, vertices = all_nodes)
 }
+
+#' @rdname as_igraph
+#' @export
+as_igraph.rpart <- function(x, ...) {
+  if (!requireNamespace("igraph", quietly = TRUE)) {
+    stop("Package 'igraph' is required. Install it with install.packages('igraph').")
+  }
+  edges <- edgelist(x)
+  nodes <- nodelist(x)
+  igraph::graph_from_data_frame(edges, directed = TRUE, vertices = nodes)
+}
+
+#' @rdname as_igraph
+#' @export
+as_igraph.xgb.Booster <- function(x, treenum = 1L, ...) {
+  if (!requireNamespace("igraph", quietly = TRUE)) {
+    stop("Package 'igraph' is required. Install it with install.packages('igraph').")
+  }
+
+  # String IDs from xgboost are already globally unique across trees
+  e <- edgelist(x, treenum = treenum)
+  n <- nodelist(x, treenum = treenum)
+  igraph::graph_from_data_frame(e, directed = TRUE, vertices = n)
+}
+
+#' @rdname as_igraph
+#' @export
+as_igraph.gbm <- function(x, treenum = 1L, ...) {
+  if (!requireNamespace("igraph", quietly = TRUE)) {
+    stop("Package 'igraph' is required. Install it with install.packages('igraph').")
+  }
+
+  tree_indices <- if (is.null(treenum)) {
+    seq_len(length(x$trees))
+  } else {
+    as.integer(treenum)
+  }
+
+  # Single tree: no prefixing needed
+  if (length(tree_indices) == 1L) {
+    e <- edgelist(x, treenum = tree_indices)
+    n <- nodelist(x, treenum = tree_indices)
+    return(igraph::graph_from_data_frame(e, directed = TRUE, vertices = n))
+  }
+
+  # Multiple trees: prefix node IDs with treenum for uniqueness
+  all_edges <- edgelist(x, treenum = tree_indices)
+  all_nodes <- nodelist(x, treenum = tree_indices)
+
+  all_edges$from <- paste0(all_edges$treenum, ".", all_edges$from)
+  all_edges$to   <- paste0(all_edges$treenum, ".", all_edges$to)
+  all_nodes$name <- paste0(all_nodes$treenum, ".", all_nodes$name)
+
+  igraph::graph_from_data_frame(all_edges, directed = TRUE, vertices = all_nodes)
+}

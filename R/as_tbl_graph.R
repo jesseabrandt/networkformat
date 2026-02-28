@@ -32,3 +32,33 @@ as_tbl_graph.randomForest <- function(x, treenum = 1L, ...) {
   }
   tidygraph::as_tbl_graph(as_igraph(x, treenum = treenum, ...))
 }
+
+#' @rdname as_tbl_graph
+#' @export
+as_tbl_graph.rpart <- function(x, ...) {
+  if (!requireNamespace("tidygraph", quietly = TRUE)) {
+    stop("Package 'tidygraph' is required. Install it with install.packages('tidygraph').")
+  }
+  tidygraph::as_tbl_graph(as_igraph(x, ...))
+}
+
+#' @rdname as_tbl_graph
+#' @param treenum Integer vector of tree numbers to extract. Default
+#'   \code{1} returns a single tbl_graph for the first tree.  Use
+#'   \code{NULL} to get all trees combined into one graph.
+#' @export
+as_tbl_graph.xgb.Booster <- function(x, treenum = 1L, ...) {
+  if (!requireNamespace("tidygraph", quietly = TRUE)) {
+    stop("Package 'tidygraph' is required. Install it with install.packages('tidygraph').")
+  }
+  tidygraph::as_tbl_graph(as_igraph(x, treenum = treenum, ...))
+}
+
+#' @rdname as_tbl_graph
+#' @export
+as_tbl_graph.gbm <- function(x, treenum = 1L, ...) {
+  if (!requireNamespace("tidygraph", quietly = TRUE)) {
+    stop("Package 'tidygraph' is required. Install it with install.packages('tidygraph').")
+  }
+  tidygraph::as_tbl_graph(as_igraph(x, treenum = treenum, ...))
+}

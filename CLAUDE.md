@@ -43,9 +43,9 @@ The package uses **S3 method dispatch** with four groups of functions:
 | `edgelist.data.frame` | data.frame | `source_cols`, `target_cols`, `attr_cols`, `na.rm`, `symmetric_cols`, `dedupe`, `weights` | from, to, from_col, to_col, [directed], [weight], \<attrs\> | Complete |
 | `edgelist.randomForest` | randomForest | `treenum` | from, to, split_var, split_point, prediction, treenum, split_var_name | Complete |
 | `edgelist.tree` | tree | | from, to, label, split_var, split_op, split_point | Complete |
-| `edgelist.xgb.Booster` | xgb.Booster | | — | Stub |
-| `edgelist.gbm` | gbm | | — | Stub |
-| `edgelist.rpart` | rpart | | — | Stub |
+| `edgelist.rpart` | rpart | | from, to, label, split_var, split_op, split_point | Complete |
+| `edgelist.xgb.Booster` | xgb.Booster | `treenum` | from, to, feature, split, quality, cover, treenum | Complete |
+| `edgelist.gbm` | gbm | `treenum` | from, to, split_var, split_point, prediction, treenum, split_var_name | Complete |
 
 ### `nodelist()` — extract node attributes
 
@@ -55,9 +55,9 @@ The package uses **S3 method dispatch** with four groups of functions:
 | `nodelist.data.frame` | data.frame | `id_col` | (reordered input, id_col first) | Complete |
 | `nodelist.randomForest` | randomForest | `treenum` | name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label | Complete |
 | `nodelist.tree` | tree | | name, var, n, dev, yval, is_leaf, label | Complete |
-| `nodelist.xgb.Booster` | xgb.Booster | | — | Stub |
-| `nodelist.gbm` | gbm | | — | Stub |
-| `nodelist.rpart` | rpart | | — | Stub |
+| `nodelist.rpart` | rpart | | name, var, n, dev, yval, is_leaf, label | Complete |
+| `nodelist.xgb.Booster` | xgb.Booster | `treenum` | name, is_leaf, feature, split, quality, cover, treenum, label | Complete |
+| `nodelist.gbm` | gbm | `treenum` | name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label | Complete |
 
 ### `as_igraph()` / `as_tbl_graph()` — direct graph construction
 
@@ -65,8 +65,14 @@ The package uses **S3 method dispatch** with four groups of functions:
 |--------|-------|---------------|---------|
 | `as_igraph.tree` | tree | | igraph |
 | `as_igraph.randomForest` | randomForest | `treenum` (default `1`) | igraph (multiple trees = disconnected components) |
+| `as_igraph.rpart` | rpart | | igraph |
+| `as_igraph.xgb.Booster` | xgb.Booster | `treenum` (default `1`) | igraph (string IDs, globally unique) |
+| `as_igraph.gbm` | gbm | `treenum` (default `1`) | igraph (multi-tree: prefixed IDs) |
 | `as_tbl_graph.tree` | tree | | tbl_graph |
 | `as_tbl_graph.randomForest` | randomForest | `treenum` (default `1`) | tbl_graph |
+| `as_tbl_graph.rpart` | rpart | | tbl_graph |
+| `as_tbl_graph.xgb.Booster` | xgb.Booster | `treenum` (default `1`) | tbl_graph |
+| `as_tbl_graph.gbm` | gbm | `treenum` (default `1`) | tbl_graph |
 
 Node IDs in nodelist outputs match the from/to columns in the corresponding edgelist, so they can be passed directly to `igraph::graph_from_data_frame()`.
 
@@ -74,7 +80,7 @@ Node IDs in nodelist outputs match the from/to columns in the corresponding edge
 
 - **vector**: `weights = TRUE` collapses duplicate `(from, to)` pairs with a count. `nodelist()` always returns unique values with frequency in the `n` column.
 - **data.frame**: `weights = TRUE` collapses fully identical rows (all columns must match, not just from/to) and adds a `weight` column. This is separate from `symmetric_cols` + `dedupe`, which normalizes edge direction.
-- **randomForest / tree**: Edges are structurally unique (tree topology); duplicates cannot occur.
+- **randomForest / tree / rpart / xgboost / gbm**: Edges are structurally unique (tree topology); duplicates cannot occur.
 
 ### File organization
 
@@ -86,6 +92,9 @@ Each S3 method lives in its own file: `R/edgelist.R` (generic), `R/edgelist.data
 - **randomForest**: Iterates trees via `randomForest::getTree()`, identifies parent nodes (`left_daughter != 0`), creates edges to both children. `treenum` filters to specific trees.
 - **tree**: Binary heap node IDs from `rownames(frame)` (root=1, left=2k, right=2k+1). Parent-child edges derived via `id %/% 2`. Split labels and parsed components (`split_var`, `split_op`, `split_point`) from the `splits` matrix.
 - **data.frame**: Cartesian product of source/target column pairs. Builds edge blocks with `na.rm` filtering, optional `directed` column from `symmetric_cols`, direction-based dedup, and row-level dedup via `weights`.
+- **rpart**: Same binary heap approach as tree (root=1, left=2k, right=2k+1). Edge labels from `labels(input_object, collapse = TRUE)` which handles `ncat` sign correctly. Uses `<` and `>=` operators (unlike tree's `<`/`>`).
+- **xgboost**: Uses `xgb.model.dt.tree()` data.table. Split nodes have explicit `Yes`/`No` ID columns (string format `"Tree-Node"`). No phantom nodes.
+- **gbm**: Uses `pretty.gbm.tree()`. Must exclude missing-sentinel nodes (phantom routing nodes for NA handling). Node IDs are 0-based integers. Multinomial models store `n.trees * num.classes` physical trees.
 
 ### Dependencies
 

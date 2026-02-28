@@ -4,6 +4,9 @@
 \alias{as_igraph}
 \alias{as_igraph.tree}
 \alias{as_igraph.randomForest}
+\alias{as_igraph.rpart}
+\alias{as_igraph.xgb.Booster}
+\alias{as_igraph.gbm}
 \title{Convert to igraph}
 \usage{
 as_igraph(x, ...)
@@ -11,10 +14,16 @@ as_igraph(x, ...)
 \method{as_igraph}{tree}(x, ...)
 
 \method{as_igraph}{randomForest}(x, treenum = 1L, ...)
+
+\method{as_igraph}{rpart}(x, ...)
+
+\method{as_igraph}{xgb.Booster}(x, treenum = 1L, ...)
+
+\method{as_igraph}{gbm}(x, treenum = 1L, ...)
 }
 \arguments{
-\item{x}{An object to convert (currently \code{tree} or
-  \code{randomForest}).}
+\item{x}{An object to convert (currently \code{tree}, \code{randomForest},
+  \code{rpart}, \code{xgb.Booster}, or \code{gbm}).}
 
 \item{...}{Additional arguments passed to methods.}
 
@@ -24,10 +33,9 @@ as_igraph(x, ...)
   disconnected components.}
 }
 \value{
-An \code{\link[igraph]{igraph}} object.  For
-  \code{randomForest} with multiple trees, the graph contains
-  disconnected components (one per tree) and a \code{treenum}
-  vertex/edge attribute.
+An \code{\link[igraph]{igraph}} object.  For multi-tree models
+  with multiple trees, the graph contains disconnected components
+  (one per tree) and a \code{treenum} vertex/edge attribute.
 }
 \description{
 Generic function to convert tree-based model objects into
@@ -53,5 +61,12 @@ if (requireNamespace("randomForest", quietly = TRUE) &&
   # All trees as disconnected components
   g_all <- as_igraph(rf, treenum = NULL)
   igraph::components(g_all)$no
+}
+
+if (requireNamespace("rpart", quietly = TRUE) &&
+    requireNamespace("igraph", quietly = TRUE)) {
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  g <- as_igraph(fit)
+  igraph::vcount(g)
 }
 }

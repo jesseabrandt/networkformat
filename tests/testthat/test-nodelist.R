@@ -383,3 +383,309 @@ test_that("nodelist on logical vector works", {
   expect_equal(nl$name, c(TRUE, FALSE))
   expect_equal(nl$n, c(3L, 1L))
 })
+
+# --- nodelist.rpart tests ---
+
+test_that("nodelist.rpart returns expected columns", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+
+  expect_s3_class(nl, "data.frame")
+  expect_true(all(c("name", "var", "n", "dev", "yval", "is_leaf",
+                     "label") %in% names(nl)))
+})
+
+test_that("nodelist.rpart node IDs match edgelist from/to", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+  el <- edgelist(fit)
+
+  edge_nodes <- sort(unique(c(el$from, el$to)))
+  expect_true(all(edge_nodes %in% nl$name))
+  expect_equal(nl$name, as.integer(rownames(fit$frame)))
+})
+
+test_that("nodelist.rpart identifies leaves correctly", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+
+  expect_true(all(nl$var[nl$is_leaf] == "<leaf>"))
+  expect_true(all(nl$var[!nl$is_leaf] != "<leaf>"))
+})
+
+test_that("nodelist.rpart root node contains all observations", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+
+  expect_equal(nl$n[1], 150)
+})
+
+test_that("nodelist.rpart classification yval is character", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+
+  expect_type(nl$yval, "character")
+  expect_true(all(nl$yval %in% c("setosa", "versicolor", "virginica")))
+})
+
+test_that("nodelist.rpart regression yval is numeric", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(mpg ~ cyl + disp + hp, data = mtcars)
+  nl <- nodelist(fit)
+
+  expect_type(nl$yval, "double")
+  expect_equal(nl$n[1], 32)
+})
+
+test_that("nodelist.rpart label column has correct format", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+
+  # Internal nodes: "var\nn=count"
+  internal <- nl[!nl$is_leaf, ]
+  for (i in seq_len(nrow(internal))) {
+    expect_true(grepl(paste0("\\nn=", internal$n[i]), internal$label[i]))
+    expect_true(startsWith(internal$label[i], internal$var[i]))
+  }
+
+  # Leaf nodes: "yval\nn=count"
+  leaves <- nl[nl$is_leaf, ]
+  for (i in seq_len(nrow(leaves))) {
+    expect_true(grepl(paste0("\\nn=", leaves$n[i]), leaves$label[i]))
+    expect_true(startsWith(leaves$label[i], as.character(leaves$yval[i])))
+  }
+})
+
+test_that("nodelist.rpart stump returns single node", {
+  skip_if_not_installed("rpart")
+
+  stump <- rpart::rpart(Species ~ ., data = iris,
+                         control = rpart::rpart.control(cp = 1))
+  nl <- nodelist(stump)
+
+  expect_equal(nrow(nl), 1)
+  expect_true(nl$is_leaf)
+})
+
+# --- nodelist.xgb.Booster tests ---
+
+test_that("nodelist.xgb.Booster returns expected columns", {
+  skip_if_not_installed("xgboost")
+
+  data(agaricus.train, package = "xgboost")
+  bst <- xgboost::xgboost(data = agaricus.train$data,
+                            label = agaricus.train$label,
+                            max_depth = 2, nrounds = 2,
+                            objective = "binary:logistic", verbose = 0)
+  nl <- nodelist(bst)
+
+  expect_s3_class(nl, "data.frame")
+  expect_true(all(c("name", "is_leaf", "feature", "split", "quality",
+                     "cover", "treenum", "label") %in% names(nl)))
+})
+
+test_that("nodelist.xgb.Booster leaves have NA feature and split", {
+  skip_if_not_installed("xgboost")
+
+  data(agaricus.train, package = "xgboost")
+  bst <- xgboost::xgboost(data = agaricus.train$data,
+                            label = agaricus.train$label,
+                            max_depth = 2, nrounds = 2,
+                            objective = "binary:logistic", verbose = 0)
+  nl <- nodelist(bst)
+
+  leaves <- nl[nl$is_leaf, ]
+  expect_true(all(is.na(leaves$feature)))
+  expect_true(all(is.na(leaves$split)))
+})
+
+test_that("nodelist.xgb.Booster treenum filters correctly", {
+  skip_if_not_installed("xgboost")
+
+  data(agaricus.train, package = "xgboost")
+  bst <- xgboost::xgboost(data = agaricus.train$data,
+                            label = agaricus.train$label,
+                            max_depth = 2, nrounds = 5,
+                            objective = "binary:logistic", verbose = 0)
+
+  nl1 <- nodelist(bst, treenum = 1)
+  expect_equal(unique(nl1$treenum), 1L)
+
+  nl13 <- nodelist(bst, treenum = c(1, 3))
+  expect_equal(sort(unique(nl13$treenum)), c(1L, 3L))
+})
+
+test_that("nodelist.xgb.Booster treenum validates range", {
+  skip_if_not_installed("xgboost")
+
+  data(agaricus.train, package = "xgboost")
+  bst <- xgboost::xgboost(data = agaricus.train$data,
+                            label = agaricus.train$label,
+                            max_depth = 2, nrounds = 2,
+                            objective = "binary:logistic", verbose = 0)
+
+  expect_error(nodelist(bst, treenum = 0), "treenum must be between")
+  expect_error(nodelist(bst, treenum = 10), "treenum must be between")
+})
+
+test_that("nodelist.xgb.Booster node IDs match edgelist", {
+  skip_if_not_installed("xgboost")
+
+  data(agaricus.train, package = "xgboost")
+  bst <- xgboost::xgboost(data = agaricus.train$data,
+                            label = agaricus.train$label,
+                            max_depth = 3, nrounds = 2,
+                            objective = "binary:logistic", verbose = 0)
+
+  nl <- nodelist(bst, treenum = 1)
+  el <- edgelist(bst, treenum = 1)
+  edge_nodes <- sort(unique(c(el$from, el$to)))
+  expect_true(all(edge_nodes %in% nl$name))
+})
+
+test_that("nodelist.xgb.Booster label column exists", {
+  skip_if_not_installed("xgboost")
+
+  data(agaricus.train, package = "xgboost")
+  bst <- xgboost::xgboost(data = agaricus.train$data,
+                            label = agaricus.train$label,
+                            max_depth = 2, nrounds = 2,
+                            objective = "binary:logistic", verbose = 0)
+  nl <- nodelist(bst)
+
+  expect_true("label" %in% names(nl))
+  expect_type(nl$label, "character")
+
+  # Internal nodes should have feature name as label
+  internal <- nl[!nl$is_leaf, ]
+  expect_equal(internal$label, internal$feature)
+})
+
+# --- nodelist.gbm tests ---
+
+test_that("nodelist.gbm returns expected columns", {
+  skip_if_not_installed("gbm")
+
+  set.seed(42)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                     n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
+  )
+  nl <- nodelist(fit)
+
+  expect_s3_class(nl, "data.frame")
+  expect_true(all(c("name", "is_leaf", "split_var", "split_var_name",
+                     "split_point", "prediction", "treenum",
+                     "label") %in% names(nl)))
+})
+
+test_that("nodelist.gbm excludes missing-sentinel nodes", {
+  skip_if_not_installed("gbm")
+
+  set.seed(42)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                     n.trees = 3, interaction.depth = 3, n.minobsinnode = 3)
+  )
+
+  for (tn in 1:3) {
+    nl_t <- nodelist(fit, treenum = tn)
+    el_t <- edgelist(fit, treenum = tn)
+    n_internal <- nrow(el_t) / 2
+    # Real nodes = 2 * internal + 1
+    expect_equal(nrow(nl_t), 2 * n_internal + 1)
+  }
+})
+
+test_that("nodelist.gbm leaves have NA split attributes", {
+  skip_if_not_installed("gbm")
+
+  set.seed(42)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                     n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
+  )
+  nl <- nodelist(fit)
+
+  leaves <- nl[nl$is_leaf, ]
+  expect_true(all(is.na(leaves$split_var)))
+  expect_true(all(is.na(leaves$split_var_name)))
+  expect_true(all(is.na(leaves$split_point)))
+})
+
+test_that("nodelist.gbm treenum filters correctly", {
+  skip_if_not_installed("gbm")
+
+  set.seed(42)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                     n.trees = 5, interaction.depth = 2, n.minobsinnode = 3)
+  )
+
+  nl1 <- nodelist(fit, treenum = 1)
+  expect_equal(unique(nl1$treenum), 1L)
+
+  nl13 <- nodelist(fit, treenum = c(1, 3))
+  expect_equal(sort(unique(nl13$treenum)), c(1L, 3L))
+})
+
+test_that("nodelist.gbm treenum validates range", {
+  skip_if_not_installed("gbm")
+
+  set.seed(42)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                     n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
+  )
+
+  expect_error(nodelist(fit, treenum = 0), "treenum must be between")
+  expect_error(nodelist(fit, treenum = 10), "treenum must be between")
+})
+
+test_that("nodelist.gbm label column exists", {
+  skip_if_not_installed("gbm")
+
+  set.seed(42)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                     n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
+  )
+  nl <- nodelist(fit)
+
+  expect_true("label" %in% names(nl))
+  expect_type(nl$label, "character")
+
+  # Internal nodes should have split_var_name as label
+  internal <- nl[!nl$is_leaf, ]
+  expect_equal(internal$label, internal$split_var_name)
+})
+
+test_that("nodelist.gbm node IDs match edgelist", {
+  skip_if_not_installed("gbm")
+
+  set.seed(42)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                     n.trees = 3, interaction.depth = 3, n.minobsinnode = 3)
+  )
+
+  for (tn in 1:3) {
+    nl_t <- nodelist(fit, treenum = tn)
+    el_t <- edgelist(fit, treenum = tn)
+    edge_nodes <- sort(unique(c(el_t$from, el_t$to)))
+    expect_true(all(edge_nodes %in% nl_t$name))
+  }
+})
