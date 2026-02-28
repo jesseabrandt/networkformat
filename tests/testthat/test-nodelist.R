@@ -49,7 +49,7 @@ test_that("nodelist.tree node IDs match edgelist from/to", {
 
   edge_nodes <- sort(unique(c(el$from, el$to)))
   expect_true(all(edge_nodes %in% nl$name))
-  expect_equal(nl$name, seq_len(nrow(nl)))
+  expect_equal(nl$name, as.integer(rownames(tr$frame)))
 })
 
 test_that("nodelist.tree identifies leaves correctly", {

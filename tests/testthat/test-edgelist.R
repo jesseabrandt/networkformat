@@ -404,7 +404,7 @@ test_that("edgelist.tree numeric splits have correct op and point", {
   # All splits on numeric data should have op and point
   numeric_rows <- !is.na(el$split_op)
   expect_true(any(numeric_rows))
-  expect_true(all(el$split_op[numeric_rows] %in% c("<", ">=")))
+  expect_true(all(el$split_op[numeric_rows] %in% c("<", ">")))
   expect_true(all(!is.na(el$split_point[numeric_rows])))
   expect_true(all(el$split_point[numeric_rows] > 0))
 })

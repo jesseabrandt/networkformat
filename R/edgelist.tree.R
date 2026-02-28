@@ -1,20 +1,21 @@
 #' Extract Edgelist from Tree Model
 #'
 #' Converts a tree model object (from the tree package) into a network edgelist
-#' representation. Uses a parent-stack algorithm to traverse the binary tree
-#' structure and construct parent-child relationships. Each edge is labeled
-#' with the split condition and parsed into component columns.
+#' representation. The tree package uses binary heap numbering for node IDs
+#' (root = 1, left child of k = 2k, right child of k = 2k + 1), so
+#' parent-child edges are derived directly from the node IDs in
+#' \code{rownames(input_object$frame)}.
 #'
 #' @param input_object A tree model object from the tree package
 #' @param ... Additional arguments (currently unused)
 #'
 #' @returns A data.frame with the following columns:
 #'   \describe{
-#'     \item{from}{Parent node index}
-#'     \item{to}{Child node index}
+#'     \item{from}{Parent node ID (binary heap index)}
+#'     \item{to}{Child node ID (binary heap index)}
 #'     \item{label}{Split condition label (variable and threshold)}
 #'     \item{split_var}{Variable name used for the split}
-#'     \item{split_op}{Operator: \code{"<"} or \code{">="} for numeric splits,
+#'     \item{split_op}{Operator: \code{"<"} or \code{">"} for numeric splits,
 #'       \code{NA} for categorical splits}
 #'     \item{split_point}{Numeric threshold for the split (\code{NA} for
 #'       categorical splits)}
@@ -35,84 +36,52 @@
 #' }
 edgelist.tree <- function(input_object, ...){
   df <- input_object$frame
-  n <- nrow(df)
 
-  # Pre-allocate edge vectors (a binary tree with n nodes has n-1 edges)
-  n_edges <- n - 1L
-  edge_from <- integer(n_edges)
-  edge_to   <- integer(n_edges)
-  edge_idx  <- 0L
+  # tree uses binary heap node IDs: root = 1, left = 2k, right = 2k + 1
+  node_ids <- as.integer(rownames(df))
 
-  df$index <- seq_len(n)
-  is_leaf <- df$var == "<leaf>"
+  # Every non-root node's parent is node_id %/% 2
+  child_ids <- node_ids[node_ids != 1L]
+  parent_ids <- child_ids %/% 2L
+  is_left <- child_ids %% 2L == 0L
 
-  parent_stack <- c()
-  children_count <- c()
+  # Build a lookup: node_id -> row index in df
+  row_lookup <- match(parent_ids, node_ids)
 
-  for (i in seq_len(n)){
-    # If we have a parent waiting for children
-    if (length(parent_stack) > 0) {
-      parent_row <- parent_stack[length(parent_stack)]
-      parent_idx <- df$index[parent_row]
+  # Build label and parsed split columns
+  split_var <- as.character(df$var[row_lookup])
 
-      edge_idx <- edge_idx + 1L
-      edge_from[edge_idx] <- parent_idx
-      edge_to[edge_idx]   <- i
+  # Left child (even) gets cutleft (col 1), right child (odd) gets cutright (col 2)
+  split_str <- ifelse(is_left,
+                      df$splits[row_lookup, 1],
+                      df$splits[row_lookup, 2])
 
-      # Increment children count for this parent
-      children_count[length(children_count)] <- children_count[length(children_count)] + 1
+  # Categorical splits start with ":"
+  is_cat <- grepl("^:", split_str)
+  label <- ifelse(is_cat,
+                  paste0(split_var, split_str),
+                  paste(split_var, split_str))
 
-      # If parent has both children, pop it from stack
-      if (children_count[length(children_count)] == 2) {
-        parent_stack <- parent_stack[-length(parent_stack)]
-        children_count <- children_count[-length(children_count)]
-      }
-    }
+  # Parse operator and threshold from the split string
+  # Numeric splits look like "<5.45" or ">3.35"
+  # Categorical splits look like ":abc"
+  split_op <- rep(NA_character_, length(split_str))
+  split_point <- rep(NA_real_, length(split_str))
 
-    #add current node to parent stack and indicate 0 children
-    if(!is_leaf[i]){
-      parent_stack <- c(parent_stack, i)
-      children_count <- c(children_count, 0)
-    }
-  }
+  is_lt <- grepl("^<", split_str)
+  is_gt <- grepl("^>", split_str)
+  split_op[is_lt] <- "<"
+  split_op[is_gt] <- ">"
+  split_point[is_lt] <- as.numeric(sub("^<", "", split_str[is_lt]))
+  split_point[is_gt] <- as.numeric(sub("^>", "", split_str[is_gt]))
 
-  edges <- data.frame(from = edge_from, to = edge_to)
-
-  ### NOW add labels and parsed split columns
-  edges$label <- NA_character_
-  edges$split_var <- NA_character_
-  edges$split_op <- NA_character_
-  edges$split_point <- NA_real_
-
-  for (i in seq_len(nrow(edges))) {
-    parent_node <- edges$from[i]
-    child_node <- edges$to[i]
-    var <- as.character(df$var[parent_node])
-
-    # Left child (even index) gets column 1, right child (odd) gets column 2
-    split_str <- ifelse(child_node %% 2 == 0,
-                        df$splits[parent_node, 1],
-                        df$splits[parent_node, 2])
-
-    # Categorical splits start with ":" — use paste0 to avoid extra space
-    if (grepl("^:", split_str)) {
-      edges$label[i] <- paste0(var, split_str)
-    } else {
-      edges$label[i] <- paste(var, split_str)
-    }
-    edges$split_var[i] <- var
-
-    # Parse operator and threshold from the split string
-    # Numeric splits look like "<5.45" or ">=3.35"
-    # Categorical splits look like ":abc" or ":adf"
-    if (grepl("^<", split_str)) {
-      edges$split_op[i] <- "<"
-      edges$split_point[i] <- as.numeric(sub("^<", "", split_str))
-    } else if (grepl("^>=", split_str)) {
-      edges$split_op[i] <- ">="
-      edges$split_point[i] <- as.numeric(sub("^>=", "", split_str))
-    }
-    # else: categorical split — op and point remain NA
-  }
-  return(edges)
+  data.frame(
+    from = parent_ids,
+    to = child_ids,
+    label = label,
+    split_var = split_var,
+    split_op = split_op,
+    split_point = split_point,
+    stringsAsFactors = FALSE
+  )
 }

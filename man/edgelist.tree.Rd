@@ -14,11 +14,11 @@
 \value{
 A data.frame with the following columns:
   \describe{
-    \item{from}{Parent node index}
-    \item{to}{Child node index}
+    \item{from}{Parent node ID (binary heap index)}
+    \item{to}{Child node ID (binary heap index)}
     \item{label}{Split condition label (variable and threshold)}
     \item{split_var}{Variable name used for the split}
-    \item{split_op}{Operator: \code{"<"} or \code{">="} for numeric splits,
+    \item{split_op}{Operator: \code{"<"} or \code{">"} for numeric splits,
       \code{NA} for categorical splits}
     \item{split_point}{Numeric threshold for the split (\code{NA} for
       categorical splits)}
@@ -26,9 +26,10 @@ A data.frame with the following columns:
 }
 \description{
 Converts a tree model object (from the tree package) into a network edgelist
-representation. Uses a parent-stack algorithm to traverse the binary tree
-structure and construct parent-child relationships. Each edge is labeled
-with the split condition and parsed into component columns.
+representation. The tree package uses binary heap numbering for node IDs
+(root = 1, left child of k = 2k, right child of k = 2k + 1), so
+parent-child edges are derived directly from the node IDs in
+\code{rownames(input_object$frame)}.
 }
 \examples{
 if (requireNamespace("tree", quietly = TRUE)) {
