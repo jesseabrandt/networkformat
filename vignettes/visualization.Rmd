@@ -198,7 +198,7 @@ cat("Nodes:", vcount(g), " Edges:", ecount(g), "\n")
 dept_pal <- c(STAT = "#5B8DB8", MATH = "#E07B54", DATA = "#6BAF6B", CS = "#9B6BB0")
 
 ggraph(tg_courses, layout = "sugiyama") +
-  geom_edge_link(
+  geom_edge_elbow(
     aes(filter = (directed == TRUE)),
     arrow = arrow(length = unit(2, "mm"), type = "closed"),
     end_cap = circle(8, "mm"), start_cap = circle(8, "mm"),
