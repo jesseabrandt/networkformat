@@ -84,7 +84,7 @@ predicted class. Edge labels show the split condition (e.g. `<5.45`).
 
 # Random forest
 
-`as_tbl_graph(rf, treenum = NULL)` combines all trees into a single graph
+`as_tbl_graph(rf)` combines all trees into a single graph
 with disconnected components --- one per tree. Each node carries a `treenum`
 attribute so you can distinguish them.
 
@@ -92,7 +92,7 @@ attribute so you can distinguish them.
 rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3, maxnodes = 5)
 
 # All 3 trees in one graph
-tg_rf <- as_tbl_graph(rf, treenum = NULL)
+tg_rf <- as_tbl_graph(rf)
 ```
 
 ```{r rf-stats, eval = requireNamespace("randomForest", quietly = TRUE) && requireNamespace("igraph", quietly = TRUE)}
@@ -101,23 +101,26 @@ cat("Nodes:", igraph::vcount(tg_rf), " Edges:", igraph::ecount(tg_rf),
 ```
 
 ```{r rf-plot, eval = requireNamespace("randomForest", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 14, fig.height = 7}
-# Add display columns directly to the graph
+# Map integer prediction indices to class names
 tg_rf <- tg_rf %>%
   mutate(
-    fill_var = ifelse(is_leaf, "leaf", split_var_name),
+    pred_class = rf$classes[replace(prediction, prediction == 0, NA)],
     display_label = ifelse(
-      is_leaf, label,
+      is_leaf, pred_class,
       paste0(split_var_name, "\n< ", round(split_point, 1))
-    )
+    ),
+    fill_var = ifelse(is_leaf, pred_class, split_var_name)
   )
 
-# Palette: one color per predictor variable + muted for leaves
+# Palette: one color per predictor variable + one per predicted class
 node_df <- as.data.frame(tg_rf, what = "vertices")
 predictor_vars <- sort(unique(na.omit(node_df$split_var_name)))
+leaf_classes <- sort(unique(na.omit(node_df$pred_class)))
 var_colors <- c("#3B8EA5", "#D4A373", "#7B68AE", "#E07B54")
+class_colors <- c("#66c2a5", "#fc8d62", "#8da0cb")
 var_pal_rf <- c(
   setNames(var_colors[seq_along(predictor_vars)], predictor_vars),
-  leaf = "#8fbc8f"
+  setNames(class_colors[seq_along(leaf_classes)], leaf_classes)
 )
 
 ggraph(tg_rf, layout = "tree") +
@@ -130,16 +133,15 @@ ggraph(tg_rf, layout = "tree") +
     size = 2.5, colour = "black", fontface = "bold",
     label.padding = unit(0.2, "lines"), label.r = unit(0.15, "lines"),
     alpha = 0.85) +
-  scale_fill_manual(values = var_pal_rf, name = "Split variable") +
+  scale_fill_manual(values = var_pal_rf, name = NULL) +
   theme_graph(base_family = "sans") +
   theme(legend.position = "bottom") +
   labs(title = "Random forest (3 trees)",
        subtitle = "Each disconnected component is one tree")
 ```
 
-All three trees are visible in a single plot. Nodes are colored by the
-split variable they use; leaf nodes are green. Internal node labels show the
-variable and threshold.
+All three trees are visible in a single plot. Internal nodes are colored by
+split variable; leaf nodes are colored by predicted class.
 
 ## Single tree from a forest
 
@@ -148,11 +150,12 @@ For a closer look at one tree:
 ```{r rf-single, eval = requireNamespace("randomForest", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 8, fig.height = 5}
 tg1 <- as_tbl_graph(rf, treenum = 1) %>%
   mutate(
-    fill_var = ifelse(is_leaf, "leaf", split_var_name),
+    pred_class = rf$classes[replace(prediction, prediction == 0, NA)],
     display_label = ifelse(
-      is_leaf, label,
+      is_leaf, pred_class,
       paste0(split_var_name, "\n< ", round(split_point, 1))
-    )
+    ),
+    fill_var = ifelse(is_leaf, pred_class, split_var_name)
   )
 
 ggraph(tg1, layout = "dendrogram") +
@@ -165,7 +168,7 @@ ggraph(tg1, layout = "dendrogram") +
   geom_node_text(
     aes(label = display_label),
     colour = "black", size = 2.5, fontface = "bold") +
-  scale_fill_manual(values = var_pal_rf, name = "Split variable") +
+  scale_fill_manual(values = var_pal_rf, name = NULL) +
   theme_graph(base_family = "sans") +
   theme(legend.position = "bottom") +
   labs(title = "Tree 1 from the random forest")
@@ -180,13 +183,13 @@ departments, with prerequisite and crosslist relationships.
 ```{r courses-net, eval = requireNamespace("igraph", quietly = TRUE) && requireNamespace("ggraph", quietly = TRUE), fig.width = 10, fig.height = 7, message = FALSE}
 library(igraph)
 
-all_edges <- edgelist(courses, source_cols = course,
-                      target_cols = c(prereq, prereq2, crosslist),
-                      symmetric_cols = crosslist)
-
-# Reverse prereq arrows so they point from prereq -> dependent course
-directed_rows <- all_edges$directed
-all_edges[directed_rows, c("from", "to")] <- all_edges[directed_rows, c("to", "from")]
+# Prereqs as source so arrows naturally point prereq -> course;
+# crosslist is undirected, so its direction doesn't matter
+all_edges <- edgelist(courses,
+                      source_cols = c(prereq, prereq2, crosslist),
+                      target_cols = course)
+all_edges$directed <- all_edges$from_col != "crosslist"
+all_edges <- all_edges[all_edges$directed | all_edges$from < all_edges$to, ]
 
 nodes <- nodelist(courses, id_col = course)
 g <- graph_from_data_frame(all_edges, vertices = nodes)
@@ -208,12 +211,8 @@ ggraph(tg_courses, layout = "stress") +
     width = 0.8, colour = "#9B59B6", linetype = "dashed") +
   geom_node_label(
     aes(label = name, fill = dept),
-    colour = "black", fontface = "bold", size = 3,
-    label.padding = unit(0.3, "lines"), label.r = unit(0.2, "lines"),
-    label.size = 0.4, alpha = 0.2) +
-  geom_node_text(
-    aes(label = name),
-    colour = "black", fontface = "bold", size = 3) +
+    colour = "white", fontface = "bold", size = 3,
+    label.padding = unit(0.3, "lines"), label.r = unit(0.2, "lines")) +
   scale_fill_manual(values = dept_pal, name = "Department") +
   theme_graph(base_family = "sans") +
   theme(legend.position = "bottom") +

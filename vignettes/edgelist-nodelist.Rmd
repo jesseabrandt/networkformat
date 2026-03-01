@@ -323,10 +323,10 @@ print(sort(deg_out[deg_out > 0], decreasing = TRUE))
 | Input class | `treenum` | Returns |
 |-------------|-----------|---------|
 | `tree` | --- | single graph |
-| `randomForest` | `1` (default) | single graph (one tree) |
-| `randomForest` | `NULL` | single graph (all trees as disconnected components) |
+| `randomForest` | `NULL` (default) | single graph (all trees as disconnected components) |
+| `randomForest` | `1` | single graph (one tree) |
 | `rpart` | --- | single graph |
-| `xgb.Booster` | `1` (default) | single graph (one tree) |
-| `xgb.Booster` | `NULL` | single graph (all trees, globally unique string IDs) |
-| `gbm` | `1` (default) | single graph (one tree) |
-| `gbm` | `NULL` | single graph (all trees as disconnected components) |
+| `xgb.Booster` | `NULL` (default) | single graph (all trees, globally unique string IDs) |
+| `xgb.Booster` | `1` | single graph (one tree) |
+| `gbm` | `NULL` (default) | single graph (all trees as disconnected components) |
+| `gbm` | `1` | single graph (one tree) |

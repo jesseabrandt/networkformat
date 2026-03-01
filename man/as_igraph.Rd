@@ -13,13 +13,13 @@ as_igraph(x, ...)
 
 \method{as_igraph}{tree}(x, ...)
 
-\method{as_igraph}{randomForest}(x, treenum = 1L, ...)
+\method{as_igraph}{randomForest}(x, treenum = NULL, ...)
 
 \method{as_igraph}{rpart}(x, ...)
 
-\method{as_igraph}{xgb.Booster}(x, treenum = 1L, ...)
+\method{as_igraph}{xgb.Booster}(x, treenum = NULL, ...)
 
-\method{as_igraph}{gbm}(x, treenum = 1L, ...)
+\method{as_igraph}{gbm}(x, treenum = NULL, ...)
 }
 \arguments{
 \item{x}{An object to convert (\code{tree}, \code{randomForest},
@@ -28,9 +28,9 @@ as_igraph(x, ...)
 \item{...}{Additional arguments passed to methods.}
 
 \item{treenum}{Integer vector of tree numbers to extract. Default
-\code{1} returns a single graph for the first tree.  Use
-\code{NULL} to get all trees combined into one graph with
-disconnected components.}
+\code{NULL} returns all trees combined into one graph with
+disconnected components.  Pass a single integer (e.g. \code{1})
+to extract one tree.}
 }
 \value{
 An \code{\link[igraph]{igraph}} object.  For

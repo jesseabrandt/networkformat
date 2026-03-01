@@ -24,10 +24,11 @@ as_tbl_graph.tree <- function(x, ...) {
 
 #' @rdname as_tbl_graph
 #' @param treenum Integer vector of tree numbers to extract. Default
-#'   \code{1} returns a single tbl_graph for the first tree.  Use
-#'   \code{NULL} to get all trees combined into one graph.
+#'   \code{NULL} returns all trees combined into one graph with
+#'   disconnected components.  Pass a single integer (e.g. \code{1})
+#'   to extract one tree.
 #' @exportS3Method tidygraph::as_tbl_graph
-as_tbl_graph.randomForest <- function(x, treenum = 1L, ...) {
+as_tbl_graph.randomForest <- function(x, treenum = NULL, ...) {
   if (!requireNamespace("tidygraph", quietly = TRUE)) {
     stop("Package 'tidygraph' is required. Install it with install.packages('tidygraph').")
   }
@@ -45,7 +46,7 @@ as_tbl_graph.rpart <- function(x, ...) {
 
 #' @rdname as_tbl_graph
 #' @exportS3Method tidygraph::as_tbl_graph
-as_tbl_graph.xgb.Booster <- function(x, treenum = 1L, ...) {
+as_tbl_graph.xgb.Booster <- function(x, treenum = NULL, ...) {
   if (!requireNamespace("tidygraph", quietly = TRUE)) {
     stop("Package 'tidygraph' is required. Install it with install.packages('tidygraph').")
   }
@@ -54,7 +55,7 @@ as_tbl_graph.xgb.Booster <- function(x, treenum = 1L, ...) {
 
 #' @rdname as_tbl_graph
 #' @exportS3Method tidygraph::as_tbl_graph
-as_tbl_graph.gbm <- function(x, treenum = 1L, ...) {
+as_tbl_graph.gbm <- function(x, treenum = NULL, ...) {
   if (!requireNamespace("tidygraph", quietly = TRUE)) {
     stop("Package 'tidygraph' is required. Install it with install.packages('tidygraph').")
   }

@@ -13,3 +13,5 @@
 ^\.claude$
 ^doc$
 ^Meta$
+^vignettes/articles$
+^_pkgdown\.yml$

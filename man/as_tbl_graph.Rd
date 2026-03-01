@@ -11,13 +11,13 @@
 \usage{
 \method{as_tbl_graph}{tree}(x, ...)
 
-\method{as_tbl_graph}{randomForest}(x, treenum = 1L, ...)
+\method{as_tbl_graph}{randomForest}(x, treenum = NULL, ...)
 
 \method{as_tbl_graph}{rpart}(x, ...)
 
-\method{as_tbl_graph}{xgb.Booster}(x, treenum = 1L, ...)
+\method{as_tbl_graph}{xgb.Booster}(x, treenum = NULL, ...)
 
-\method{as_tbl_graph}{gbm}(x, treenum = 1L, ...)
+\method{as_tbl_graph}{gbm}(x, treenum = NULL, ...)
 }
 \arguments{
 \item{x}{An object to convert (currently \code{tree},
@@ -27,8 +27,9 @@
 \item{...}{Additional arguments passed to \code{as_igraph}.}
 
 \item{treenum}{Integer vector of tree numbers to extract. Default
-\code{1} returns a single tbl_graph for the first tree.  Use
-\code{NULL} to get all trees combined into one graph.}
+\code{NULL} returns all trees combined into one graph with
+disconnected components.  Pass a single integer (e.g. \code{1})
+to extract one tree.}
 }
 \value{
 A \code{\link[tidygraph]{tbl_graph}} object.

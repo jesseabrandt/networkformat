@@ -64,15 +64,15 @@ The package uses **S3 method dispatch** with four groups of functions:
 | Method | Input | Key Parameters | Returns |
 |--------|-------|---------------|---------|
 | `as_igraph.tree` | tree | | igraph |
-| `as_igraph.randomForest` | randomForest | `treenum` (default `1`) | igraph (multiple trees = disconnected components) |
+| `as_igraph.randomForest` | randomForest | `treenum` (default `NULL` = all) | igraph (multiple trees = disconnected components) |
 | `as_igraph.rpart` | rpart | | igraph |
-| `as_igraph.xgb.Booster` | xgb.Booster | `treenum` (default `1`) | igraph (string IDs, globally unique) |
-| `as_igraph.gbm` | gbm | `treenum` (default `1`) | igraph (multi-tree: prefixed IDs) |
+| `as_igraph.xgb.Booster` | xgb.Booster | `treenum` (default `NULL` = all) | igraph (string IDs, globally unique) |
+| `as_igraph.gbm` | gbm | `treenum` (default `NULL` = all) | igraph (multi-tree: prefixed IDs) |
 | `as_tbl_graph.tree` | tree | | tbl_graph |
-| `as_tbl_graph.randomForest` | randomForest | `treenum` (default `1`) | tbl_graph |
+| `as_tbl_graph.randomForest` | randomForest | `treenum` (default `NULL` = all) | tbl_graph |
 | `as_tbl_graph.rpart` | rpart | | tbl_graph |
-| `as_tbl_graph.xgb.Booster` | xgb.Booster | `treenum` (default `1`) | tbl_graph |
-| `as_tbl_graph.gbm` | gbm | `treenum` (default `1`) | tbl_graph |
+| `as_tbl_graph.xgb.Booster` | xgb.Booster | `treenum` (default `NULL` = all) | tbl_graph |
+| `as_tbl_graph.gbm` | gbm | `treenum` (default `NULL` = all) | tbl_graph |
 
 Node IDs in nodelist outputs match the from/to columns in the corresponding edgelist, so they can be passed directly to `igraph::graph_from_data_frame()`.
 
@@ -119,6 +119,11 @@ Each S3 method lives in its own file: `R/edgelist.R` (generic), `R/edgelist.data
 - Test files: `test-edgelist.R` (~165 tests), `test-nodelist.R` (~112 tests), `test-as_igraph.R`
 - Tests for randomForest/tree use `skip_if_not_installed()`
 - The overlap warning in `test-edgelist.R` is expected (tests that `attr_cols` overlap triggers a warning)
+
+## Comments and Documentation Style
+
+- Comments should describe what code does, not how it differs from a previous version. Avoid words like "now", "already", "instead", "no longer", or "changed to" that frame current behavior relative to past behavior.
+- Vignette prose should read as a standalone guide for the user, not a changelog.
 
 ## Vignettes
 

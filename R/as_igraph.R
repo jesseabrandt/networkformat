@@ -29,11 +29,11 @@ as_igraph.tree <- function(x, ...) {
 
 #' @rdname as_igraph
 #' @param treenum Integer vector of tree numbers to extract. Default
-#'   \code{1} returns a single graph for the first tree.  Use
-#'   \code{NULL} to get all trees combined into one graph with
-#'   disconnected components.
+#'   \code{NULL} returns all trees combined into one graph with
+#'   disconnected components.  Pass a single integer (e.g. \code{1})
+#'   to extract one tree.
 #' @export
-as_igraph.randomForest <- function(x, treenum = 1L, ...) {
+as_igraph.randomForest <- function(x, treenum = NULL, ...) {
   if (!requireNamespace("igraph", quietly = TRUE)) {
     stop("Package 'igraph' is required. Install it with install.packages('igraph').")
   }
@@ -77,7 +77,7 @@ as_igraph.rpart <- function(x, ...) {
 
 #' @rdname as_igraph
 #' @export
-as_igraph.xgb.Booster <- function(x, treenum = 1L, ...) {
+as_igraph.xgb.Booster <- function(x, treenum = NULL, ...) {
   if (!requireNamespace("igraph", quietly = TRUE)) {
     stop("Package 'igraph' is required. Install it with install.packages('igraph').")
   }
@@ -90,7 +90,7 @@ as_igraph.xgb.Booster <- function(x, treenum = 1L, ...) {
 
 #' @rdname as_igraph
 #' @export
-as_igraph.gbm <- function(x, treenum = 1L, ...) {
+as_igraph.gbm <- function(x, treenum = NULL, ...) {
   if (!requireNamespace("igraph", quietly = TRUE)) {
     stop("Package 'igraph' is required. Install it with install.packages('igraph').")
   }
