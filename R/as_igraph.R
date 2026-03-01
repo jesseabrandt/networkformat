@@ -5,8 +5,8 @@
 #' \code{\link{edgelist}} and \code{\link{nodelist}} internally and
 #' handle column reconciliation so you get a ready-to-use graph.
 #'
-#' @param x An object to convert (currently \code{tree} or
-#'   \code{randomForest}).
+#' @param x An object to convert (\code{tree}, \code{randomForest},
+#'   \code{rpart}, \code{xgb.Booster}, or \code{gbm}).
 #' @param ... Additional arguments passed to methods.
 #'
 #' @returns An \code{\link[igraph]{igraph}} object.  For

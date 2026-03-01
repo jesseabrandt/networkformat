@@ -10,24 +10,24 @@
 \item{input_object}{An xgboost model object (\code{xgb.Booster})}
 
 \item{treenum}{Integer vector of 1-based tree numbers to extract
-  (default: \code{NULL} extracts all trees).}
+(default: \code{NULL} extracts all trees).}
 
 \item{...}{Additional arguments (currently unused)}
 }
 \value{
 A data.frame with one row per node and the following columns:
-\describe{
-  \item{name}{Node ID string (\code{"Tree-Node"} format, matches
-    edgelist from/to)}
-  \item{is_leaf}{Logical: \code{TRUE} for leaf nodes}
-  \item{feature}{Split variable name (\code{NA} for leaves)}
-  \item{split}{Split threshold (\code{NA} for leaves)}
-  \item{quality}{Information gain for splits, leaf score for leaves}
-  \item{cover}{Cover (sum of second-order gradient)}
-  \item{treenum}{1-based tree number}
-  \item{label}{Display label: feature name for splits, leaf score
-    for leaves}
-}
+  \describe{
+    \item{name}{Node ID string (\code{"Tree-Node"} format, matches
+      edgelist from/to)}
+    \item{is_leaf}{Logical: \code{TRUE} for leaf nodes}
+    \item{feature}{Split variable name (\code{NA} for leaves)}
+    \item{split}{Split threshold (\code{NA} for leaves)}
+    \item{quality}{Information gain for splits, leaf score for leaves}
+    \item{cover}{Cover (sum of second-order gradient)}
+    \item{treenum}{1-based tree number}
+    \item{label}{Display label: feature name for splits, leaf score
+      for leaves}
+  }
 }
 \description{
 Extracts node-level attributes from an xgboost model via

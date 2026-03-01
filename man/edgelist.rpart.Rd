@@ -30,7 +30,8 @@ The rpart package uses binary heap numbering for node IDs
 (root = 1, left child of k = 2k, right child of k = 2k + 1), so
 parent-child edges are derived directly from the node IDs in
 \code{rownames(input_object$frame)}.
-
+}
+\details{
 Edge labels come from \code{labels(input_object, collapse = TRUE)},
 which correctly handles the \code{ncat} sign that controls split
 direction (left child does not always get \code{"<"}).

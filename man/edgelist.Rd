@@ -19,7 +19,8 @@ A data.frame representing an edgelist. The specific columns depend
 Generic function to extract a network edgelist from various object types.
 Methods exist for atomic vectors (sequential edges), data frames
 (column-pair edges), and tree-based model objects (\code{randomForest},
-\code{tree}).  The specific columns returned depend on the input type.
+\code{tree}, \code{rpart}, \code{xgb.Booster}, \code{gbm}).
+The specific columns returned depend on the input type.
 }
 \examples{
 # Vector --- sequential edges

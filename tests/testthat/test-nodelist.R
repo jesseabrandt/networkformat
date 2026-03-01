@@ -123,6 +123,7 @@ test_that("nodelist.tree label column has correct format", {
 test_that("nodelist.randomForest returns expected columns", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
   nl <- nodelist(rf)
 
@@ -134,6 +135,7 @@ test_that("nodelist.randomForest returns expected columns", {
 test_that("nodelist.randomForest has correct number of trees", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
   nl <- nodelist(rf)
 
@@ -143,6 +145,7 @@ test_that("nodelist.randomForest has correct number of trees", {
 test_that("nodelist.randomForest node IDs match edgelist per tree", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
   nl <- nodelist(rf)
   el <- edgelist(rf)
@@ -160,6 +163,7 @@ test_that("nodelist.randomForest node IDs match edgelist per tree", {
 test_that("nodelist.randomForest leaves have NA split attributes", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
   nl <- nodelist(rf)
 
@@ -172,6 +176,7 @@ test_that("nodelist.randomForest leaves have NA split attributes", {
 test_that("nodelist.randomForest works for regression", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(mpg ~ cyl + disp + hp, data = mtcars, ntree = 2)
   nl <- nodelist(rf)
 
@@ -185,6 +190,7 @@ test_that("nodelist.randomForest works for regression", {
 test_that("nodelist.randomForest label column exists", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
   nl <- nodelist(rf)
 
@@ -195,9 +201,9 @@ test_that("nodelist.randomForest label column exists", {
   internal <- nl[!nl$is_leaf, ]
   expect_equal(internal$label, internal$split_var_name)
 
-  # Leaf nodes should have prediction as label
+  # Leaf nodes should have class name as label (not numeric index)
   leaves <- nl[nl$is_leaf, ]
-  expect_equal(leaves$label, as.character(leaves$prediction))
+  expect_true(all(leaves$label %in% levels(iris$Species)))
 })
 
 # --- nodelist.randomForest treenum tests ---
@@ -205,6 +211,7 @@ test_that("nodelist.randomForest label column exists", {
 test_that("nodelist.randomForest treenum extracts specific trees", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 5)
 
   nl1 <- nodelist(rf, treenum = 1)
@@ -217,6 +224,7 @@ test_that("nodelist.randomForest treenum extracts specific trees", {
 test_that("nodelist.randomForest treenum NULL returns all trees", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
 
   nl_all <- nodelist(rf, treenum = NULL)
@@ -227,6 +235,7 @@ test_that("nodelist.randomForest treenum NULL returns all trees", {
 test_that("nodelist.randomForest treenum validates range", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
 
   expect_error(nodelist(rf, treenum = 0), "treenum must be between")

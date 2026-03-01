@@ -32,6 +32,10 @@
 #'   nodelist(fit)$label
 #' }
 nodelist.rpart <- function(input_object, ...) {
+  if (!requireNamespace("rpart", quietly = TRUE)) {
+    stop("Package 'rpart' is required. Install it with install.packages('rpart').")
+  }
+
   frame <- input_object$frame
   is_leaf <- frame$var == "<leaf>"
 

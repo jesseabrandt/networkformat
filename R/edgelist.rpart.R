@@ -36,6 +36,10 @@
 #'   el[, c("split_var", "split_op", "split_point")]
 #' }
 edgelist.rpart <- function(input_object, ...) {
+  if (!requireNamespace("rpart", quietly = TRUE)) {
+    stop("Package 'rpart' is required. Install it with install.packages('rpart').")
+  }
+
   frame <- input_object$frame
 
   # rpart uses binary heap node IDs: root = 1, left = 2k, right = 2k + 1

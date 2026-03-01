@@ -165,7 +165,7 @@ syntax --- bare names, strings, numbers, or helpers like `starts_with()`.
 ```{r df-basic}
 courses
 
-edgelist(courses, source_cols = course, target_cols = (prereq))
+edgelist(courses, source_cols = course, target_cols = prereq)
 ```
 
 ### Multiple target columns
@@ -302,6 +302,9 @@ print(sort(deg_out[deg_out > 0], decreasing = TRUE))
 | `data.frame` | `from`, `to`, `from_col`, `to_col`, [`directed`], [`weight`], `<attr_cols>` |
 | `tree` | `from`, `to`, `label`, `split_var`, `split_op`, `split_point` |
 | `randomForest` | `from`, `to`, `split_var`, `split_point`, `prediction`, `treenum`, `split_var_name` |
+| `rpart` | `from`, `to`, `label`, `split_var`, `split_op`, `split_point` |
+| `xgb.Booster` | `from`, `to`, `feature`, `split`, `quality`, `cover`, `treenum` |
+| `gbm` | `from`, `to`, `split_var`, `split_point`, `prediction`, `treenum`, `split_var_name` |
 
 ## nodelist()
 
@@ -311,6 +314,9 @@ print(sort(deg_out[deg_out > 0], decreasing = TRUE))
 | `data.frame` | Reordered input (ID column first) |
 | `tree` | `name`, `var`, `n`, `dev`, `yval`, `is_leaf`, `label` |
 | `randomForest` | `name`, `is_leaf`, `split_var`, `split_var_name`, `split_point`, `prediction`, `treenum`, `label` |
+| `rpart` | `name`, `var`, `n`, `dev`, `yval`, `is_leaf`, `label` |
+| `xgb.Booster` | `name`, `is_leaf`, `feature`, `split`, `quality`, `cover`, `treenum`, `label` |
+| `gbm` | `name`, `is_leaf`, `split_var`, `split_var_name`, `split_point`, `prediction`, `treenum`, `label` |
 
 ## as_igraph() / as_tbl_graph()
 
@@ -319,3 +325,8 @@ print(sort(deg_out[deg_out > 0], decreasing = TRUE))
 | `tree` | --- | single graph |
 | `randomForest` | `1` (default) | single graph (one tree) |
 | `randomForest` | `NULL` | single graph (all trees as disconnected components) |
+| `rpart` | --- | single graph |
+| `xgb.Booster` | `1` (default) | single graph (one tree) |
+| `xgb.Booster` | `NULL` | single graph (all trees, globally unique string IDs) |
+| `gbm` | `1` (default) | single graph (one tree) |
+| `gbm` | `NULL` | single graph (all trees as disconnected components) |

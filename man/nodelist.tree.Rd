@@ -13,17 +13,17 @@
 }
 \value{
 A data.frame with one row per node and the following columns:
-\describe{
-  \item{name}{Integer node ID (binary heap index, matches edgelist from/to)}
-  \item{var}{Split variable name, or \code{"<leaf>"} for terminal nodes}
-  \item{n}{Number of observations routed to this node}
-  \item{dev}{Deviance (impurity) at this node}
-  \item{yval}{Predicted value (numeric for regression, character for
-    classification)}
-  \item{is_leaf}{Logical: \code{TRUE} for terminal nodes}
-  \item{label}{Display label: \code{"<var>\\nn=<n>"} for internal nodes,
-    \code{"<yval>\\nn=<n>"} for leaves}
-}
+  \describe{
+    \item{name}{Integer node ID (binary heap index, matches edgelist from/to)}
+    \item{var}{Split variable name, or \code{"<leaf>"} for terminal nodes}
+    \item{n}{Number of observations routed to this node}
+    \item{dev}{Deviance (impurity) at this node}
+    \item{yval}{Predicted value (numeric for regression, character for
+      classification)}
+    \item{is_leaf}{Logical: \code{TRUE} for terminal nodes}
+    \item{label}{Display label: \code{"<var>\\nn=<n>"} for internal nodes,
+      \code{"<yval>\\nn=<n>"} for leaves}
+  }
 }
 \description{
 Extracts node-level attributes from a \code{tree} model object.

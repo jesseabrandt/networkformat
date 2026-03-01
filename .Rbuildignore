@@ -11,3 +11,5 @@
 ^data-raw$
 ^dev$
 ^\.claude$
+^doc$
+^Meta$

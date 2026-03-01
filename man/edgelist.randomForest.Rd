@@ -10,8 +10,8 @@
 \item{input_object}{A randomForest model object from the randomForest package}
 
 \item{treenum}{Integer vector of tree numbers to extract (default:
-  \code{NULL} extracts all trees). Values must be between 1 and
-  \code{input_object$ntree}.}
+\code{NULL} extracts all trees). Values must be between 1 and
+\code{input_object$ntree}.}
 
 \item{...}{Additional arguments (currently unused)}
 }

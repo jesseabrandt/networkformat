@@ -35,6 +35,10 @@
 #'   tree_edges[, c("split_var", "split_op", "split_point")]
 #' }
 edgelist.tree <- function(input_object, ...){
+  if (!requireNamespace("tree", quietly = TRUE)) {
+    stop("Package 'tree' is required. Install it with install.packages('tree').")
+  }
+
   df <- input_object$frame
 
   # tree uses binary heap node IDs: root = 1, left = 2k, right = 2k + 1

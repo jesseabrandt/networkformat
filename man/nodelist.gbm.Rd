@@ -10,23 +10,23 @@
 \item{input_object}{A gbm model object from the \pkg{gbm} package}
 
 \item{treenum}{Integer vector of 1-based tree numbers to extract
-  (default: \code{NULL} extracts all trees).}
+(default: \code{NULL} extracts all trees).}
 
 \item{...}{Additional arguments (currently unused)}
 }
 \value{
 A data.frame with one row per real node and the following columns:
-\describe{
-  \item{name}{0-based node ID within the tree}
-  \item{is_leaf}{Logical: \code{TRUE} for terminal nodes}
-  \item{split_var}{0-based variable index (\code{NA} for leaves)}
-  \item{split_var_name}{Variable name (\code{NA} for leaves)}
-  \item{split_point}{Split threshold (\code{NA} for leaves)}
-  \item{prediction}{Prediction value at the node}
-  \item{treenum}{1-based tree number}
-  \item{label}{Display label: variable name for splits, prediction
-    for leaves}
-}
+  \describe{
+    \item{name}{0-based node ID within the tree}
+    \item{is_leaf}{Logical: \code{TRUE} for terminal nodes}
+    \item{split_var}{0-based variable index (\code{NA} for leaves)}
+    \item{split_var_name}{Variable name (\code{NA} for leaves)}
+    \item{split_point}{Split threshold (\code{NA} for leaves)}
+    \item{prediction}{Prediction value at the node}
+    \item{treenum}{1-based tree number}
+    \item{label}{Display label: variable name for splits, prediction
+      for leaves}
+  }
 }
 \description{
 Extracts node-level attributes from a gbm model via

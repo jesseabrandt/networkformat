@@ -20,7 +20,7 @@
 #'   \describe{
 #'     \item{from}{Parent node ID (0-based integer)}
 #'     \item{to}{Child node ID (0-based integer)}
-#'     \item{split_var}{0-based variable index (\code{NA} for leaves)}
+#'     \item{split_var}{0-based variable index}
 #'     \item{split_point}{Split threshold for continuous variables, or
 #'       \code{c.splits} index for categorical variables}
 #'     \item{prediction}{Prediction value at the child node}
@@ -51,12 +51,12 @@ edgelist.gbm <- function(input_object, treenum = NULL, ...) {
   tree_indices <- if (is.null(treenum)) {
     seq_len(n_physical)
   } else {
-    treenum <- as.integer(treenum)
-    if (!all(treenum >= 1L & treenum <= n_physical)) {
+    treenum_int <- as.integer(treenum)
+    if (!all(treenum_int >= 1L & treenum_int <= n_physical)) {
       stop("treenum must be between 1 and ", n_physical,
            "; got: ", paste(treenum, collapse = ", "))
     }
-    treenum
+    treenum_int
   }
 
   convert_tree <- function(tn) {

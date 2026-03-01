@@ -10,7 +10,7 @@
 \item{input_object}{An xgboost model object (\code{xgb.Booster})}
 
 \item{treenum}{Integer vector of 1-based tree numbers to extract
-  (default: \code{NULL} extracts all trees).}
+(default: \code{NULL} extracts all trees).}
 
 \item{...}{Additional arguments (currently unused)}
 }

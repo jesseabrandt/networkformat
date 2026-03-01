@@ -33,7 +33,10 @@ parent-child edges are derived directly from the node IDs in
 }
 \examples{
 if (requireNamespace("tree", quietly = TRUE)) {
+  # Fit a classification tree
   tree_model <- tree::tree(Species ~ ., data = iris)
+
+  # Extract edgelist
   tree_edges <- edgelist(tree_model)
   head(tree_edges)
 

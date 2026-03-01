@@ -15,13 +15,6 @@ Vignettes:
   \item \code{vignette("edgelist-nodelist")} --- edgelist and nodelist usage
   \item \code{vignette("visualization")} --- ggraph visualization examples
 }
-
-Useful links:
-\itemize{
-  \item \url{https://github.com/jesseabrandt/networkformat}
-  \item Report bugs at \url{https://github.com/jesseabrandt/networkformat/issues}
-}
-
 }
 \author{
 \strong{Maintainer}: Jesse Brandt \email{jesseabrandt@users.noreply.github.com} (\href{https://orcid.org/0009-0005-7462-075X}{ORCID})

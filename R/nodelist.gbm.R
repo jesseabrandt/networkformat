@@ -43,17 +43,16 @@ nodelist.gbm <- function(input_object, treenum = NULL, ...) {
   tree_indices <- if (is.null(treenum)) {
     seq_len(n_physical)
   } else {
-    treenum <- as.integer(treenum)
-    if (!all(treenum >= 1L & treenum <= n_physical)) {
+    treenum_int <- as.integer(treenum)
+    if (!all(treenum_int >= 1L & treenum_int <= n_physical)) {
       stop("treenum must be between 1 and ", n_physical,
            "; got: ", paste(treenum, collapse = ", "))
     }
-    treenum
+    treenum_int
   }
 
   convert_tree <- function(tn) {
     pt <- gbm::pretty.gbm.tree(input_object, i.tree = tn)
-    all_ids <- as.integer(rownames(pt))
 
     # Find real nodes by traversing from root (node 0) via LeftNode/RightNode
     internal <- pt[pt$SplitVar != -1, ]

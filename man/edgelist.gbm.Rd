@@ -10,8 +10,8 @@
 \item{input_object}{A gbm model object from the \pkg{gbm} package}
 
 \item{treenum}{Integer vector of 1-based tree numbers to extract
-  (default: \code{NULL} extracts all trees).  For multinomial models,
-  this indexes physical trees (not boosting iterations).}
+(default: \code{NULL} extracts all trees).  For multinomial models,
+this indexes physical trees (not boosting iterations).}
 
 \item{...}{Additional arguments (currently unused)}
 }
@@ -20,7 +20,7 @@ A data.frame with the following columns:
   \describe{
     \item{from}{Parent node ID (0-based integer)}
     \item{to}{Child node ID (0-based integer)}
-    \item{split_var}{0-based variable index (\code{NA} for leaves)}
+    \item{split_var}{0-based variable index}
     \item{split_point}{Split threshold for continuous variables, or
       \code{c.splits} index for categorical variables}
     \item{prediction}{Prediction value at the child node}
@@ -33,7 +33,8 @@ Converts a gbm model object into a network edgelist representation
 using \code{pretty.gbm.tree()}.  Missing-sentinel nodes (the phantom
 routing nodes gbm creates for NA handling) are excluded — only real
 \code{LeftNode}/\code{RightNode} edges are returned.
-
+}
+\details{
 Node IDs are 0-based integers per tree.  For models with
 \code{num.classes > 1} (multinomial), physical trees are stored as
 \code{n.trees * num.classes} entries; \code{treenum} indexes into

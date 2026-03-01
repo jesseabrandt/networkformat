@@ -41,14 +41,19 @@
 #'   rf_edges_13 <- edgelist(rf_model, treenum = c(1, 3))
 #' }
 edgelist.randomForest <- function(input_object, treenum = NULL, ...){
+  if (!requireNamespace("randomForest", quietly = TRUE)) {
+    stop("Package 'randomForest' is required. Install it with install.packages('randomForest').")
+  }
+
   tree_indices <- if (is.null(treenum)) {
     seq_len(input_object$ntree)
   } else {
-    if (!all(treenum >= 1 & treenum <= input_object$ntree)) {
+    treenum_int <- as.integer(treenum)
+    if (!all(treenum_int >= 1L & treenum_int <= input_object$ntree)) {
       stop("treenum must be between 1 and ", input_object$ntree,
            "; got: ", paste(treenum, collapse = ", "))
     }
-    as.integer(treenum)
+    treenum_int
   }
 
   convert_tree <- function(tn){

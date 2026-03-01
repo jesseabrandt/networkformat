@@ -14,7 +14,8 @@ Description: Converts R objects into network edgelist and nodelist format for
     visualization and analysis with packages like 'igraph', 'tidygraph', and
     'ggraph'. Works with atomic vectors (sequential edges), data frames
     (column-pair edges with tidyselect), and tree-based model objects
-    ('randomForest', 'tree'). Also provides one-step graph construction
+    ('randomForest', 'tree', 'rpart', 'xgboost', 'gbm'). Also provides
+    one-step graph construction
     via as_igraph() and as_tbl_graph() methods for tree models.
 License: MIT + file LICENSE
 Encoding: UTF-8
@@ -23,7 +24,6 @@ RoxygenNote: 7.3.3
 Depends:
     R (>= 3.6.0)
 Imports:
-    methods,
     rlang,
     tidyselect
 Suggests:

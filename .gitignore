@@ -6,3 +6,5 @@
 inst/doc
 *.html
 *.pdf
+/doc/
+/Meta/

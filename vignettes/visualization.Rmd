@@ -182,7 +182,6 @@ library(igraph)
 
 all_edges <- edgelist(courses, source_cols = course,
                       target_cols = c(prereq, prereq2, crosslist),
-                      attr_cols = c(),
                       symmetric_cols = crosslist)
 
 # Reverse prereq arrows so they point from prereq -> dependent course
@@ -197,26 +196,29 @@ cat("Nodes:", vcount(g), " Edges:", ecount(g), "\n")
 
 dept_pal <- c(STAT = "#5B8DB8", MATH = "#E07B54", DATA = "#6BAF6B", CS = "#9B6BB0")
 
-ggraph(tg_courses, layout = "sugiyama") +
-  geom_edge_elbow(
-    aes(filter = (directed == TRUE)),
+ggraph(tg_courses, layout = "stress") +
+  geom_edge_link(
+    aes(filter = directed),
     arrow = arrow(length = unit(2, "mm"), type = "closed"),
-    end_cap = circle(8, "mm"), start_cap = circle(8, "mm"),
-    edge_width = 0.5, colour = "grey45") +
-  geom_edge_arc(
-    aes(filter = (directed == FALSE)),
+    end_cap = circle(8, "mm"),
+    width = 0.5, colour = "grey45") +
+  geom_edge_link(
+    aes(filter = !directed),
     end_cap = circle(6, "mm"), start_cap = circle(6, "mm"),
-    edge_width = 0.8, colour = "#9B59B6", linetype = "dashed",
-    strength = 0.3) +
+    width = 0.8, colour = "#9B59B6", linetype = "dashed") +
   geom_node_label(
     aes(label = name, fill = dept),
-    colour = "white", fontface = "bold", size = 3,
-    label.padding = unit(0.3, "lines"), label.r = unit(0.2, "lines")) +
+    colour = "black", fontface = "bold", size = 3,
+    label.padding = unit(0.3, "lines"), label.r = unit(0.2, "lines"),
+    label.size = 0.4, alpha = 0.2) +
+  geom_node_text(
+    aes(label = name),
+    colour = "black", fontface = "bold", size = 3) +
   scale_fill_manual(values = dept_pal, name = "Department") +
   theme_graph(base_family = "sans") +
   theme(legend.position = "bottom") +
   labs(title = "Course prerequisite network",
-       subtitle = "Solid arrows = prerequisites  |  Dashed curves = crosslists")
+       subtitle = "Arrows point from prerequisite to dependent course  |  Dashed = crosslisted")
 ```
 
 For the full data frame workflow --- column selection, `na.rm`, `attr_cols`,

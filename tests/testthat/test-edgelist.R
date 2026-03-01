@@ -3,6 +3,7 @@
 test_that("edgelist.randomForest produces data frame with expected structure", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
   el <- edgelist(rf)
 
@@ -15,6 +16,7 @@ test_that("edgelist.randomForest produces data frame with expected structure", {
 test_that("edgelist.randomForest includes split variable names", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(mpg ~ cyl + disp + hp, data = mtcars, ntree = 2)
   el <- edgelist(rf)
 
@@ -64,6 +66,7 @@ test_that("edgelist.default raises error for unsupported types", {
 test_that("edgelist generic dispatches to correct method", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 1)
   df <- data.frame(from = 1:3, to = 2:4)
 
@@ -79,6 +82,7 @@ test_that("edgelist generic dispatches to correct method", {
 test_that("edgelist.randomForest handles single tree forest", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf_single <- randomForest::randomForest(Species ~ ., data = iris, ntree = 1)
   el <- edgelist(rf_single)
 
@@ -90,6 +94,7 @@ test_that("edgelist.randomForest handles single tree forest", {
 test_that("edgelist.randomForest validates model structure", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(mpg ~ ., data = mtcars, ntree = 2)
   el <- edgelist(rf)
 
@@ -341,6 +346,7 @@ test_that("edgelist.data.frame symmetric_cols works with na.rm", {
 test_that("edgelist.randomForest treenum extracts specific trees", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 5)
 
   el1 <- edgelist(rf, treenum = 1)
@@ -353,6 +359,7 @@ test_that("edgelist.randomForest treenum extracts specific trees", {
 test_that("edgelist.randomForest treenum NULL returns all trees", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
 
   el_all <- edgelist(rf, treenum = NULL)
@@ -363,6 +370,7 @@ test_that("edgelist.randomForest treenum NULL returns all trees", {
 test_that("edgelist.randomForest treenum validates range", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
 
   expect_error(edgelist(rf, treenum = 0), "treenum must be between")

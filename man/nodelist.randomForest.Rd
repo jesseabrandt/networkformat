@@ -8,32 +8,33 @@
 }
 \arguments{
 \item{input_object}{A randomForest model object from the
-  \pkg{randomForest} package}
+\pkg{randomForest} package}
 
 \item{treenum}{Integer vector of tree numbers to extract (default:
-  \code{NULL} extracts all trees). Values must be between 1 and
-  \code{input_object$ntree}.}
+\code{NULL} extracts all trees). Values must be between 1 and
+\code{input_object$ntree}.}
 
 \item{...}{Additional arguments (currently unused)}
 }
 \value{
 A data.frame with one row per node (across all trees) and the
   following columns:
-\describe{
-  \item{name}{Integer node ID within the tree (matches edgelist
-    from/to)}
-  \item{is_leaf}{Logical: \code{TRUE} for terminal nodes}
-  \item{split_var}{Numeric index of the split variable (\code{NA} for
-    leaves)}
-  \item{split_var_name}{Name of the split variable (\code{NA} for
-    leaves)}
-  \item{split_point}{Split threshold (\code{NA} for leaves)}
-  \item{prediction}{Predicted value (numeric for regression, integer
-    class index for classification)}
-  \item{treenum}{Integer identifying which tree the node belongs to}
-  \item{label}{Display label: split variable name for internal nodes,
-    predicted value for leaves}
-}
+  \describe{
+    \item{name}{Integer node ID within the tree (matches edgelist
+      from/to)}
+    \item{is_leaf}{Logical: \code{TRUE} for terminal nodes}
+    \item{split_var}{Numeric index of the split variable (\code{NA} for
+      leaves)}
+    \item{split_var_name}{Name of the split variable (\code{NA} for
+      leaves)}
+    \item{split_point}{Split threshold (\code{NA} for leaves)}
+    \item{prediction}{Predicted value (numeric for regression, integer
+      class index for classification)}
+    \item{treenum}{Integer identifying which tree the node belongs to}
+    \item{label}{Display label: split variable name for internal nodes,
+      predicted class name (classification) or numeric value (regression)
+      for leaves}
+  }
 }
 \description{
 Extracts node-level attributes from every tree in a

@@ -22,51 +22,25 @@ as_igraph(x, ...)
 \method{as_igraph}{gbm}(x, treenum = 1L, ...)
 }
 \arguments{
-\item{x}{An object to convert (currently \code{tree}, \code{randomForest},
-  \code{rpart}, \code{xgb.Booster}, or \code{gbm}).}
+\item{x}{An object to convert (\code{tree}, \code{randomForest},
+\code{rpart}, \code{xgb.Booster}, or \code{gbm}).}
 
 \item{...}{Additional arguments passed to methods.}
 
 \item{treenum}{Integer vector of tree numbers to extract. Default
-  \code{1} returns a single graph for the first tree.  Use
-  \code{NULL} to get all trees combined into one graph with
-  disconnected components.}
+\code{1} returns a single graph for the first tree.  Use
+\code{NULL} to get all trees combined into one graph with
+disconnected components.}
 }
 \value{
-An \code{\link[igraph]{igraph}} object.  For multi-tree models
-  with multiple trees, the graph contains disconnected components
-  (one per tree) and a \code{treenum} vertex/edge attribute.
+An \code{\link[igraph]{igraph}} object.  For
+  \code{randomForest} with multiple trees, the graph contains
+  disconnected components (one per tree) and a \code{treenum}
+  vertex/edge attribute.
 }
 \description{
 Generic function to convert tree-based model objects into
 \code{\link[igraph]{igraph}} graph objects.  Methods call
 \code{\link{edgelist}} and \code{\link{nodelist}} internally and
 handle column reconciliation so you get a ready-to-use graph.
-}
-\examples{
-if (requireNamespace("tree", quietly = TRUE) &&
-    requireNamespace("igraph", quietly = TRUE)) {
-  tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
-  g <- as_igraph(tr)
-  igraph::vcount(g)
-}
-
-if (requireNamespace("randomForest", quietly = TRUE) &&
-    requireNamespace("igraph", quietly = TRUE)) {
-  rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
-
-  # Single tree
-  g1 <- as_igraph(rf, treenum = 1)
-
-  # All trees as disconnected components
-  g_all <- as_igraph(rf, treenum = NULL)
-  igraph::components(g_all)$no
-}
-
-if (requireNamespace("rpart", quietly = TRUE) &&
-    requireNamespace("igraph", quietly = TRUE)) {
-  fit <- rpart::rpart(Species ~ ., data = iris)
-  g <- as_igraph(fit)
-  igraph::vcount(g)
-}
 }

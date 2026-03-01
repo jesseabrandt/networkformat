@@ -32,6 +32,10 @@
 #'   nodelist(tr)$label
 #' }
 nodelist.tree <- function(input_object, ...) {
+  if (!requireNamespace("tree", quietly = TRUE)) {
+    stop("Package 'tree' is required. Install it with install.packages('tree').")
+  }
+
   frame <- input_object$frame
   is_leaf <- frame$var == "<leaf>"
   yval <- if (is.factor(frame$yval)) as.character(frame$yval) else frame$yval
