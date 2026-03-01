@@ -1,0 +1,12 @@
+url: https://jesseabrandt.github.io/networkformat/
+
+articles:
+- title: Vignettes
+  navbar: ~
+  contents:
+  - networkformat
+  - edgelist-nodelist
+  - visualization
+- title: Reference
+  contents:
+  - complete-method-reference

@@ -125,11 +125,14 @@ Each S3 method lives in its own file: `R/edgelist.R` (generic), `R/edgelist.data
 - Comments should describe what code does, not how it differs from a previous version. Avoid words like "now", "already", "instead", "no longer", or "changed to" that frame current behavior relative to past behavior.
 - Vignette prose should read as a standalone guide for the user, not a changelog.
 
-## Vignettes
+## Vignettes and Articles
 
 - `vignettes/networkformat.Rmd` — package introduction
 - `vignettes/edgelist-nodelist.Rmd` — edgelist/nodelist usage guide
 - `vignettes/visualization.Rmd` — ggraph visualization examples
+- `vignettes/articles/complete-method-reference.Rmd` — pkgdown-only article covering every method (not shipped with the package)
+
+The pkgdown site is configured via `_pkgdown.yml`.
 
 ## Dev Request Workflow
 
