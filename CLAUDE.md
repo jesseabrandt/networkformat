@@ -116,7 +116,7 @@ Each S3 method lives in its own file: `R/edgelist.R` (generic), `R/edgelist.data
 ## Testing
 
 - Framework: testthat 3rd edition
-- Test files: `test-edgelist.R` (~165 tests), `test-nodelist.R` (~112 tests), `test-as_igraph.R`
+- Test files: `test-edgelist.R` (~220 tests), `test-nodelist.R` (~171 tests), `test-as_igraph.R`
 - Tests for randomForest/tree use `skip_if_not_installed()`
 - The overlap warning in `test-edgelist.R` is expected (tests that `attr_cols` overlap triggers a warning)
 
@@ -131,8 +131,9 @@ Each S3 method lives in its own file: `R/edgelist.R` (generic), `R/edgelist.data
 - `vignettes/edgelist-nodelist.Rmd` — edgelist/nodelist usage guide
 - `vignettes/visualization.Rmd` — ggraph visualization examples
 - `vignettes/articles/complete-method-reference.Rmd` — pkgdown-only article covering every method (not shipped with the package)
+- `vignettes/articles/visual-qa.Rmd` — pkgdown-only article plotting every model type
 
-The pkgdown site is configured via `_pkgdown.yml`.
+The pkgdown site is configured via `_pkgdown.yml`. The site is deployed to GitHub Pages via `.github/workflows/pkgdown.yml`.
 
 ## Dev Request Workflow
 
