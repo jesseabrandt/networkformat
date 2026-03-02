@@ -18,6 +18,8 @@ tidygraph, and ggraph. It works with tree-based ML models
 (`randomForest`, `tree`, `rpart`, `xgboost`, `gbm`), data frames, and
 vectors.
 
+Full documentation at <https://jesseabrandt.github.io/networkformat/>.
+
 ## Installation
 
 ``` r
