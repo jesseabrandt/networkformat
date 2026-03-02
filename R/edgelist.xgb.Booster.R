@@ -42,6 +42,11 @@ edgelist.xgb.Booster <- function(input_object, treenum = NULL, ...) {
 
   dt <- xgboost::xgb.model.dt.tree(model = input_object)
 
+  # xgboost >= 2.0 renamed "Quality" to "Gain"
+  if (is.null(dt$Quality) && !is.null(dt$Gain)) {
+    dt$Quality <- dt$Gain
+  }
+
   # xgboost uses 0-based tree indices; our treenum is 1-based
   if (!is.null(treenum)) {
     treenum_int <- as.integer(treenum)

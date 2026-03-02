@@ -368,15 +368,3 @@ as_tbl_graph(xg, treenum = 1)
 | randomForest | `name`, `is_leaf`, `split_var`, `split_var_name`, `split_point`, `prediction`, `treenum`, `label` |
 | gbm | `name`, `is_leaf`, `split_var`, `split_var_name`, `split_point`, `prediction`, `treenum`, `label` |
 | xgb.Booster | `name`, `is_leaf`, `feature`, `split`, `quality`, `cover`, `treenum`, `label` |
-
-### as_igraph / as_tbl_graph availability
-
-| Input | as_igraph | as_tbl_graph | `treenum` param |
-|-------|-----------|--------------|-----------------|
-| vector | -- | -- | -- |
-| data.frame | -- | -- | -- |
-| tree | yes | yes | no |
-| rpart | yes | yes | no |
-| randomForest | yes | yes | yes (default `NULL`) |
-| gbm | yes | yes | yes (default `NULL`) |
-| xgb.Booster | yes | yes | yes (default `NULL`) |
