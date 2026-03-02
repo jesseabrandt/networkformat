@@ -1,12 +1,84 @@
 url: https://jesseabrandt.github.io/networkformat/
 
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left:  [intro, articles, reference]
+    right: [search, github]
+  components:
+    intro:
+      text: Get Started
+      href: articles/networkformat.html
+    articles:
+      text: Articles
+      menu:
+      - text: Edgelists and Nodelists
+        href: articles/edgelist-nodelist.html
+      - text: Visualization with ggraph
+        href: articles/visualization.html
+    reference:
+      text: Reference
+      href: reference/index.html
+    github:
+      icon: fa-github
+      href: https://github.com/jesseabrandt/networkformat
+      aria-label: GitHub
+
+reference:
+- title: Core generics
+  desc: >
+    The main generic functions exported by networkformat.
+  contents:
+  - "`networkformat-package`"
+  - edgelist
+  - nodelist
+  - as_igraph
+  - as_tbl_graph
+
+- title: Vector and data frame methods
+  desc: >
+    Methods for atomic vectors (sequential edges) and data frames
+    (column-pair edges with tidyselect).
+  contents:
+  - edgelist.default
+  - nodelist.default
+  - edgelist.data.frame
+  - nodelist.data.frame
+
+- title: Tree model methods
+  desc: >
+    Methods for tree-based machine learning models.
+  contents:
+  - edgelist.tree
+  - nodelist.tree
+  - edgelist.rpart
+  - nodelist.rpart
+  - edgelist.randomForest
+  - nodelist.randomForest
+  - edgelist.xgb.Booster
+  - nodelist.xgb.Booster
+  - edgelist.gbm
+  - nodelist.gbm
+
+- title: Data
+  desc: Example datasets included with the package.
+  contents:
+  - courses
+
 articles:
 - title: Vignettes
   navbar: ~
   contents:
   - networkformat
-  - edgelist-nodelist
+  - "`edgelist-nodelist`"
   - visualization
-- title: Reference
+- title: Articles
   contents:
-  - complete-method-reference
+  - "`articles/complete-method-reference`"
+  - "`articles/visual-qa`"
+
+home:
+  sidebar:
+    structure: [links, license, dev]
