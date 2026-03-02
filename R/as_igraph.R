@@ -38,17 +38,7 @@ as_igraph.randomForest <- function(x, treenum = NULL, ...) {
     stop("Package 'igraph' is required. Install it with install.packages('igraph').")
   }
 
-  tree_indices <- if (is.null(treenum)) {
-    seq_len(x$ntree)
-  } else {
-    treenum_int <- as.integer(treenum)
-    if (length(treenum_int) == 0L || anyNA(treenum_int) ||
-        !all(treenum_int >= 1L & treenum_int <= x$ntree)) {
-      stop("treenum must be between 1 and ", x$ntree,
-           "; got: ", paste(treenum, collapse = ", "))
-    }
-    treenum_int
-  }
+  tree_indices <- .validate_treenum(treenum, x$ntree)
 
   # Single tree: simple case, no prefixing needed
   if (length(tree_indices) == 1L) {
@@ -102,17 +92,7 @@ as_igraph.gbm <- function(x, treenum = NULL, ...) {
   }
 
   n_physical <- length(x$trees)
-  tree_indices <- if (is.null(treenum)) {
-    seq_len(n_physical)
-  } else {
-    treenum_int <- as.integer(treenum)
-    if (length(treenum_int) == 0L || anyNA(treenum_int) ||
-        !all(treenum_int >= 1L & treenum_int <= n_physical)) {
-      stop("treenum must be between 1 and ", n_physical,
-           "; got: ", paste(treenum, collapse = ", "))
-    }
-    treenum_int
-  }
+  tree_indices <- .validate_treenum(treenum, n_physical)
 
   # Single tree: no prefixing needed
   if (length(tree_indices) == 1L) {

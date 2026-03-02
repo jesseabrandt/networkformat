@@ -376,6 +376,8 @@ test_that("edgelist.randomForest treenum validates range", {
 
   expect_error(edgelist(rf, treenum = 0), "treenum must be between")
   expect_error(edgelist(rf, treenum = 4), "treenum must be between")
+  expect_error(edgelist(rf, treenum = integer(0)), "treenum must be between")
+  expect_error(edgelist(rf, treenum = NA), "treenum must be between")
 })
 
 # --- edgelist.tree split parsing tests ---
@@ -429,6 +431,26 @@ test_that("edgelist.tree label column is unchanged", {
   # For numeric splits, label should contain the split var and a space
   numeric_rows <- !is.na(el$split_op)
   expect_true(all(grepl(" ", el$label[numeric_rows])))
+})
+
+test_that("edgelist.tree categorical splits have NA split_op and split_point", {
+  skip_if_not_installed("tree")
+
+  # Use a factor predictor to produce categorical splits
+  dat <- data.frame(
+    y = c(1, 1, 1, 2, 2, 2, 3, 3, 3, 1, 2, 3),
+    x = factor(c("a", "a", "a", "b", "b", "b", "c", "c", "c", "a", "b", "c"))
+  )
+  tr <- tryCatch(tree::tree(y ~ x, data = dat), error = function(e) NULL)
+  skip_if(is.null(tr), "tree could not fit a categorical split")
+
+  el <- edgelist(tr)
+  cat_rows <- grepl("^:", el$label)
+
+  if (any(cat_rows)) {
+    expect_true(all(is.na(el$split_op[cat_rows])))
+    expect_true(all(is.na(el$split_point[cat_rows])))
+  }
 })
 
 # --- dedupe tests ---
@@ -798,6 +820,8 @@ test_that("edgelist.xgb.Booster treenum validates range", {
 
   expect_error(edgelist(bst, treenum = 0), "treenum must be between")
   expect_error(edgelist(bst, treenum = 10), "treenum must be between")
+  expect_error(edgelist(bst, treenum = integer(0)), "treenum must be between")
+  expect_error(edgelist(bst, treenum = NA), "treenum must be between")
 })
 
 test_that("edgelist.xgb.Booster multi-class model works", {
@@ -891,6 +915,8 @@ test_that("edgelist.gbm treenum validates range", {
 
   expect_error(edgelist(fit, treenum = 0), "treenum must be between")
   expect_error(edgelist(fit, treenum = 10), "treenum must be between")
+  expect_error(edgelist(fit, treenum = integer(0)), "treenum must be between")
+  expect_error(edgelist(fit, treenum = NA), "treenum must be between")
 })
 
 test_that("edgelist.gbm node IDs match nodelist", {

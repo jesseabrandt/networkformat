@@ -48,17 +48,7 @@ edgelist.gbm <- function(input_object, treenum = NULL, ...) {
 
   n_physical <- length(input_object$trees)
 
-  tree_indices <- if (is.null(treenum)) {
-    seq_len(n_physical)
-  } else {
-    treenum_int <- as.integer(treenum)
-    if (length(treenum_int) == 0L || anyNA(treenum_int) ||
-        !all(treenum_int >= 1L & treenum_int <= n_physical)) {
-      stop("treenum must be between 1 and ", n_physical,
-           "; got: ", paste(treenum, collapse = ", "))
-    }
-    treenum_int
-  }
+  tree_indices <- .validate_treenum(treenum, n_physical)
 
   convert_tree <- function(tn) {
     pt <- gbm::pretty.gbm.tree(input_object, i.tree = tn)

@@ -50,17 +50,7 @@ nodelist.randomForest <- function(input_object, treenum = NULL, ...) {
 
   var_names <- names(input_object$forest$ncat)
 
-  tree_indices <- if (is.null(treenum)) {
-    seq_len(input_object$ntree)
-  } else {
-    treenum_int <- as.integer(treenum)
-    if (length(treenum_int) == 0L || anyNA(treenum_int) ||
-        !all(treenum_int >= 1L & treenum_int <= input_object$ntree)) {
-      stop("treenum must be between 1 and ", input_object$ntree,
-           "; got: ", paste(treenum, collapse = ", "))
-    }
-    treenum_int
-  }
+  tree_indices <- .validate_treenum(treenum, input_object$ntree)
 
   convert_tree <- function(tn) {
     tree_df <- as.data.frame(randomForest::getTree(input_object, tn))

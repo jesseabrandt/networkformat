@@ -240,6 +240,8 @@ test_that("nodelist.randomForest treenum validates range", {
 
   expect_error(nodelist(rf, treenum = 0), "treenum must be between")
   expect_error(nodelist(rf, treenum = 4), "treenum must be between")
+  expect_error(nodelist(rf, treenum = integer(0)), "treenum must be between")
+  expect_error(nodelist(rf, treenum = NA), "treenum must be between")
 })
 
 # --- nodelist.default tests ---
@@ -548,6 +550,8 @@ test_that("nodelist.xgb.Booster treenum validates range", {
 
   expect_error(nodelist(bst, treenum = 0), "treenum must be between")
   expect_error(nodelist(bst, treenum = 10), "treenum must be between")
+  expect_error(nodelist(bst, treenum = integer(0)), "treenum must be between")
+  expect_error(nodelist(bst, treenum = NA), "treenum must be between")
 })
 
 test_that("nodelist.xgb.Booster node IDs match edgelist", {
@@ -662,6 +666,8 @@ test_that("nodelist.gbm treenum validates range", {
 
   expect_error(nodelist(fit, treenum = 0), "treenum must be between")
   expect_error(nodelist(fit, treenum = 10), "treenum must be between")
+  expect_error(nodelist(fit, treenum = integer(0)), "treenum must be between")
+  expect_error(nodelist(fit, treenum = NA), "treenum must be between")
 })
 
 test_that("nodelist.gbm label column exists", {
