@@ -52,7 +52,8 @@ edgelist.gbm <- function(input_object, treenum = NULL, ...) {
     seq_len(n_physical)
   } else {
     treenum_int <- as.integer(treenum)
-    if (!all(treenum_int >= 1L & treenum_int <= n_physical)) {
+    if (length(treenum_int) == 0L || anyNA(treenum_int) ||
+        !all(treenum_int >= 1L & treenum_int <= n_physical)) {
       stop("treenum must be between 1 and ", n_physical,
            "; got: ", paste(treenum, collapse = ", "))
     }

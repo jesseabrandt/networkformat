@@ -88,7 +88,8 @@ test_that("edgelist.randomForest handles single tree forest", {
 
   expect_s3_class(el, "data.frame")
   expect_equal(unique(el$treenum), 1)
-  expect_true(all(el$from < el$to | el$from == el$to))
+  expect_true(all(el$from > 0L))
+  expect_true(all(el$to > 0L))
 })
 
 test_that("edgelist.randomForest validates model structure", {

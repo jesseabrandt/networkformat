@@ -258,9 +258,11 @@ test_that("as_igraph.gbm treenum=1 returns igraph", {
   skip_if_not_installed("igraph")
 
   set.seed(42)
-  fit <- gbm::gbm(mpg ~ ., data = mtcars,
-                   distribution = "gaussian", n.trees = 3,
-                   interaction.depth = 2, n.minobsinnode = 3)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars,
+                     distribution = "gaussian", n.trees = 3,
+                     interaction.depth = 2, n.minobsinnode = 3)
+  )
   g <- as_igraph(fit, treenum = 1)
 
   expect_true(igraph::is_igraph(g))
@@ -274,9 +276,11 @@ test_that("as_igraph.gbm treenum=NULL returns combined graph", {
   skip_if_not_installed("igraph")
 
   set.seed(42)
-  fit <- gbm::gbm(mpg ~ ., data = mtcars,
-                   distribution = "gaussian", n.trees = 3,
-                   interaction.depth = 2, n.minobsinnode = 3)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars,
+                     distribution = "gaussian", n.trees = 3,
+                     interaction.depth = 2, n.minobsinnode = 3)
+  )
   g <- as_igraph(fit, treenum = NULL)
 
   expect_true(igraph::is_igraph(g))
@@ -288,9 +292,11 @@ test_that("as_tbl_graph.gbm returns tbl_graph", {
   skip_if_not_installed("tidygraph")
 
   set.seed(42)
-  fit <- gbm::gbm(mpg ~ ., data = mtcars,
-                   distribution = "gaussian", n.trees = 2,
-                   interaction.depth = 2, n.minobsinnode = 3)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars,
+                     distribution = "gaussian", n.trees = 2,
+                     interaction.depth = 2, n.minobsinnode = 3)
+  )
   tg <- tidygraph::as_tbl_graph(fit, treenum = 1)
 
   expect_s3_class(tg, "tbl_graph")

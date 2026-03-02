@@ -49,7 +49,8 @@ edgelist.randomForest <- function(input_object, treenum = NULL, ...){
     seq_len(input_object$ntree)
   } else {
     treenum_int <- as.integer(treenum)
-    if (!all(treenum_int >= 1L & treenum_int <= input_object$ntree)) {
+    if (length(treenum_int) == 0L || anyNA(treenum_int) ||
+        !all(treenum_int >= 1L & treenum_int <= input_object$ntree)) {
       stop("treenum must be between 1 and ", input_object$ntree,
            "; got: ", paste(treenum, collapse = ", "))
     }

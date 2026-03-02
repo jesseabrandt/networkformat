@@ -8,8 +8,6 @@ Authors@R: person(
       role = c("aut", "cre"),
       comment = c(ORCID = "0009-0005-7462-075X")
     )
-Author: Jesse Brandt [aut, cre] (<https://orcid.org/0009-0005-7462-075X>)
-Maintainer: Jesse Brandt <jesseabrandt@users.noreply.github.com>
 Description: Converts R objects into network edgelist and nodelist format for
     visualization and analysis with packages like 'igraph', 'tidygraph', and
     'ggraph'. Works with atomic vectors (sequential edges), data frames

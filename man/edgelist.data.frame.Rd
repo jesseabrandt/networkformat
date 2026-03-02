@@ -35,8 +35,8 @@ syntax as \code{source_cols}.}
 
 \item{na.rm}{Logical; if \code{TRUE} (the default), rows where
 \code{from} or \code{to} is \code{NA} are removed from the
-result.  Set to \code{FALSE} to preserve the old behavior of
-keeping all rows.}
+result.  Set to \code{FALSE} to keep all rows including those
+with \code{NA} endpoints.}
 
 \item{symmetric_cols}{Target column names that represent undirected
 (symmetric) relationships.  When non-\code{NULL}, a \code{directed}

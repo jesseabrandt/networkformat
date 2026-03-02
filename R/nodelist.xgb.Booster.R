@@ -52,10 +52,14 @@ nodelist.xgb.Booster <- function(input_object, treenum = NULL, ...) {
   # xgboost uses 0-based tree indices; our treenum is 1-based
   if (!is.null(treenum)) {
     treenum_int <- as.integer(treenum)
+    if (nrow(dt) == 0L) {
+      stop("xgb.model.dt.tree() returned no rows; the model may have no trees.")
+    }
     n_trees <- max(dt$Tree) + 1L
-    if (!all(treenum_int >= 1L & treenum_int <= n_trees)) {
+    if (length(treenum_int) == 0L || anyNA(treenum_int) ||
+        !all(treenum_int >= 1L & treenum_int <= n_trees)) {
       stop("treenum must be between 1 and ", n_trees,
-           "; got: ", paste(treenum_int, collapse = ", "))
+           "; got: ", paste(treenum, collapse = ", "))
     }
     dt <- dt[dt$Tree %in% (treenum_int - 1L), ]
   }
