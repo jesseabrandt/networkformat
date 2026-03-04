@@ -56,5 +56,5 @@ edgelist.default <- function(input_object, weights = FALSE, ...) {
 
   stop("edgelist() does not support objects of class '",
        paste(class(input_object), collapse = "', '"),
-       "'. Supported classes: vector, data.frame, randomForest, tree.")
+       "'. Supported classes: vector, data.frame, randomForest, tree, rpart, xgb.Booster, gbm.")
 }

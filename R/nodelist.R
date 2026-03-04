@@ -2,8 +2,9 @@
 #'
 #' Generic function to extract a node list (with attributes) from various
 #' object types including atomic vectors (unique values with frequencies),
-#' data frames, and tree models.  The node list provides metadata about
-#' each node in the network.
+#' data frames, and tree models (\code{randomForest}, \code{tree},
+#' \code{rpart}, \code{xgb.Booster}, \code{gbm}).  The node list provides
+#' metadata about each node in the network.
 #'
 #' @param input_object An object containing node information (vector, data.frame,
 #'   tree model, etc.)
@@ -19,4 +20,4 @@
 #'
 #' # Node list with course as ID (column 2)
 #' nodelist(courses, id_col = 2)
-nodelist <- function(input_object, ...){UseMethod("nodelist")}
+nodelist <- function(input_object, ...) UseMethod("nodelist")

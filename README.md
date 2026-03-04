@@ -5,9 +5,7 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/jesseabrandt/networkformat/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jesseabrandt/networkformat/actions/workflows/R-CMD-check.yaml)
-[![Codecov test
-coverage](https://codecov.io/gh/jesseabrandt/networkformat/branch/main/graph/badge.svg)](https://codecov.io/gh/jesseabrandt/networkformat?branch=main)
+[![R-CMD-check](https://github.com/jesseabrandt/networkformat/actions/workflows/r.yml/badge.svg)](https://github.com/jesseabrandt/networkformat/actions/workflows/r.yml)
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
@@ -15,7 +13,10 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 **networkformat** converts R objects into network edgelist/nodelist
 format for visualization and analysis with packages like igraph,
 tidygraph, and ggraph. It works with tree-based ML models
-(`randomForest`, `tree`), data frames, and vectors.
+(`randomForest`, `tree`, `rpart`, `xgboost`, `gbm`), data frames, and
+vectors.
+
+Full documentation at <https://jesseabrandt.github.io/networkformat/>.
 
 ## Installation
 
@@ -59,6 +60,9 @@ as_igraph(tr)
 | **data.frame**                     |        column-pair edges        | reorder with `id_col` first  |                —                 |
 | **randomForest**                   |       parent-child splits       |   node attributes per tree   |    single or multi-tree graph    |
 | **tree**                           | parent-child splits with labels |       node attributes        |         full tree graph          |
+| **rpart**                          | parent-child splits with labels |       node attributes        |         full tree graph          |
+| **xgb.Booster** (xgboost)          |       parent-child splits       |   node attributes per tree   |    single or multi-tree graph    |
+| **gbm**                            |       parent-child splits       |   node attributes per tree   |    single or multi-tree graph    |
 
 ## Vectors
 
@@ -222,6 +226,12 @@ To add support for a new model class:
   random forest models
 - [tree](https://cran.r-project.org/package=tree) — classification and
   regression trees
+- [rpart](https://cran.r-project.org/package=rpart) — recursive
+  partitioning trees
+- [xgboost](https://cran.r-project.org/package=xgboost) — gradient
+  boosting
+- [gbm](https://cran.r-project.org/package=gbm) — generalized boosted
+  models
 - [igraph](https://cran.r-project.org/package=igraph) — network analysis
   and visualization
 - [tidygraph](https://cran.r-project.org/package=tidygraph) — tidy graph

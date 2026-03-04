@@ -10,8 +10,8 @@
 \item{input_object}{A data.frame containing node information}
 
 \item{id_col}{Column for the node ID (default: 1). Accepts
-  \href{https://tidyselect.r-lib.org/reference/language.html}{tidyselect}
-  expressions: a bare name, string, or numeric index.}
+\href{https://tidyselect.r-lib.org/reference/language.html}{tidyselect}
+expressions: a bare name, string, or numeric index.}
 
 \item{...}{Additional arguments (currently unused)}
 }

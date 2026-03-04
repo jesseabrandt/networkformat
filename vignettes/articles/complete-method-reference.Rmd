@@ -1,0 +1,369 @@
+---
+title: "Complete method reference"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 3
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(networkformat)
+```
+
+This article demonstrates every `edgelist()`, `nodelist()`, `as_igraph()`, and `as_tbl_graph()` method in the package. For a gentler introduction, see `vignette("networkformat")`.
+
+## Atomic vectors
+
+Vectors produce sequential edges: element *i* connects to element *i + 1*.
+
+### edgelist
+
+```{r}
+edgelist(c("A", "B", "C", "D"))
+```
+
+Numeric vectors work the same way:
+
+```{r}
+edgelist(c(1, 2, 3))
+```
+
+Duplicate edges can be collapsed with `weights = TRUE`:
+
+```{r}
+edgelist(c("A", "B", "A", "B", "C"), weights = TRUE)
+```
+
+### nodelist
+
+Returns unique values with frequency counts:
+
+```{r}
+nodelist(c("A", "B", "A", "B", "C"))
+```
+
+---
+
+## Data frames
+
+Data frame methods use tidyselect to specify which columns form edges.
+
+### edgelist
+
+**Basic usage** with the bundled `courses` dataset:
+
+```{r}
+data(courses)
+edgelist(courses, source_cols = prereq, target_cols = course)
+```
+
+**Multiple source columns** — each source column produces a block of edges, identified by `from_col`:
+
+```{r}
+edgelist(courses, source_cols = c(prereq, prereq2), target_cols = course)
+```
+
+**Keeping NAs** (default is `na.rm = TRUE`):
+
+```{r}
+edgelist(courses, source_cols = prereq, target_cols = course, na.rm = FALSE)
+```
+
+**Controlling attribute columns** — by default all non-edge columns are carried through. Use `attr_cols` to select specific ones:
+
+```{r}
+edgelist(courses, source_cols = prereq, target_cols = course,
+         attr_cols = c(dept, credits))
+```
+
+Or pass `c()` to drop all attributes:
+
+```{r}
+edgelist(courses, source_cols = prereq, target_cols = course, attr_cols = c())
+```
+
+**Symmetric (undirected) edges** with automatic deduplication:
+
+```{r}
+edgelist(courses, source_cols = course, target_cols = crosslist,
+         symmetric_cols = crosslist, dedupe = TRUE)
+```
+
+**Edge weights** — collapse identical rows and count:
+
+```{r}
+edgelist(courses, source_cols = prereq, target_cols = course, weights = TRUE)
+```
+
+**Mixed directed and undirected edges:**
+
+```{r}
+edgelist(courses,
+         source_cols = course,
+         target_cols = c(prereq, crosslist),
+         symmetric_cols = crosslist)
+```
+
+### nodelist
+
+Reorders the data frame so the ID column comes first:
+
+```{r}
+nodelist(courses, id_col = course)
+```
+
+---
+
+## Decision trees (tree)
+
+```{r}
+library(tree)
+tr <- tree(Species ~ ., iris)
+```
+
+### edgelist
+
+```{r}
+edgelist(tr)
+```
+
+### nodelist
+
+```{r}
+nodelist(tr)
+```
+
+### as_igraph
+
+```{r}
+library(igraph)
+g <- as_igraph(tr)
+g
+```
+
+```{r}
+vcount(g)
+ecount(g)
+```
+
+### as_tbl_graph
+
+```{r}
+library(tidygraph)
+as_tbl_graph(tr)
+```
+
+---
+
+## Random forests (randomForest)
+
+```{r}
+library(randomForest)
+set.seed(42)
+rf <- randomForest(Species ~ ., iris, ntree = 3)
+```
+
+### edgelist
+
+All trees:
+
+```{r}
+edgelist(rf)
+```
+
+A single tree:
+
+```{r}
+edgelist(rf, treenum = 1)
+```
+
+Multiple specific trees:
+
+```{r}
+edgelist(rf, treenum = c(1, 3))
+```
+
+### nodelist
+
+```{r}
+nodelist(rf, treenum = 1)
+```
+
+### as_igraph
+
+Single tree:
+
+```{r}
+g <- as_igraph(rf, treenum = 1)
+g
+```
+
+Multiple trees produce disconnected components:
+
+```{r}
+g_all <- as_igraph(rf)
+components(g_all)$no
+```
+
+### as_tbl_graph
+
+```{r}
+as_tbl_graph(rf, treenum = 1)
+```
+
+---
+
+## Recursive partitioning (rpart)
+
+```{r}
+library(rpart)
+rp <- rpart(Species ~ ., iris)
+```
+
+### edgelist
+
+```{r}
+edgelist(rp)
+```
+
+### nodelist
+
+```{r}
+nodelist(rp)
+```
+
+### as_igraph
+
+```{r}
+g <- as_igraph(rp)
+g
+```
+
+### as_tbl_graph
+
+```{r}
+as_tbl_graph(rp)
+```
+
+---
+
+## Gradient boosted models (gbm)
+
+```{r}
+library(gbm)
+set.seed(42)
+gb <- gbm(as.numeric(Species == "setosa") ~ ., data = iris,
+           distribution = "bernoulli", n.trees = 3, interaction.depth = 3)
+```
+
+### edgelist
+
+All trees:
+
+```{r}
+edgelist(gb)
+```
+
+A single tree:
+
+```{r}
+edgelist(gb, treenum = 1)
+```
+
+### nodelist
+
+```{r}
+nodelist(gb, treenum = 1)
+```
+
+### as_igraph
+
+```{r}
+g <- as_igraph(gb, treenum = 1)
+g
+```
+
+### as_tbl_graph
+
+```{r}
+as_tbl_graph(gb, treenum = 1)
+```
+
+---
+
+## XGBoost (xgb.Booster)
+
+```{r}
+library(xgboost)
+set.seed(42)
+xg <- xgboost(
+  x = as.matrix(iris[, 1:4]),
+  y = iris$Species,
+  max_depth = 3, nrounds = 3, nthreads = 1
+)
+```
+
+### edgelist
+
+All trees:
+
+```{r}
+edgelist(xg)
+```
+
+A single tree:
+
+```{r}
+edgelist(xg, treenum = 1)
+```
+
+### nodelist
+
+```{r}
+nodelist(xg, treenum = 1)
+```
+
+### as_igraph
+
+```{r}
+g <- as_igraph(xg, treenum = 1)
+g
+```
+
+### as_tbl_graph
+
+```{r}
+as_tbl_graph(xg, treenum = 1)
+```
+
+---
+
+## Output column reference
+
+### edgelist columns by input type
+
+| Input | Columns |
+|-------|---------|
+| vector | `from`, `to`, [`weight`] |
+| data.frame | `from`, `to`, `from_col`, `to_col`, [`directed`], [`weight`], \<attrs\> |
+| tree | `from`, `to`, `label`, `split_var`, `split_op`, `split_point` |
+| rpart | `from`, `to`, `label`, `split_var`, `split_op`, `split_point` |
+| randomForest | `from`, `to`, `split_var`, `split_point`, `prediction`, `treenum`, `split_var_name` |
+| gbm | `from`, `to`, `split_var`, `split_point`, `prediction`, `treenum`, `split_var_name` |
+| xgb.Booster | `from`, `to`, `feature`, `split`, `quality`, `cover`, `treenum` |
+
+### nodelist columns by input type
+
+| Input | Columns |
+|-------|---------|
+| vector | `name`, `n` |
+| data.frame | (input columns reordered, `id_col` first) |
+| tree | `name`, `var`, `n`, `dev`, `yval`, `is_leaf`, `label` |
+| rpart | `name`, `var`, `n`, `dev`, `yval`, `is_leaf`, `label` |
+| randomForest | `name`, `is_leaf`, `split_var`, `split_var_name`, `split_point`, `prediction`, `treenum`, `label` |
+| gbm | `name`, `is_leaf`, `split_var`, `split_var_name`, `split_point`, `prediction`, `treenum`, `label` |
+| xgb.Booster | `name`, `is_leaf`, `feature`, `split`, `quality`, `cover`, `treenum`, `label` |

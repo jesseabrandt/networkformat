@@ -8,7 +8,7 @@
 }
 \arguments{
 \item{input_object}{An atomic vector, or an object for which no specific
-  nodelist method exists.}
+nodelist method exists.}
 
 \item{...}{Additional arguments (currently unused)}
 }

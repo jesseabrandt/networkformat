@@ -43,9 +43,9 @@ The package uses **S3 method dispatch** with four groups of functions:
 | `edgelist.data.frame` | data.frame | `source_cols`, `target_cols`, `attr_cols`, `na.rm`, `symmetric_cols`, `dedupe`, `weights` | from, to, from_col, to_col, [directed], [weight], \<attrs\> | Complete |
 | `edgelist.randomForest` | randomForest | `treenum` | from, to, split_var, split_point, prediction, treenum, split_var_name | Complete |
 | `edgelist.tree` | tree | | from, to, label, split_var, split_op, split_point | Complete |
-| `edgelist.xgb.Booster` | xgb.Booster | | — | Stub |
-| `edgelist.gbm` | gbm | | — | Stub |
-| `edgelist.rpart` | rpart | | — | Stub |
+| `edgelist.rpart` | rpart | | from, to, label, split_var, split_op, split_point | Complete |
+| `edgelist.xgb.Booster` | xgb.Booster | `treenum` | from, to, feature, split, quality, cover, treenum | Complete |
+| `edgelist.gbm` | gbm | `treenum` | from, to, split_var, split_point, prediction, treenum, split_var_name | Complete |
 
 ### `nodelist()` — extract node attributes
 
@@ -55,18 +55,24 @@ The package uses **S3 method dispatch** with four groups of functions:
 | `nodelist.data.frame` | data.frame | `id_col` | (reordered input, id_col first) | Complete |
 | `nodelist.randomForest` | randomForest | `treenum` | name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label | Complete |
 | `nodelist.tree` | tree | | name, var, n, dev, yval, is_leaf, label | Complete |
-| `nodelist.xgb.Booster` | xgb.Booster | | — | Stub |
-| `nodelist.gbm` | gbm | | — | Stub |
-| `nodelist.rpart` | rpart | | — | Stub |
+| `nodelist.rpart` | rpart | | name, var, n, dev, yval, is_leaf, label | Complete |
+| `nodelist.xgb.Booster` | xgb.Booster | `treenum` | name, is_leaf, feature, split, quality, cover, treenum, label | Complete |
+| `nodelist.gbm` | gbm | `treenum` | name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label | Complete |
 
 ### `as_igraph()` / `as_tbl_graph()` — direct graph construction
 
 | Method | Input | Key Parameters | Returns |
 |--------|-------|---------------|---------|
 | `as_igraph.tree` | tree | | igraph |
-| `as_igraph.randomForest` | randomForest | `treenum` (default `1`) | igraph (multiple trees = disconnected components) |
+| `as_igraph.randomForest` | randomForest | `treenum` (default `NULL` = all) | igraph (multiple trees = disconnected components) |
+| `as_igraph.rpart` | rpart | | igraph |
+| `as_igraph.xgb.Booster` | xgb.Booster | `treenum` (default `NULL` = all) | igraph (string IDs, globally unique) |
+| `as_igraph.gbm` | gbm | `treenum` (default `NULL` = all) | igraph (multi-tree: prefixed IDs) |
 | `as_tbl_graph.tree` | tree | | tbl_graph |
-| `as_tbl_graph.randomForest` | randomForest | `treenum` (default `1`) | tbl_graph |
+| `as_tbl_graph.randomForest` | randomForest | `treenum` (default `NULL` = all) | tbl_graph |
+| `as_tbl_graph.rpart` | rpart | | tbl_graph |
+| `as_tbl_graph.xgb.Booster` | xgb.Booster | `treenum` (default `NULL` = all) | tbl_graph |
+| `as_tbl_graph.gbm` | gbm | `treenum` (default `NULL` = all) | tbl_graph |
 
 Node IDs in nodelist outputs match the from/to columns in the corresponding edgelist, so they can be passed directly to `igraph::graph_from_data_frame()`.
 
@@ -74,7 +80,7 @@ Node IDs in nodelist outputs match the from/to columns in the corresponding edge
 
 - **vector**: `weights = TRUE` collapses duplicate `(from, to)` pairs with a count. `nodelist()` always returns unique values with frequency in the `n` column.
 - **data.frame**: `weights = TRUE` collapses fully identical rows (all columns must match, not just from/to) and adds a `weight` column. This is separate from `symmetric_cols` + `dedupe`, which normalizes edge direction.
-- **randomForest / tree**: Edges are structurally unique (tree topology); duplicates cannot occur.
+- **randomForest / tree / rpart / xgboost / gbm**: Edges are structurally unique (tree topology); duplicates cannot occur.
 
 ### File organization
 
@@ -84,8 +90,11 @@ Each S3 method lives in its own file: `R/edgelist.R` (generic), `R/edgelist.data
 
 - **vector (default)**: Sequential edges: element `i` connects to element `i + 1`, producing `n - 1` edges from a length-`n` vector.
 - **randomForest**: Iterates trees via `randomForest::getTree()`, identifies parent nodes (`left_daughter != 0`), creates edges to both children. `treenum` filters to specific trees.
-- **tree**: Parent-stack algorithm to reconstruct binary tree traversal. Generates human-readable split labels and parsed components (`split_var`, `split_op`, `split_point`).
+- **tree**: Binary heap node IDs from `rownames(frame)` (root=1, left=2k, right=2k+1). Parent-child edges derived via `id %/% 2`. Split labels and parsed components (`split_var`, `split_op`, `split_point`) from the `splits` matrix.
 - **data.frame**: Cartesian product of source/target column pairs. Builds edge blocks with `na.rm` filtering, optional `directed` column from `symmetric_cols`, direction-based dedup, and row-level dedup via `weights`.
+- **rpart**: Same binary heap approach as tree (root=1, left=2k, right=2k+1). Edge labels from `labels(input_object, collapse = TRUE)` which handles `ncat` sign correctly. Uses `<` and `>=` operators (unlike tree's `<`/`>`).
+- **xgboost**: Uses `xgb.model.dt.tree()` data.table. Split nodes have explicit `Yes`/`No` ID columns (string format `"Tree-Node"`). No phantom nodes.
+- **gbm**: Uses `pretty.gbm.tree()`. Must exclude missing-sentinel nodes (phantom routing nodes for NA handling). Node IDs are 0-based integers. Multinomial models store `n.trees * num.classes` physical trees.
 
 ### Dependencies
 
@@ -107,15 +116,24 @@ Each S3 method lives in its own file: `R/edgelist.R` (generic), `R/edgelist.data
 ## Testing
 
 - Framework: testthat 3rd edition
-- Test files: `test-edgelist.R` (~165 tests), `test-nodelist.R` (~112 tests), `test-as_igraph.R`
+- Test files: `test-edgelist.R` (~220 tests), `test-nodelist.R` (~171 tests), `test-as_igraph.R`
 - Tests for randomForest/tree use `skip_if_not_installed()`
 - The overlap warning in `test-edgelist.R` is expected (tests that `attr_cols` overlap triggers a warning)
 
-## Vignettes
+## Comments and Documentation Style
+
+- Comments should describe what code does, not how it differs from a previous version. Avoid words like "now", "already", "instead", "no longer", or "changed to" that frame current behavior relative to past behavior.
+- Vignette prose should read as a standalone guide for the user, not a changelog.
+
+## Vignettes and Articles
 
 - `vignettes/networkformat.Rmd` — package introduction
 - `vignettes/edgelist-nodelist.Rmd` — edgelist/nodelist usage guide
 - `vignettes/visualization.Rmd` — ggraph visualization examples
+- `vignettes/articles/complete-method-reference.Rmd` — pkgdown-only article covering every method (not shipped with the package)
+- `vignettes/articles/visual-qa.Rmd` — pkgdown-only article plotting every model type
+
+The pkgdown site is configured via `_pkgdown.yml`. The site is deployed to GitHub Pages via `.github/workflows/pkgdown.yml`.
 
 ## Dev Request Workflow
 

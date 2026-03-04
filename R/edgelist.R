@@ -3,7 +3,8 @@
 #' Generic function to extract a network edgelist from various object types.
 #' Methods exist for atomic vectors (sequential edges), data frames
 #' (column-pair edges), and tree-based model objects (\code{randomForest},
-#' \code{tree}).  The specific columns returned depend on the input type.
+#' \code{tree}, \code{rpart}, \code{xgb.Booster}, \code{gbm}).
+#' The specific columns returned depend on the input type.
 #'
 #' @param input_object An object to extract an edgelist from
 #' @param ... Additional arguments passed to specific methods
@@ -17,11 +18,11 @@
 #' edgelist(c("A", "B", "C", "D"))
 #'
 #' # Data.frame example using bundled dataset
-#' edgelist(courses)
+#' edgelist(courses, source_cols = course, target_cols = prereq)
 #'
 #' # RandomForest example
 #' if (requireNamespace("randomForest", quietly = TRUE)) {
-#'   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 10)
+#'   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 5)
 #'   edges_rf <- edgelist(rf)
 #'   head(edges_rf)
 #' }
@@ -32,4 +33,4 @@
 #'   edges_tr <- edgelist(tr)
 #'   head(edges_tr)
 #' }
-edgelist <- function(input_object, ...) {UseMethod("edgelist")}
+edgelist <- function(input_object, ...) UseMethod("edgelist")

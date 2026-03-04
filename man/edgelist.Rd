@@ -19,18 +19,19 @@ A data.frame representing an edgelist. The specific columns depend
 Generic function to extract a network edgelist from various object types.
 Methods exist for atomic vectors (sequential edges), data frames
 (column-pair edges), and tree-based model objects (\code{randomForest},
-\code{tree}).  The specific columns returned depend on the input type.
+\code{tree}, \code{rpart}, \code{xgb.Booster}, \code{gbm}).
+The specific columns returned depend on the input type.
 }
 \examples{
 # Vector --- sequential edges
 edgelist(c("A", "B", "C", "D"))
 
 # Data.frame example using bundled dataset
-edgelist(courses)
+edgelist(courses, source_cols = course, target_cols = prereq)
 
 # RandomForest example
 if (requireNamespace("randomForest", quietly = TRUE)) {
-  rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 10)
+  rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 5)
   edges_rf <- edgelist(rf)
   head(edges_rf)
 }

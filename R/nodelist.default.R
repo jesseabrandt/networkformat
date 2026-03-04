@@ -42,5 +42,5 @@ nodelist.default <- function(input_object, ...) {
 
   stop("nodelist() does not support objects of class '",
        paste(class(input_object), collapse = "', '"),
-       "'. Supported classes: vector, data.frame, randomForest, tree.")
+       "'. Supported classes: vector, data.frame, randomForest, tree, rpart, xgb.Booster, gbm.")
 }

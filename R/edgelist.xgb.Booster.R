@@ -1,31 +1,84 @@
 #' Extract Edgelist from XGBoost Model
 #'
-#' Converts an xgboost model object into a network edgelist representation.
-#' This function is currently a stub and needs implementation.
+#' Converts an xgboost model object into a network edgelist representation
+#' using \code{xgb.model.dt.tree()}.  Each edge connects a split node to
+#' one of its two children (yes/no branches).  Node IDs are globally unique
+#' strings in \code{"Tree-Node"} format (e.g., \code{"0-3"}).
 #'
-#' @param input_object An xgboost model object (xgb.Booster)
-#' @param ... Additional arguments for future implementation
+#' @param input_object An xgboost model object (\code{xgb.Booster})
+#' @param treenum Integer vector of 1-based tree numbers to extract
+#'   (default: \code{NULL} extracts all trees).
+#' @param ... Additional arguments (currently unused)
 #'
-#' @returns A data.frame representing the edgelist structure (to be implemented)
+#' @returns A data.frame with the following columns:
+#'   \describe{
+#'     \item{from}{Parent node ID string (\code{"Tree-Node"} format)}
+#'     \item{to}{Child node ID string}
+#'     \item{feature}{Name of the split variable (or 0-based index string
+#'       when feature names are absent)}
+#'     \item{split}{Numeric split threshold}
+#'     \item{quality}{Information gain at the split}
+#'     \item{cover}{Number of observations covered}
+#'     \item{treenum}{1-based tree number}
+#'   }
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Future implementation
 #' if (requireNamespace("xgboost", quietly = TRUE)) {
-#'   library(xgboost)
 #'   data(agaricus.train, package = "xgboost")
-#'   bst <- xgboost(
-#'     data = agaricus.train$data,
-#'     label = agaricus.train$label,
-#'     max_depth = 2,
-#'     nrounds = 2,
-#'     objective = "binary:logistic"
+#'   bst <- xgboost::xgboost(
+#'     x = agaricus.train$data,
+#'     y = factor(agaricus.train$label),
+#'     max_depth = 2, nrounds = 2, nthreads = 1
 #'   )
-#'   # edges_xgb <- edgelist(bst)  # Not yet implemented
+#'   el <- edgelist(bst)
+#'   head(el)
 #' }
-#' }
-edgelist.xgb.Booster <- function(input_object, ...) {
-  stop("edgelist() method for xgboost models not yet implemented. ",
-       "Contributions welcome!")
+edgelist.xgb.Booster <- function(input_object, treenum = NULL, ...) {
+  if (!requireNamespace("xgboost", quietly = TRUE)) {
+    stop("Package 'xgboost' is required. Install it with install.packages('xgboost').")
+  }
+
+  dt <- xgboost::xgb.model.dt.tree(model = input_object)
+
+  # xgboost >= 2.0 renamed "Quality" to "Gain"
+  if (is.null(dt$Quality) && !is.null(dt$Gain)) {
+    dt$Quality <- dt$Gain
+  }
+
+  if (nrow(dt) == 0L) {
+    stop("xgb.model.dt.tree() returned no rows; the model may have no trees.")
+  }
+
+  # xgboost uses 0-based tree indices; our treenum is 1-based
+  if (!is.null(treenum)) {
+    n_trees <- max(dt$Tree) + 1L
+    treenum_int <- .validate_treenum(treenum, n_trees)
+    dt <- dt[dt$Tree %in% (treenum_int - 1L), ]
+  }
+
+  # Filter to split (internal) nodes
+  splits <- dt[dt$Feature != "Leaf", ]
+
+  if (nrow(splits) == 0L) {
+    return(data.frame(
+      from = character(0), to = character(0),
+      feature = character(0), split = numeric(0),
+      quality = numeric(0), cover = numeric(0),
+      treenum = integer(0),
+      stringsAsFactors = FALSE
+    ))
+  }
+
+  # Build edges: each split node produces two edges (yes and no)
+  data.frame(
+    from    = c(splits$ID, splits$ID),
+    to      = c(splits$Yes, splits$No),
+    feature = c(splits$Feature, splits$Feature),
+    split   = c(splits$Split, splits$Split),
+    quality = c(splits$Quality, splits$Quality),
+    cover   = c(splits$Cover, splits$Cover),
+    treenum = c(splits$Tree + 1L, splits$Tree + 1L),
+    stringsAsFactors = FALSE
+  )
 }

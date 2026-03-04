@@ -4,34 +4,44 @@
 \alias{edgelist.xgb.Booster}
 \title{Extract Edgelist from XGBoost Model}
 \usage{
-\method{edgelist}{xgb.Booster}(input_object, ...)
+\method{edgelist}{xgb.Booster}(input_object, treenum = NULL, ...)
 }
 \arguments{
-\item{input_object}{An xgboost model object (xgb.Booster)}
+\item{input_object}{An xgboost model object (\code{xgb.Booster})}
 
-\item{...}{Additional arguments for future implementation}
+\item{treenum}{Integer vector of 1-based tree numbers to extract
+(default: \code{NULL} extracts all trees).}
+
+\item{...}{Additional arguments (currently unused)}
 }
 \value{
-A data.frame representing the edgelist structure (to be implemented)
+A data.frame with the following columns:
+  \describe{
+    \item{from}{Parent node ID string (\code{"Tree-Node"} format)}
+    \item{to}{Child node ID string}
+    \item{feature}{Name of the split variable (or 0-based index string
+      when feature names are absent)}
+    \item{split}{Numeric split threshold}
+    \item{quality}{Information gain at the split}
+    \item{cover}{Number of observations covered}
+    \item{treenum}{1-based tree number}
+  }
 }
 \description{
-Converts an xgboost model object into a network edgelist representation.
-This function is currently a stub and needs implementation.
+Converts an xgboost model object into a network edgelist representation
+using \code{xgb.model.dt.tree()}.  Each edge connects a split node to
+one of its two children (yes/no branches).  Node IDs are globally unique
+strings in \code{"Tree-Node"} format (e.g., \code{"0-3"}).
 }
 \examples{
-\dontrun{
-# Future implementation
 if (requireNamespace("xgboost", quietly = TRUE)) {
-  library(xgboost)
   data(agaricus.train, package = "xgboost")
-  bst <- xgboost(
-    data = agaricus.train$data,
-    label = agaricus.train$label,
-    max_depth = 2,
-    nrounds = 2,
-    objective = "binary:logistic"
+  bst <- xgboost::xgboost(
+    x = agaricus.train$data,
+    y = factor(agaricus.train$label),
+    max_depth = 2, nrounds = 2, nthreads = 1
   )
-  # edges_xgb <- edgelist(bst)  # Not yet implemented
-}
+  el <- edgelist(bst)
+  head(el)
 }
 }

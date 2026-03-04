@@ -1,16 +1,17 @@
 #' Convert to tbl_graph
 #'
-#' S3 methods for the \code{\link[tidygraph]{as_tbl_graph}} generic
-#' from the \pkg{tidygraph} package.  Each method wraps the
-#' corresponding \code{\link{as_igraph}} method.
+#' Generic function and S3 methods for converting tree-based model
+#' objects into \code{\link[tidygraph]{tbl_graph}} objects.  Each
+#' method wraps the corresponding \code{\link{as_igraph}} method.
 #'
-#' @param x An object to convert (currently \code{tree} or
-#'   \code{randomForest}).
+#' @param x An object to convert (currently \code{tree},
+#'   \code{randomForest}, \code{rpart}, \code{xgb.Booster}, or
+#'   \code{gbm}).
 #' @param ... Additional arguments passed to \code{as_igraph}.
 #'
 #' @returns A \code{\link[tidygraph]{tbl_graph}} object.
-#'
-#' @name as_tbl_graph
+#' @export
+as_tbl_graph <- function(x, ...) UseMethod("as_tbl_graph")
 
 #' @rdname as_tbl_graph
 #' @export
@@ -23,10 +24,38 @@ as_tbl_graph.tree <- function(x, ...) {
 
 #' @rdname as_tbl_graph
 #' @param treenum Integer vector of tree numbers to extract. Default
-#'   \code{1} returns a single tbl_graph for the first tree.  Use
-#'   \code{NULL} to get all trees combined into one graph.
+#'   \code{NULL} returns all trees combined into one graph with
+#'   disconnected components.  Pass a single integer (e.g. \code{1})
+#'   to extract one tree.
 #' @export
-as_tbl_graph.randomForest <- function(x, treenum = 1L, ...) {
+as_tbl_graph.randomForest <- function(x, treenum = NULL, ...) {
+  if (!requireNamespace("tidygraph", quietly = TRUE)) {
+    stop("Package 'tidygraph' is required. Install it with install.packages('tidygraph').")
+  }
+  tidygraph::as_tbl_graph(as_igraph(x, treenum = treenum, ...))
+}
+
+#' @rdname as_tbl_graph
+#' @export
+as_tbl_graph.rpart <- function(x, ...) {
+  if (!requireNamespace("tidygraph", quietly = TRUE)) {
+    stop("Package 'tidygraph' is required. Install it with install.packages('tidygraph').")
+  }
+  tidygraph::as_tbl_graph(as_igraph(x, ...))
+}
+
+#' @rdname as_tbl_graph
+#' @export
+as_tbl_graph.xgb.Booster <- function(x, treenum = NULL, ...) {
+  if (!requireNamespace("tidygraph", quietly = TRUE)) {
+    stop("Package 'tidygraph' is required. Install it with install.packages('tidygraph').")
+  }
+  tidygraph::as_tbl_graph(as_igraph(x, treenum = treenum, ...))
+}
+
+#' @rdname as_tbl_graph
+#' @export
+as_tbl_graph.gbm <- function(x, treenum = NULL, ...) {
   if (!requireNamespace("tidygraph", quietly = TRUE)) {
     stop("Package 'tidygraph' is required. Install it with install.packages('tidygraph').")
   }

@@ -1,0 +1,1022 @@
+---
+title: "Exploring Stub Model Object Structures"
+subtitle: "rpart, gbm, xgboost — edges, nodes, and implementation notes"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: false
+    embed-resources: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+# Purpose
+
+Before implementing `edgelist()` / `nodelist()` for rpart, gbm, and xgboost, we need
+to understand exactly how each object stores its tree structure. Getting this wrong is
+easy — Claude initially misunderstood the `tree` package format, so we're being
+careful here.
+
+Each section:
+
+1. Fits a model with enough depth to exercise the structure meaningfully
+2. Inspects the raw internal structure
+3. Interprets what constitutes "edges" and "nodes"
+4. Proposes an implementation approach (no code)
+5. Describes a validation strategy
+6. Flags complexity / gotchas
+
+
+---
+
+# rpart
+
+## Fit a model and inspect
+
+We use `kyphosis` (rpart's built-in dataset) — it has a factor response, a mix of
+predictors, and grows a reasonably deep tree. We also lower `cp` to let the tree branch
+out further so we can see non-consecutive node IDs (gaps from pruning/heap numbering).
+
+```{r rpart-fit}
+library(rpart)
+
+# kyphosis: 81 obs, 4 vars (Age, Number, Start — numeric; Kyphosis — factor response)
+# Low cp + modest minsplit to get a deeper tree
+fit_rpart <- rpart(Kyphosis ~ ., data = kyphosis,
+                   control = rpart.control(cp = 0.005, minsplit = 5, maxdepth = 5))
+cat("Number of nodes:", nrow(fit_rpart$frame), "\n")
+cat("Number of leaves:", sum(fit_rpart$frame$var == "<leaf>"), "\n")
+cat("Number of internal:", sum(fit_rpart$frame$var != "<leaf>"), "\n")
+```
+
+### The `frame` component — one row per node
+
+```{r rpart-frame}
+fit_rpart$frame
+```
+
+Row names are node IDs. `var == "<leaf>"` marks terminal nodes.
+
+### Node ID numbering scheme
+
+rpart uses **binary heap numbering** (1-indexed):
+
+- Root = 1
+- Left child of node k = 2k
+- Right child of node k = 2k + 1
+- Parent of node k = k %/% 2
+
+```{r rpart-node-ids}
+node_ids <- as.integer(rownames(fit_rpart$frame))
+cat("Node IDs:", node_ids, "\n")
+cat("Min:", min(node_ids), " Max:", max(node_ids), "\n")
+cat("Count:", length(node_ids), "\n")
+cat("Are they consecutive?", identical(node_ids, seq_along(node_ids)), "\n")
+cat("Gaps show where pruned branches would have been\n")
+
+# Verify parent-child relationships
+child_ids <- node_ids[node_ids != 1L]
+parent_ids <- child_ids %/% 2L
+cat("\nEdges (parent -> child):\n")
+edges_rpart <- data.frame(
+  from = parent_ids, to = child_ids,
+  direction = ifelse(child_ids %% 2 == 0, "left", "right"))
+print(edges_rpart)
+
+# Verify every parent actually exists in the node set
+cat("\nAll parents in node set?", all(parent_ids %in% node_ids), "\n")
+```
+
+### The `splits` matrix
+
+```{r rpart-splits}
+cat("Dimensions:", dim(fit_rpart$splits), "\n\n")
+fit_rpart$splits
+```
+
+Rows map to frame rows **sequentially** (consuming 1 + ncompete + nsurrogate rows per
+internal node). The first consumed row is the primary split.
+
+- `ncat < 0` = continuous split; `index` is the cutpoint
+- `ncat > 1` = categorical split; `index` is a row into `csplit`
+
+```{r rpart-splits-mapping}
+# Show how splits rows map to frame rows
+mapping <- data.frame(
+  node = as.integer(rownames(fit_rpart$frame)),
+  var = fit_rpart$frame$var,
+  ncompete = fit_rpart$frame$ncompete,
+  nsurrogate = fit_rpart$frame$nsurrogate,
+  rows_consumed = ifelse(
+    fit_rpart$frame$var == "<leaf>", 0,
+    1 + fit_rpart$frame$ncompete + fit_rpart$frame$nsurrogate
+  )
+)
+print(mapping)
+cat("\nTotal splits rows consumed:", sum(mapping$rows_consumed), "\n")
+cat("Actual splits rows:", nrow(fit_rpart$splits), "\n")
+```
+
+### Walk the splits matrix to extract primary split per node
+
+This is the algorithm we'll need in the implementation — mapping each internal node
+to its primary split threshold.
+
+```{r rpart-splits-walk}
+node_ids <- as.integer(rownames(fit_rpart$frame))
+is_leaf <- fit_rpart$frame$var == "<leaf>"
+primary_split <- data.frame(
+  node = integer(0), var = character(0),
+  ncat = numeric(0), index = numeric(0))
+
+split_row <- 1L
+for (i in seq_along(node_ids)) {
+  if (is_leaf[i]) next
+  primary_split <- rbind(primary_split, data.frame(
+    node = node_ids[i],
+    var = rownames(fit_rpart$splits)[split_row],
+    ncat = fit_rpart$splits[split_row, "ncat"],
+    index = fit_rpart$splits[split_row, "index"]
+  ))
+  n_consume <- 1L + fit_rpart$frame$ncompete[i] + fit_rpart$frame$nsurrogate[i]
+  split_row <- split_row + n_consume
+}
+cat("Primary split per internal node:\n")
+print(primary_split)
+cat("\n(ncat < 0 = continuous, ncat > 1 = categorical)\n")
+```
+
+### Edge labels via `labels()`
+
+```{r rpart-labels}
+edge_labels <- labels(fit_rpart, collapse = TRUE)
+data.frame(node = node_ids, label = edge_labels)
+```
+
+Element i is the condition on the edge *leading into* node i. Root gets `"root"`.
+
+### GOTCHA: `ncat` sign controls split direction
+
+For continuous splits, `ncat` can be -1 or +1. The sign determines whether `<` or `>=`
+goes to the left child. **Do not assume left always means `<`.**
+
+```{r rpart-ncat-direction}
+# Show the ncat sign and resulting label direction for each internal node
+cat("ncat sign -> label direction per internal node:\n\n")
+child_ids <- node_ids[node_ids != 1L]
+parent_ids <- child_ids %/% 2L
+
+lbl_collapse <- labels(fit_rpart, collapse = TRUE)
+names(lbl_collapse) <- as.character(node_ids)
+
+lbl_matrix <- labels(fit_rpart, collapse = FALSE)
+rownames(lbl_matrix) <- as.character(node_ids)
+
+for (r in seq_len(nrow(primary_split))) {
+  nid <- primary_split$node[r]
+  ncat_val <- primary_split$ncat[r]
+  idx_val <- primary_split$index[r]
+  left_child <- 2 * nid
+  right_child <- 2 * nid + 1
+
+  cat(sprintf("Node %d: %s, ncat=%+d, cutpoint=%.1f\n",
+              nid, primary_split$var[r], ncat_val, idx_val))
+  if (left_child %in% node_ids) {
+    cat(sprintf("  LEFT  child %d: \"%s\"\n", left_child,
+                lbl_collapse[as.character(left_child)]))
+  }
+  if (right_child %in% node_ids) {
+    cat(sprintf("  RIGHT child %d: \"%s\"\n", right_child,
+                lbl_collapse[as.character(right_child)]))
+  }
+  expected_left_op <- if (ncat_val < 0) "<" else ">="
+  cat(sprintf("  -> ncat=%+d means left gets \"%s\", right gets \"%s\"\n\n",
+              ncat_val, expected_left_op,
+              if (expected_left_op == "<") ">=" else "<"))
+}
+```
+
+### Visualize for validation
+
+```{r rpart-plot, fig.width=10, fig.height=7}
+plot(fit_rpart, uniform = TRUE, margin = 0.1)
+text(fit_rpart, use.n = TRUE, cex = 0.7)
+title(paste("rpart tree —", nrow(fit_rpart$frame), "nodes,",
+            nrow(edges_rpart), "edges"))
+```
+
+Count the nodes and edges in the plot and verify they match our extraction above.
+
+### `path.rpart()` — alternative validation
+
+```{r rpart-path}
+# path.rpart returns the root-to-node path for each node
+paths <- path.rpart(fit_rpart, node = node_ids, print.it = FALSE)
+cat("Path to deepest node (", names(paths)[length(paths)], "):\n")
+print(paths[[length(paths)]])
+cat("\nPath length should equal depth + 1\n")
+```
+
+### `csplit` — categorical split directions (if present)
+
+```{r rpart-csplit}
+if (!is.null(fit_rpart$csplit)) {
+  cat("csplit matrix present (", nrow(fit_rpart$csplit), "rows):\n")
+  print(fit_rpart$csplit)
+  cat("\nValues: 1=LEFT, 2=missing, 3=RIGHT\n")
+} else {
+  cat("No csplit matrix (kyphosis uses only numeric predictors)\n")
+}
+```
+
+### Test with categorical predictors — use a mixed dataset
+
+```{r rpart-categorical}
+# Build a dataset with both numeric and categorical predictors
+set.seed(123)
+n <- 200
+df_mixed <- data.frame(
+  y = factor(sample(c("A","B","C"), n, replace = TRUE,
+                    prob = c(0.5, 0.3, 0.2))),
+  color = factor(sample(c("red","green","blue","yellow"), n, replace = TRUE)),
+  size = factor(sample(c("S","M","L","XL"), n, replace = TRUE)),
+  score = rnorm(n),
+  count = rpois(n, 5)
+)
+# Make y partially predictable from predictors
+df_mixed$y[df_mixed$color == "red" & df_mixed$score > 0] <- "A"
+df_mixed$y[df_mixed$size == "XL"] <- "C"
+df_mixed$y <- factor(df_mixed$y)
+
+fit_cat <- rpart(y ~ ., data = df_mixed,
+                 control = rpart.control(cp = 0.005, minsplit = 5, maxdepth = 5))
+cat("Nodes:", nrow(fit_cat$frame), "\n")
+cat("Leaves:", sum(fit_cat$frame$var == "<leaf>"), "\n\n")
+
+if (!is.null(fit_cat$csplit)) {
+  cat("csplit matrix (", nrow(fit_cat$csplit), "rows x",
+      ncol(fit_cat$csplit), "cols):\n")
+  print(fit_cat$csplit)
+  cat("\nValues: 1=LEFT, 2=missing/unused, 3=RIGHT\n")
+  cat("\nxlevels:\n")
+  str(attr(fit_cat, "xlevels"))
+  cat("\nEdge labels for categorical tree:\n")
+  print(labels(fit_cat, collapse = TRUE))
+} else {
+  cat("(no categorical splits found — try a different seed)\n")
+}
+```
+
+```{r rpart-cat-plot, fig.width=10, fig.height=7}
+if (nrow(fit_cat$frame) > 1) {
+  plot(fit_cat, uniform = TRUE, margin = 0.1)
+  text(fit_cat, use.n = TRUE, cex = 0.7)
+  title("rpart with categorical + numeric predictors")
+}
+```
+
+
+## My interpretation of edges and nodes
+
+**Nodes** = rows of `frame`. Each has an ID (from rownames), a split variable (or
+`"<leaf>"`), observation count, deviance, and predicted value.
+
+**Edges** = parent-child relationships derived purely from node IDs via the binary heap
+rule. Every non-root node k has parent k %/% 2. Edge labels come from `labels(fit)`.
+
+**This is structurally simple** — the parent-child relationship is implicit in the
+numbering, not stored in explicit "left_daughter"/"right_daughter" columns like
+randomForest. No traversal algorithm needed.
+
+**IMPORTANT: the `ncat` sign controls split direction.** For continuous variables,
+`ncat` can be -1 or +1:
+
+- `ncat < 0`, left (even) child: `x < cutpoint`
+- `ncat < 0`, right (odd) child: `x >= cutpoint`
+- `ncat > 0`, left (even) child: `x >= cutpoint`
+- `ncat > 0`, right (odd) child: `x < cutpoint`
+
+This means left children do NOT always get `<`. The direction depends on the specific
+split. `labels(fit, collapse = TRUE)` handles this correctly, so using it for edge
+labels is the safest approach. If we want to extract `split_op` ourselves, we must check
+the `ncat` sign from the splits matrix.
+
+## Approximate implementation approach
+
+**`edgelist.rpart`:**
+
+1. Extract `node_ids` from `rownames(frame)`
+2. For non-root nodes: `parent = id %/% 2`, `direction = "left"/"right"` from even/odd
+3. Get edge labels from `labels(fit, collapse = TRUE)` — this already accounts for
+   `ncat` sign, so it's the safest source for split conditions
+4. Walk the `splits` matrix sequentially to extract primary split variable/threshold per
+   internal node (for the `split_var`, `split_point` columns)
+5. For `split_op`: derive from `ncat` sign and child direction (see truth table above),
+   OR parse from the label string
+6. Handle categorical splits via `csplit` matrix when `ncat > 1`
+7. Edge case: stump (single node, no splits) -> empty edgelist
+
+**`nodelist.rpart`:**
+
+1. One row per node from `frame`
+2. Include: name (node ID), var, n, dev, yval, is_leaf, label
+3. For classification: decode `yval` to class name via `attr(fit, "ylevels")`
+4. Could optionally include depth via `floor(log2(node_id))`
+
+## Validation strategy
+
+1. **Visual comparison**: `plot(fit)` + `text(fit)` shows the tree structure — count
+   nodes and edges, verify they match our output
+2. **`labels(fit, collapse=TRUE)`**: Compare our extracted split labels against rpart's
+   own label generation — these are the ground truth since they handle `ncat` sign
+3. **`path.rpart(fit)`**: Returns the path from root to each node — can verify edge
+   sequences
+4. **Stump test**: Fit with `maxdepth=0`, verify empty edgelist and single-node nodelist
+5. **Categorical predictor test**: Verify csplit decoding produces correct level sets
+6. **`ncat` sign test**: Verify our `split_op` extraction matches the label for both
+   `ncat = -1` and `ncat = +1` cases
+
+## Complexity assessment: LOW-MEDIUM (revised up from LOW)
+
+The binary heap numbering makes parent-child extraction trivial — no traversal
+algorithm needed. However:
+
+- **The `ncat` sign gotcha** means we cannot assume left = `<` and right = `>=`. We
+  must either parse labels or check the sign from the splits matrix. This is the kind
+  of thing that's easy to get wrong and hard to notice in simple tests.
+- Walking the `splits` matrix (sequential consumption with ncompete/nsurrogate offsets)
+  requires careful bookkeeping.
+- Categorical splits via `csplit` add another layer.
+
+Using `labels(fit, collapse = TRUE)` as the source of truth for edge conditions
+side-steps the `ncat` issue, but we still need splits-matrix walking for `split_point`.
+
+
+---
+
+# gbm
+
+## Fit a model and inspect
+
+We use `mtcars` for the primary model — it has 11 numeric variables and allows deeper
+trees. We fit with `interaction.depth = 4` and 10 trees so we can see meaningful
+structure and verify the missing-sentinel pattern at scale.
+
+```{r gbm-fit}
+library(gbm)
+set.seed(42)
+fit_gbm <- gbm(mpg ~ ., data = mtcars,
+                distribution = "gaussian", n.trees = 10,
+                interaction.depth = 4, shrinkage = 0.1,
+                n.minobsinnode = 3, bag.fraction = 0.8)
+cat("Number of trees:", fit_gbm$n.trees, "\n")
+cat("Interaction depth:", fit_gbm$interaction.depth, "\n")
+cat("num.classes:", fit_gbm$num.classes, "\n")
+```
+
+### `pretty.gbm.tree()` — the canonical tree accessor
+
+```{r gbm-pretty}
+pt <- pretty.gbm.tree(fit_gbm, i.tree = 1)
+pt
+```
+
+### Internal list structure of a single tree
+
+```{r gbm-tree-raw}
+# trees[[i]] is an unnamed list of 8 vectors
+cat("Tree 1 internal structure (list of 8 vectors):\n")
+str(fit_gbm$trees[[1]])
+```
+
+### Node numbering and the 3d+1 formula
+
+```{r gbm-nodes}
+cat("Row names (0-based node IDs):", rownames(pt), "\n")
+cat("Number of nodes:", nrow(pt), "\n")
+
+# Identify internal vs terminal vs missing-sentinel
+internal <- pt[pt$SplitVar != -1, ]
+terminal <- pt[pt$SplitVar == -1, ]
+
+cat("\nInternal nodes:", nrow(internal), "\n")
+cat("Terminal nodes (SplitVar == -1):", nrow(terminal), "\n")
+
+# Show the parent-child structure
+if (nrow(internal) > 0) {
+  cat("\nEdge structure from internal nodes:\n")
+  edge_info <- data.frame(
+    from = as.integer(rownames(internal)),
+    left_child = internal$LeftNode,
+    right_child = internal$RightNode,
+    missing_child = internal$MissingNode,
+    split_var_idx = internal$SplitVar,
+    split_var_name = fit_gbm$var.names[internal$SplitVar + 1],
+    split_threshold = round(internal$SplitCodePred, 4)
+  )
+  print(edge_info)
+}
+```
+
+### THE CRITICAL GOTCHA: Missing-sentinel nodes
+
+```{r gbm-missing-sentinel}
+# gbm creates a SEPARATE physical node for each internal node's missing path
+# These are NOT real tree nodes — they're routing destinations for NA values
+# Formula: total rows = 3 * (num_internal) + 1
+
+n_internal <- nrow(internal)
+cat("Internal nodes:", n_internal, "\n")
+cat("Expected total: 3 *", n_internal, "+ 1 =", 3 * n_internal + 1, "nodes\n")
+cat("Actual:", nrow(pt), "nodes\n")
+
+# Which nodes are missing-sentinels?
+if (nrow(internal) > 0) {
+  missing_ids <- internal$MissingNode
+  left_ids <- internal$LeftNode
+  right_ids <- internal$RightNode
+  real_child_ids <- c(left_ids, right_ids)
+
+  cat("\nMissing-sentinel node IDs:", sort(missing_ids), "\n")
+  cat("Real child IDs (left+right):", sort(unique(real_child_ids)), "\n")
+  cat("Are missing-sentinels disjoint from left/right children?",
+      !any(missing_ids %in% real_child_ids), "\n")
+
+  # Show which nodes are what
+  all_ids <- 0:(nrow(pt) - 1)
+  role <- ifelse(all_ids %in% as.integer(rownames(internal)), "internal",
+          ifelse(all_ids %in% missing_ids, "MISSING-SENTINEL",
+                 "leaf"))
+  cat("\nNode roles:\n")
+  print(data.frame(node = all_ids, role = role))
+}
+```
+
+### Verify the pattern across multiple trees
+
+```{r gbm-multi-tree}
+cat("Tree structure summary across all", fit_gbm$n.trees, "trees:\n\n")
+for (i in 1:fit_gbm$n.trees) {
+  pt_i <- pretty.gbm.tree(fit_gbm, i.tree = i)
+  n_int <- sum(pt_i$SplitVar != -1)
+  n_total <- nrow(pt_i)
+  formula_ok <- n_total == 3 * n_int + 1
+  cat(sprintf("Tree %2d: %2d total, %2d internal, %2d terminal | 3d+1=%2d | match=%s\n",
+              i, n_total, n_int, n_total - n_int,
+              3 * n_int + 1, formula_ok))
+}
+```
+
+### Variable metadata
+
+```{r gbm-vars}
+cat("Variable names (0-based index -> name):\n")
+for (i in seq_along(fit_gbm$var.names)) {
+  cat(sprintf("  [%d] %s (type=%d)\n", i - 1,
+              fit_gbm$var.names[i], fit_gbm$var.type[i]))
+}
+```
+
+### Reconstruct edges for Tree 1 — excluding missing-sentinels
+
+```{r gbm-edges-demo}
+pt1 <- pretty.gbm.tree(fit_gbm, i.tree = 1)
+int1 <- pt1[pt1$SplitVar != -1, ]
+
+if (nrow(int1) > 0) {
+  edges_gbm <- data.frame(
+    from = rep(as.integer(rownames(int1)), 2),
+    to = c(int1$LeftNode, int1$RightNode),
+    direction = c(rep("left", nrow(int1)), rep("right", nrow(int1))),
+    stringsAsFactors = FALSE
+  )
+  real_nodes <- sort(unique(c(edges_gbm$from, edges_gbm$to)))
+
+  cat("Edges for Tree 1:\n")
+  print(edges_gbm)
+  cat("\nReal tree nodes:", real_nodes, "\n")
+  cat("Total real nodes:", length(real_nodes), "\n")
+  cat("Expected (2*d + 1):", 2 * nrow(int1) + 1, "\n")
+
+  # Show the missing-sentinel nodes we excluded
+  all_node_ids <- 0:(nrow(pt1) - 1)
+  excluded <- setdiff(all_node_ids, real_nodes)
+  cat("Excluded missing-sentinel nodes:", excluded, "\n")
+}
+```
+
+### c.splits — categorical split encoding
+
+```{r gbm-csplits}
+cat("c.splits length:", length(fit_gbm$c.splits), "\n")
+if (length(fit_gbm$c.splits) > 0) {
+  cat("First c.split entry:\n")
+  print(fit_gbm$c.splits[[1]])
+  cat("Values: 1=LEFT, 255=RIGHT, -1=missing\n")
+} else {
+  cat("(no categorical splits — mtcars predictors are all numeric)\n")
+}
+```
+
+### Test with categorical predictors and deeper trees
+
+```{r gbm-categorical}
+set.seed(1)
+n <- 300
+df_cat_gbm <- data.frame(
+  y = rnorm(n),
+  x_cat = factor(sample(c("A","B","C","D","E"), n, replace = TRUE)),
+  x_ord = factor(sample(c("low","med","high"), n, replace = TRUE),
+                 levels = c("low","med","high"), ordered = TRUE),
+  x_num1 = rnorm(n),
+  x_num2 = rpois(n, 3)
+)
+# Make y depend on predictors
+df_cat_gbm$y <- df_cat_gbm$y +
+  ifelse(df_cat_gbm$x_cat %in% c("A","B"), 2, 0) +
+  df_cat_gbm$x_num1 * 1.5
+
+fit_gbm_cat <- gbm(y ~ ., data = df_cat_gbm, distribution = "gaussian",
+                    n.trees = 10, interaction.depth = 4, shrinkage = 0.1,
+                    n.minobsinnode = 5)
+cat("var.names:", fit_gbm_cat$var.names, "\n")
+cat("var.type:", fit_gbm_cat$var.type, "\n")
+cat("c.splits length:", length(fit_gbm_cat$c.splits), "\n\n")
+
+if (length(fit_gbm_cat$c.splits) > 0) {
+  cat("c.splits entries (first 3):\n")
+  for (j in seq_len(min(3, length(fit_gbm_cat$c.splits)))) {
+    cat(sprintf("  c.splits[[%d]]: ", j))
+    cat(fit_gbm_cat$c.splits[[j]], "\n")
+  }
+  cat("\nvar.levels:\n")
+  str(fit_gbm_cat$var.levels)
+
+  # Show a tree with a categorical split
+  for (i in 1:10) {
+    pt_i <- pretty.gbm.tree(fit_gbm_cat, i.tree = i)
+    int_i <- pt_i[pt_i$SplitVar != -1, ]
+    has_cat <- any(fit_gbm_cat$var.type[int_i$SplitVar + 1] > 0)
+    if (has_cat) {
+      cat(sprintf("\nTree %d has categorical split(s):\n", i))
+      for (r in seq_len(nrow(int_i))) {
+        vj <- int_i$SplitVar[r]
+        if (fit_gbm_cat$var.type[vj + 1] > 0) {
+          cs_idx <- as.integer(int_i$SplitCodePred[r])
+          levels_j <- fit_gbm_cat$var.levels[[vj + 1]]
+          cs_vec <- fit_gbm_cat$c.splits[[cs_idx + 1]]
+          cat(sprintf("  Node %s: %s — left={%s} right={%s}\n",
+                      rownames(int_i)[r],
+                      fit_gbm_cat$var.names[vj + 1],
+                      paste(levels_j[cs_vec == 1], collapse=","),
+                      paste(levels_j[cs_vec != 1], collapse=",")))
+        }
+      }
+      break
+    }
+  }
+}
+```
+
+### Multinomial classification
+
+```{r gbm-multinomial}
+set.seed(42)
+fit_gbm_multi <- gbm(Species ~ ., data = iris,
+                      distribution = "multinomial", n.trees = 5,
+                      interaction.depth = 3, shrinkage = 0.1,
+                      n.minobsinnode = 5)
+cat("num.classes:", fit_gbm_multi$num.classes, "\n")
+cat("Total trees stored:", length(fit_gbm_multi$trees), "\n")
+cat("Expected (n.trees * num.classes):", 5 * 3, "\n\n")
+
+cat("Tree index -> (iteration, class) mapping:\n")
+for (ti in 1:min(9, length(fit_gbm_multi$trees))) {
+  iter <- ((ti - 1) %/% fit_gbm_multi$num.classes) + 1
+  cls <- ((ti - 1) %% fit_gbm_multi$num.classes) + 1
+  pt_i <- pretty.gbm.tree(fit_gbm_multi, i.tree = ti)
+  cat(sprintf("  trees[[%2d]]: iteration=%d, class=%d (%s), nodes=%d\n",
+              ti, iter, cls, levels(iris$Species)[cls], nrow(pt_i)))
+}
+```
+
+
+## My interpretation of edges and nodes
+
+**Nodes** = rows of `pretty.gbm.tree()` output, BUT with an important caveat:
+**missing-sentinel nodes must be excluded** from the graph. They are phantom routing
+nodes for NA handling, not real tree structure.
+
+The real tree consists of:
+- Internal nodes: `SplitVar != -1`
+- Leaf nodes: `SplitVar == -1` AND reachable via LeftNode/RightNode (not MissingNode)
+
+**Edges** = `LeftNode` and `RightNode` pointers from each internal node. Node IDs are
+0-based integers, explicitly stored (unlike rpart's implicit heap numbering).
+
+**Split semantics**: `x < threshold` goes LEFT, `x >= threshold` goes RIGHT.
+For categoricals: index into global `c.splits` pool, where `1` = left, `255` = right.
+
+## Approximate implementation approach
+
+**`edgelist.gbm`:**
+
+1. Call `pretty.gbm.tree(input_object, i.tree)` for selected tree(s)
+2. Filter to internal nodes (`SplitVar != -1`)
+3. Build edges: `from` = internal node ID (twice), `to` = c(LeftNode, RightNode)
+4. Attach `split_var_name` via `var.names[SplitVar + 1]` (0-based indexing!)
+5. Attach `split_point` from `SplitCodePred` (for continuous; for categorical, this is
+   a csplit index — need to decode or store raw)
+6. Support `treenum` parameter for filtering (handle `num.classes > 1` for multinomial)
+7. **Exclude MissingNode edges** — they are not part of the tree topology
+
+**`nodelist.gbm`:**
+
+1. Get the set of node IDs that appear in edges (from + to), which automatically
+   excludes missing-sentinel nodes
+2. Join back to `pretty.gbm.tree` for attributes: Weight, Prediction, SplitVar, etc.
+3. Include: name, is_leaf, split_var, split_var_name, split_point, prediction, weight,
+   error_reduction, treenum
+
+## Validation strategy
+
+1. **Node count formula**: For `interaction.depth = d`, expect `d` internal nodes,
+   `d + 1` leaves, `d` missing-sentinels, total = `3d + 1`. Verify our edgelist
+   produces exactly `d` edges * 2 directions = `2d` edge rows, touching `2d + 1`
+   unique nodes
+2. **Manual trace**: For a 2-split tree (interaction.depth=2), manually trace the left/
+   right edges and verify they form a valid binary tree
+3. **Compare with `pretty.gbm.tree()` output directly** — our edges should cover exactly
+   the LeftNode/RightNode columns
+4. **Categorical validation**: Fit a model with known factor levels, decode c.splits, and
+   verify the level assignments make sense against the data
+5. **Stump test**: `interaction.depth = 1` gives 1 split, 2 leaves, 1 missing-sentinel
+   (4 total rows). Verify our edgelist has exactly 2 edges
+
+## Complexity assessment: MEDIUM-HIGH (flagged)
+
+**Why this is flagged:**
+
+1. **Missing-sentinel nodes** are a non-obvious structural feature. Every internal node
+   creates a phantom "missing" child. If we naively include all `SplitVar == -1` nodes,
+   we get extra nodes that don't belong in the tree. Must explicitly filter.
+
+2. **0-based indexing everywhere** — `SplitVar`, `LeftNode`, `RightNode`, `c.splits`
+   indices, row names. Easy off-by-one errors when converting to R's 1-based convention.
+
+3. **`c.splits` is a global pool** across all trees. The index in `SplitCodePred` is a
+   0-based global index. Must add 1 for R list indexing.
+
+4. **Multinomial classification** stores `num.classes` trees per boosting iteration.
+   The `treenum` parameter needs to account for this (tree index = `(iter-1)*K + class`).
+
+5. **`Prediction` column semantics differ** between internal and terminal nodes — leaf
+   predictions are the actual model contribution, internal node predictions are weighted
+   averages (less useful).
+
+
+---
+
+# xgboost
+
+## Fit a model and inspect
+
+We use a synthetic 500-row dataset so xgboost has enough data to actually grow deep
+trees (mtcars at 32 rows barely splits). `max_depth = 5` with 8 predictors gives us
+trees with 30-60 nodes — enough structure to verify our understanding.
+
+```{r xgb-fit}
+library(xgboost)
+
+# Synthetic dataset — 500 obs, 8 numeric predictors, non-linear response
+set.seed(42)
+n <- 500
+X_syn <- matrix(rnorm(n * 8), nrow = n)
+colnames(X_syn) <- paste0("x", 1:8)
+y_syn <- 2*X_syn[,1] - 1.5*X_syn[,2] + X_syn[,3]*X_syn[,4] +
+         0.5*X_syn[,5]^2 + rnorm(n, 0, 0.5)
+
+fit_xgb <- xgboost(data = X_syn, label = y_syn,
+                    objective = "reg:squarederror",
+                    nrounds = 10, max_depth = 5,
+                    eta = 0.3, verbose = 0,
+                    min_child_weight = 3)
+cat("nrounds:", fit_xgb$niter, "\n")
+cat("feature_names:", fit_xgb$feature_names, "\n")
+```
+
+### `xgb.model.dt.tree()` — the key function
+
+```{r xgb-dt-tree}
+dt <- xgb.model.dt.tree(model = fit_xgb)
+cat("Total rows (all trees, all nodes):", nrow(dt), "\n")
+cat("Trees:", length(unique(dt$Tree)), "\n\n")
+head(dt, 20)
+```
+
+### Column types and meanings
+
+```{r xgb-columns}
+str(dt)
+```
+
+### Per-tree summary
+
+```{r xgb-per-tree}
+for (t in unique(dt$Tree)) {
+  sub <- dt[dt$Tree == t, ]
+  n_split <- sum(sub$Feature != "Leaf")
+  n_leaf <- sum(sub$Feature == "Leaf")
+  cat(sprintf("Tree %2d: %2d nodes (%2d split, %2d leaf)\n",
+              t, nrow(sub), n_split, n_leaf))
+}
+```
+
+### Node ID format
+
+```{r xgb-id-format}
+cat("Sample IDs:", head(dt$ID, 15), "\n")
+cat("Format: 'Tree-Node' (both 0-based)\n\n")
+
+# Show structure of a single deeper tree
+tree0 <- dt[dt$Tree == 0, ]
+cat("Tree 0 — full structure:\n")
+print(tree0[, c("Node", "ID", "Feature", "Split", "Yes", "No", "Missing",
+                "Quality", "Cover")])
+```
+
+### Leaf node identification
+
+```{r xgb-leaves}
+leaves <- dt[dt$Feature == "Leaf", ]
+splits <- dt[dt$Feature != "Leaf", ]
+
+cat("Total nodes:", nrow(dt), "\n")
+cat("Split (internal) nodes:", nrow(splits), "\n")
+cat("Leaf nodes:", nrow(leaves), "\n")
+
+cat("\nSample leaf row:\n")
+print(leaves[1, ])
+cat("\nSample split row:\n")
+print(splits[1, ])
+```
+
+### Yes / No / Missing columns
+
+```{r xgb-yes-no}
+cat("Yes/No/Missing are ID strings pointing to child nodes:\n\n")
+print(splits[1:5, c("ID", "Feature", "Split", "Yes", "No", "Missing")])
+
+cat("\n\nMissing value routing across all split nodes:\n")
+cat("Missing == Yes:", sum(splits$Missing == splits$Yes, na.rm = TRUE),
+    "out of", nrow(splits), "\n")
+cat("Missing == No:", sum(splits$Missing == splits$No, na.rm = TRUE),
+    "out of", nrow(splits), "\n")
+cat("Missing == neither:", sum(splits$Missing != splits$Yes &
+    splits$Missing != splits$No, na.rm = TRUE), "\n")
+```
+
+### Edge construction — directly from split nodes
+
+```{r xgb-edges}
+# This is exactly how xgb.plot.tree does it internally
+edges_xgb <- data.frame(
+  from = c(splits$ID, splits$ID),
+  to = c(splits$Yes, splits$No),
+  branch = c(rep("yes", nrow(splits)), rep("no", nrow(splits))),
+  feature = c(splits$Feature, splits$Feature),
+  split = c(splits$Split, splits$Split),
+  tree = c(splits$Tree, splits$Tree),
+  stringsAsFactors = FALSE
+)
+cat("Total edge count:", nrow(edges_xgb), "\n")
+cat("Unique from nodes:", length(unique(edges_xgb$from)), "\n")
+cat("Unique to nodes:", length(unique(edges_xgb$to)), "\n\n")
+
+# Show edges for Tree 0 only
+cat("Edges for Tree 0:\n")
+print(edges_xgb[edges_xgb$tree == 0, c("from","to","branch","feature","split")])
+```
+
+### Quality column dual meaning
+
+```{r xgb-quality}
+cat("Quality for split nodes = information gain:\n")
+summary(splits$Quality)
+cat("\nQuality for leaf nodes = leaf score (raw prediction):\n")
+summary(leaves$Quality)
+```
+
+### Verify tree structure — every to-node should exist as a row
+
+```{r xgb-verify}
+# Confirm that every child ID referenced in Yes/No actually exists in the dt
+all_ids <- dt$ID
+yes_ids <- splits$Yes
+no_ids <- splits$No
+
+cat("All Yes-children exist in ID column:", all(yes_ids %in% all_ids), "\n")
+cat("All No-children exist in ID column:", all(no_ids %in% all_ids), "\n")
+
+# Confirm no phantom/sentinel nodes (unlike gbm)
+cat("\nTotal unique nodes from edges:",
+    length(unique(c(edges_xgb$from, edges_xgb$to))), "\n")
+cat("Total rows in dt:", nrow(dt), "\n")
+cat("These should be equal (no phantom nodes):",
+    length(unique(c(edges_xgb$from, edges_xgb$to))) +
+    1 == nrow(dt[dt$Tree == 0, ]),  # root is only in 'from', not 'to'... actually roots are in from
+    "\n")
+
+# Better check: for each tree, nodes = split_nodes + leaf_nodes, edges = 2*split_nodes
+for (t in 0:2) {
+  sub <- dt[dt$Tree == t, ]
+  n_s <- sum(sub$Feature != "Leaf")
+  n_l <- sum(sub$Feature == "Leaf")
+  cat(sprintf("Tree %d: %d split + %d leaf = %d total, edges = %d (should be 2*%d = %d)\n",
+              t, n_s, n_l, n_s + n_l, 2 * n_s, n_s, 2 * n_s))
+}
+```
+
+### `xgb.dump()` — text representation for cross-validation
+
+```{r xgb-dump}
+dump_text <- xgb.dump(fit_xgb, with_stats = TRUE)
+cat("First 30 lines of text dump:\n")
+cat(paste(head(dump_text, 30), collapse = "\n"))
+```
+
+### Multi-class model
+
+```{r xgb-multiclass}
+X_iris <- as.matrix(iris[, 1:4])
+colnames(X_iris) <- colnames(iris)[1:4]
+y_iris <- as.integer(iris$Species) - 1L
+
+set.seed(42)
+fit_xgb_mc <- xgboost(data = X_iris, label = y_iris,
+                       objective = "multi:softmax", num_class = 3,
+                       nrounds = 5, max_depth = 4,
+                       eta = 0.3, verbose = 0)
+
+dt_mc <- xgb.model.dt.tree(model = fit_xgb_mc)
+cat("Total trees:", length(unique(dt_mc$Tree)), "\n")
+cat("Expected (3 classes * 5 rounds):", 3 * 5, "\n\n")
+
+# Tree -> (class, round) mapping
+cat("Tree -> (class, round) mapping:\n")
+for (t in unique(dt_mc$Tree)) {
+  cls <- t %% 3
+  rnd <- t %/% 3
+  sub <- dt_mc[dt_mc$Tree == t, ]
+  cat(sprintf("  Tree %2d -> class %d (%s), round %d: %d nodes\n",
+              t, cls, levels(iris$Species)[cls + 1], rnd, nrow(sub)))
+}
+```
+
+### Feature names handling — with vs without
+
+```{r xgb-feature-names}
+cat("model$feature_names:", fit_xgb$feature_names, "\n")
+cat("Feature column uses actual names (from colnames(X)):\n")
+head(dt[dt$Feature != "Leaf", c("ID","Feature","Split")], 8)
+
+# Compare with no feature names (unnamed matrix)
+X_nonames <- unname(X_syn)
+fit_xgb_nonames <- xgboost(data = X_nonames, label = y_syn,
+                            objective = "reg:squarederror",
+                            nrounds = 2, max_depth = 3,
+                            eta = 0.3, verbose = 0)
+dt_nonames <- xgb.model.dt.tree(model = fit_xgb_nonames)
+cat("\nWithout feature_names (0-based indices as strings):\n")
+head(dt_nonames[dt_nonames$Feature != "Leaf", c("ID","Feature","Split")], 6)
+```
+
+### use_int_id option
+
+```{r xgb-int-id}
+dt_int <- xgb.model.dt.tree(model = fit_xgb, use_int_id = TRUE)
+cat("Columns with use_int_id=TRUE:\n")
+cat(names(dt_int), "\n")
+cat("\nNote: ID column is DROPPED; Yes/No/Missing become integers\n")
+head(dt_int[dt_int$Feature != "Leaf",
+            c("Tree", "Node", "Feature", "Yes", "No", "Missing")], 8)
+```
+
+
+## My interpretation of edges and nodes
+
+**Nodes** = rows of `xgb.model.dt.tree()`. Each node has a globally unique `ID`
+("Tree-Node" format). Leaf nodes have `Feature == "Leaf"`.
+
+**Edges** = `Yes` and `No` pointers from each split node. These are ID strings,
+so from/to values are already globally unique across trees. The `Missing` pointer
+is a third routing path for NA values — typically equals `Yes` and can be annotated
+on edges but shouldn't create additional edges.
+
+**Split semantics**: `feature < Split` goes to `Yes` (left), `feature >= Split` goes
+to `No` (right).
+
+## Approximate implementation approach
+
+**`edgelist.xgb.Booster`:**
+
+1. Call `xgb.model.dt.tree(model = input_object)` — this gives everything we need
+2. Filter to split nodes (`Feature != "Leaf"`)
+3. Build edges: `from = ID` (twice), `to = c(Yes, No)`
+4. Attach: feature, split threshold, gain (Quality), cover, tree number
+5. Optionally annotate which branch the Missing path follows
+6. Support `treenum` parameter via `trees` argument to `xgb.model.dt.tree()`
+7. **Decision needed**: Use string IDs ("0-3") or integer node IDs? String IDs are
+   globally unique out of the box; integer IDs need tree-prefixing (like randomForest)
+
+**`nodelist.xgb.Booster`:**
+
+1. All rows from `xgb.model.dt.tree()` — no phantom nodes to filter (unlike gbm)
+2. Include: name (ID), tree, node, is_leaf, feature, split, quality/gain, cover,
+   leaf_score (Quality for leaves), label
+3. Feature names: handle both named and unnamed models (check `feature_names`)
+
+**`as_igraph.xgb.Booster`:**
+
+Should work naturally — string IDs in from/to give globally unique node names, so
+`graph_from_data_frame()` handles multi-tree graphs as disconnected components.
+
+## Validation strategy
+
+1. **`xgb.plot.tree(model, trees = 0)`** draws the tree using DiagrammeR. Compare
+   node count, edge count, and split labels against our output
+2. **`xgb.dump(model, with_stats = TRUE)`** gives a text representation — verify that
+   our edgelist captures the same structure
+3. **Node count check**: For a single tree with `max_depth = d`, expect at most
+   `2^(d+1) - 1` nodes. Verify our output is within bounds
+4. **Round-trip test**: Build igraph from our edgelist/nodelist, verify it has the
+   expected number of connected components (one per tree)
+5. **Multi-class test**: Verify tree count = `num_class * nrounds` and that tree-to-class
+   mapping is correct
+6. **Feature name test**: Fit with and without `feature_names`, verify Feature column
+   content differs appropriately
+
+## Complexity assessment: LOW-MEDIUM
+
+**Why relatively straightforward:**
+
+- `xgb.model.dt.tree()` is a clean, well-structured data.table output — no sequential
+  walking of splits matrices, no phantom nodes
+- Yes/No/Missing are explicit ID references — no heap arithmetic or daughter columns
+- String IDs are globally unique — no need for tree-prefixing logic
+- The function handles all the internal parsing (xgb.dump text -> data.table)
+
+**Watch out for:**
+
+- **Feature names**: When `model$feature_names` is NULL, the Feature column contains
+  0-based integer indices as strings (e.g., "2" not "Petal.Length"). Need to handle
+  this gracefully — either pass feature_names explicitly or document the behavior
+- **0-based tree indexing**: xgboost uses 0-based tree indices vs our package's
+  convention of 1-based `treenum` (from randomForest). Need to convert
+- **Multi-class tree ordering**: `Tree %% num_class` gives the class — need to decide
+  if/how to expose this
+
+
+---
+
+# Comparison and implementation priority
+
+```{r comparison-table, echo=FALSE}
+comparison <- data.frame(
+  Model = c("rpart", "xgboost", "gbm"),
+  Complexity = c("Low-Medium", "Low-Medium", "Medium-High"),
+  `Tree Access` = c(
+    "rownames(frame) + heap math",
+    "xgb.model.dt.tree() data.table",
+    "pretty.gbm.tree() data.frame"
+  ),
+  `Edge Source` = c(
+    "Implicit: parent = id %/% 2",
+    "Explicit: Yes/No ID columns",
+    "Explicit: LeftNode/RightNode columns"
+  ),
+  `Node IDs` = c(
+    "1-based heap (gaps possible)",
+    "String 'Tree-Node' (0-based)",
+    "0-based integers"
+  ),
+  `Gotchas` = c(
+    "ncat sign flips split direction; splits matrix sequential walk; csplit for categoricals",
+    "0-based everything; feature_names may be NULL",
+    "Missing-sentinel phantom nodes; 0-based indexing; global c.splits pool; multinomial K trees per round"
+  ),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+knitr::kable(comparison, caption = "Implementation comparison across stub models")
+```
+
+**Suggested implementation order:** rpart -> xgboost -> gbm
+
+- **rpart first**: Simplest structure, already in base R, well-documented internals
+- **xgboost second**: Clean API via `xgb.model.dt.tree()`, no phantom nodes
+- **gbm last**: Most gotchas (missing-sentinels, global c.splits pool, 0-based
+  everything, multinomial indexing)

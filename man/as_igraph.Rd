@@ -4,24 +4,33 @@
 \alias{as_igraph}
 \alias{as_igraph.tree}
 \alias{as_igraph.randomForest}
+\alias{as_igraph.rpart}
+\alias{as_igraph.xgb.Booster}
+\alias{as_igraph.gbm}
 \title{Convert to igraph}
 \usage{
 as_igraph(x, ...)
 
 \method{as_igraph}{tree}(x, ...)
 
-\method{as_igraph}{randomForest}(x, treenum = 1L, ...)
+\method{as_igraph}{randomForest}(x, treenum = NULL, ...)
+
+\method{as_igraph}{rpart}(x, ...)
+
+\method{as_igraph}{xgb.Booster}(x, treenum = NULL, ...)
+
+\method{as_igraph}{gbm}(x, treenum = NULL, ...)
 }
 \arguments{
-\item{x}{An object to convert (currently \code{tree} or
-  \code{randomForest}).}
+\item{x}{An object to convert (\code{tree}, \code{randomForest},
+\code{rpart}, \code{xgb.Booster}, or \code{gbm}).}
 
 \item{...}{Additional arguments passed to methods.}
 
 \item{treenum}{Integer vector of tree numbers to extract. Default
-  \code{1} returns a single graph for the first tree.  Use
-  \code{NULL} to get all trees combined into one graph with
-  disconnected components.}
+\code{NULL} returns all trees combined into one graph with
+disconnected components.  Pass a single integer (e.g. \code{1})
+to extract one tree.}
 }
 \value{
 An \code{\link[igraph]{igraph}} object.  For
@@ -34,24 +43,4 @@ Generic function to convert tree-based model objects into
 \code{\link[igraph]{igraph}} graph objects.  Methods call
 \code{\link{edgelist}} and \code{\link{nodelist}} internally and
 handle column reconciliation so you get a ready-to-use graph.
-}
-\examples{
-if (requireNamespace("tree", quietly = TRUE) &&
-    requireNamespace("igraph", quietly = TRUE)) {
-  tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
-  g <- as_igraph(tr)
-  igraph::vcount(g)
-}
-
-if (requireNamespace("randomForest", quietly = TRUE) &&
-    requireNamespace("igraph", quietly = TRUE)) {
-  rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
-
-  # Single tree
-  g1 <- as_igraph(rf, treenum = 1)
-
-  # All trees as disconnected components
-  g_all <- as_igraph(rf, treenum = NULL)
-  igraph::components(g_all)$no
-}
 }

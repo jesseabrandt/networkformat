@@ -4,51 +4,59 @@
 \alias{edgelist.data.frame}
 \title{Extract Edgelist from Data Frame}
 \usage{
-\method{edgelist}{data.frame}(input_object, source_cols = 1, target_cols = 2,
-  attr_cols = NULL, na.rm = TRUE, symmetric_cols = NULL, dedupe = TRUE,
-  weights = FALSE, ...)
+\method{edgelist}{data.frame}(
+  input_object,
+  source_cols = 1,
+  target_cols = 2,
+  attr_cols = NULL,
+  na.rm = TRUE,
+  symmetric_cols = NULL,
+  dedupe = TRUE,
+  weights = FALSE,
+  ...
+)
 }
 \arguments{
 \item{input_object}{A data.frame containing network information}
 
 \item{source_cols}{Column(s) for source nodes (default: 1). Accepts
-  \href{https://tidyselect.r-lib.org/reference/language.html}{tidyselect}
-  expressions: bare names, strings, numeric indices, or helpers like
-  \code{starts_with()}.}
+\href{https://tidyselect.r-lib.org/reference/language.html}{tidyselect}
+expressions: bare names, strings, numeric indices, or helpers like
+\code{starts_with()}.}
 
 \item{target_cols}{Column(s) for target nodes (default: 2). Same syntax as
-  \code{source_cols}.}
+\code{source_cols}.}
 
 \item{attr_cols}{Columns to carry as edge attributes (default: \code{NULL}
-  keeps all columns not used as source or target). Pass an empty \code{c()}
-  to keep only from, to, and metadata columns. Accepts the same
-  \href{https://tidyselect.r-lib.org/reference/language.html}{tidyselect}
-  syntax as \code{source_cols}.}
+keeps all columns not used as source or target). Pass an empty \code{c()}
+to keep only from, to, and metadata columns. Accepts the same
+\href{https://tidyselect.r-lib.org/reference/language.html}{tidyselect}
+syntax as \code{source_cols}.}
 
 \item{na.rm}{Logical; if \code{TRUE} (the default), rows where
-  \code{from} or \code{to} is \code{NA} are removed from the
-  result.  Set to \code{FALSE} to preserve the old behavior of
-  keeping all rows.}
+\code{from} or \code{to} is \code{NA} are removed from the
+result.  Set to \code{FALSE} to keep all rows including those
+with \code{NA} endpoints.}
 
 \item{symmetric_cols}{Target column names that represent undirected
-  (symmetric) relationships.  When non-\code{NULL}, a \code{directed}
-  column is added: \code{FALSE} for edges from target columns named in
-  \code{symmetric_cols}, \code{TRUE} otherwise.  Accepts the same
-  tidyselect syntax as \code{target_cols}; names must be a subset of
-  \code{target_cols}.}
+(symmetric) relationships.  When non-\code{NULL}, a \code{directed}
+column is added: \code{FALSE} for edges from target columns named
+in \code{symmetric_cols}, \code{TRUE} otherwise.  Accepts the same
+tidyselect syntax as \code{target_cols}; names must be a subset of
+\code{target_cols}.}
 
 \item{dedupe}{Logical; if \code{TRUE} (the default) and
-  \code{symmetric_cols} is non-\code{NULL}, duplicate undirected edges
-  are removed by keeping only rows where \code{from <= to}
-  (lexicographic comparison). Set to \code{FALSE} to preserve both
-  directions.}
+\code{symmetric_cols} is non-\code{NULL}, duplicate undirected edges
+are removed by keeping only rows where \code{from <= to}
+(lexicographic comparison). Set to \code{FALSE} to preserve both
+directions.}
 
 \item{weights}{Logical; if \code{TRUE}, fully identical rows (same
-  \code{from}, \code{to}, and all attribute columns) are collapsed and
-  a \code{weight} column is added with the count.  Rows that share
-  \code{(from, to)} but differ in any attribute are kept separate.
-  Applied after NA removal and symmetric deduplication.  Defaults to
-  \code{FALSE}.}
+\code{from}, \code{to}, and all attribute columns) are collapsed and
+a \code{weight} column is added with the count.  Rows that share
+\code{(from, to)} but differ in any attribute are kept separate.
+Applied after NA removal and symmetric deduplication.  Defaults to
+\code{FALSE}.}
 
 \item{...}{Additional arguments (currently unused)}
 }

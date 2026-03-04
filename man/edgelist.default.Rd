@@ -8,11 +8,11 @@
 }
 \arguments{
 \item{input_object}{An atomic vector, or an object for which no specific
-  edgelist method exists.}
+edgelist method exists.}
 
 \item{weights}{Logical; if \code{TRUE}, duplicate edges are collapsed and a
-  \code{weight} column is added with the count of each unique
-  \code{(from, to)} pair.  Defaults to \code{FALSE}.}
+\code{weight} column is added with the count of each unique
+\code{(from, to)} pair.  Defaults to \code{FALSE}.}
 
 \item{...}{Additional arguments (currently unused)}
 }

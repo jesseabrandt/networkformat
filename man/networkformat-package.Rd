@@ -6,15 +6,15 @@
 \alias{networkformat-package}
 \title{networkformat: Convert R Objects to Network Edgelists and Nodelists}
 \description{
-Converts R objects into network edgelist and nodelist format for visualization and analysis with packages like 'igraph', 'tidygraph', and 'ggraph'. Works with atomic vectors (sequential edges), data frames (column-pair edges with tidyselect), and tree-based model objects ('randomForest', 'tree'). Also provides one-step graph construction via as_igraph() and as_tbl_graph() methods for tree models.
+Converts R objects into network edgelist and nodelist format for visualization and analysis with packages like 'igraph', 'tidygraph', and 'ggraph'. Works with atomic vectors (sequential edges), data frames (column-pair edges with tidyselect), and tree-based model objects ('randomForest', 'tree', 'rpart', 'xgboost', 'gbm'). Also provides one-step graph construction via as_igraph() and as_tbl_graph() methods for tree models.
 }
 \seealso{
-Useful links:
+Vignettes:
 \itemize{
-  \item \url{https://github.com/jesseabrandt/networkformat}
-  \item Report bugs at \url{https://github.com/jesseabrandt/networkformat/issues}
+  \item \code{vignette("networkformat")} --- package overview
+  \item \code{vignette("edgelist-nodelist")} --- edgelist and nodelist usage
+  \item \code{vignette("visualization")} --- ggraph visualization examples
 }
-
 }
 \author{
 \strong{Maintainer}: Jesse Brandt \email{jesseabrandt@users.noreply.github.com} (\href{https://orcid.org/0009-0005-7462-075X}{ORCID})

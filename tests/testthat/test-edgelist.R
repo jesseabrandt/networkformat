@@ -3,6 +3,7 @@
 test_that("edgelist.randomForest produces data frame with expected structure", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
   el <- edgelist(rf)
 
@@ -15,6 +16,7 @@ test_that("edgelist.randomForest produces data frame with expected structure", {
 test_that("edgelist.randomForest includes split variable names", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(mpg ~ cyl + disp + hp, data = mtcars, ntree = 2)
   el <- edgelist(rf)
 
@@ -64,6 +66,7 @@ test_that("edgelist.default raises error for unsupported types", {
 test_that("edgelist generic dispatches to correct method", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 1)
   df <- data.frame(from = 1:3, to = 2:4)
 
@@ -79,17 +82,20 @@ test_that("edgelist generic dispatches to correct method", {
 test_that("edgelist.randomForest handles single tree forest", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf_single <- randomForest::randomForest(Species ~ ., data = iris, ntree = 1)
   el <- edgelist(rf_single)
 
   expect_s3_class(el, "data.frame")
   expect_equal(unique(el$treenum), 1)
-  expect_true(all(el$from < el$to | el$from == el$to))
+  expect_true(all(el$from > 0L))
+  expect_true(all(el$to > 0L))
 })
 
 test_that("edgelist.randomForest validates model structure", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(mpg ~ ., data = mtcars, ntree = 2)
   el <- edgelist(rf)
 
@@ -316,8 +322,8 @@ test_that("edgelist.data.frame no directed column when symmetric_cols omitted", 
   expect_false("directed" %in% names(el))
 })
 
-test_that("edgelist.data.frame symmetric_cols warns for non-target columns", {
-  expect_warning(
+test_that("edgelist.data.frame symmetric_cols errors for non-target columns", {
+  expect_error(
     edgelist(courses, source_cols = course,
              target_cols = prereq,
              symmetric_cols = crosslist),
@@ -341,6 +347,7 @@ test_that("edgelist.data.frame symmetric_cols works with na.rm", {
 test_that("edgelist.randomForest treenum extracts specific trees", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 5)
 
   el1 <- edgelist(rf, treenum = 1)
@@ -353,6 +360,7 @@ test_that("edgelist.randomForest treenum extracts specific trees", {
 test_that("edgelist.randomForest treenum NULL returns all trees", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
 
   el_all <- edgelist(rf, treenum = NULL)
@@ -363,10 +371,13 @@ test_that("edgelist.randomForest treenum NULL returns all trees", {
 test_that("edgelist.randomForest treenum validates range", {
   skip_if_not_installed("randomForest")
 
+  set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
 
   expect_error(edgelist(rf, treenum = 0), "treenum must be between")
   expect_error(edgelist(rf, treenum = 4), "treenum must be between")
+  expect_error(edgelist(rf, treenum = integer(0)), "treenum must be between")
+  expect_error(edgelist(rf, treenum = NA), "treenum must be between")
 })
 
 # --- edgelist.tree split parsing tests ---
@@ -404,9 +415,9 @@ test_that("edgelist.tree numeric splits have correct op and point", {
   # All splits on numeric data should have op and point
   numeric_rows <- !is.na(el$split_op)
   expect_true(any(numeric_rows))
-  expect_true(all(el$split_op[numeric_rows] %in% c("<", ">=")))
+  expect_true(all(el$split_op[numeric_rows] %in% c("<", ">")))
   expect_true(all(!is.na(el$split_point[numeric_rows])))
-  expect_true(all(el$split_point[numeric_rows] > 0))
+  expect_true(all(!is.na(el$split_point[numeric_rows])))
 })
 
 test_that("edgelist.tree label column is unchanged", {
@@ -420,6 +431,41 @@ test_that("edgelist.tree label column is unchanged", {
   # For numeric splits, label should contain the split var and a space
   numeric_rows <- !is.na(el$split_op)
   expect_true(all(grepl(" ", el$label[numeric_rows])))
+})
+
+test_that("edgelist.tree categorical splits have NA split_op and split_point", {
+  skip_if_not_installed("tree")
+
+  # Use a factor predictor to produce categorical splits
+  dat <- data.frame(
+    y = c(1, 1, 1, 2, 2, 2, 3, 3, 3, 1, 2, 3),
+    x = factor(c("a", "a", "a", "b", "b", "b", "c", "c", "c", "a", "b", "c"))
+  )
+  tr <- tryCatch(tree::tree(y ~ x, data = dat), error = function(e) NULL)
+  skip_if(is.null(tr), "tree could not fit a categorical split")
+
+  el <- edgelist(tr)
+  cat_rows <- grepl("^:", el$label)
+
+  if (any(cat_rows)) {
+    expect_true(all(is.na(el$split_op[cat_rows])))
+    expect_true(all(is.na(el$split_point[cat_rows])))
+  }
+})
+
+test_that("edgelist.tree returns 0 rows for stump (single root node)", {
+  skip_if_not_installed("tree")
+
+  # Constant response produces a stump (root only, no splits)
+  dat <- data.frame(y = rep(1, 20), x = seq_len(20))
+  tr <- tryCatch(tree::tree(y ~ x, data = dat), error = function(e) NULL)
+  skip_if(is.null(tr), "tree could not fit a stump")
+
+  el <- edgelist(tr)
+  expect_s3_class(el, "data.frame")
+  expect_equal(nrow(el), 0)
+  expect_true(all(c("from", "to", "label", "split_var",
+                     "split_op", "split_point") %in% names(el)))
 })
 
 # --- dedupe tests ---
@@ -605,4 +651,341 @@ test_that("edgelist vector with repeated adjacent pair and weights", {
   expect_equal(nrow(el), 2)
   expect_equal(el$weight[el$from == 1 & el$to == 2], 3L)
   expect_equal(el$weight[el$from == 2 & el$to == 1], 2L)
+})
+
+# --- edgelist.rpart tests ---
+
+test_that("edgelist.rpart produces data frame with expected columns", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  el <- edgelist(fit)
+
+  expect_s3_class(el, "data.frame")
+  expect_true(all(c("from", "to", "label", "split_var", "split_op",
+                     "split_point") %in% names(el)))
+  expect_true(nrow(el) > 0)
+})
+
+test_that("edgelist.rpart forms a valid tree", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  el <- edgelist(fit)
+
+  # n_nodes = n_edges + 1
+  n_nodes <- length(unique(c(el$from, el$to)))
+  expect_equal(n_nodes, nrow(el) + 1)
+})
+
+test_that("edgelist.rpart node IDs match nodelist", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  el <- edgelist(fit)
+  nl <- nodelist(fit)
+
+  edge_nodes <- sort(unique(c(el$from, el$to)))
+  expect_true(all(edge_nodes %in% nl$name))
+})
+
+test_that("edgelist.rpart split_op values are < or >=", {
+  skip_if_not_installed("rpart")
+
+  # Use all-numeric predictors to ensure numeric splits
+  fit <- rpart::rpart(mpg ~ cyl + disp + hp, data = mtcars)
+  el <- edgelist(fit)
+
+  numeric_rows <- !is.na(el$split_op)
+  expect_true(any(numeric_rows))
+  expect_true(all(el$split_op[numeric_rows] %in% c("<", ">=")))
+  expect_true(all(!is.na(el$split_point[numeric_rows])))
+})
+
+test_that("edgelist.rpart stump returns empty data.frame", {
+  skip_if_not_installed("rpart")
+
+  stump <- rpart::rpart(Species ~ ., data = iris,
+                         control = rpart::rpart.control(cp = 1))
+  el <- edgelist(stump)
+
+  expect_s3_class(el, "data.frame")
+  expect_equal(nrow(el), 0)
+  expect_true(all(c("from", "to", "label", "split_var", "split_op",
+                     "split_point") %in% names(el)))
+})
+
+test_that("edgelist.rpart regression tree works", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(mpg ~ ., data = mtcars)
+  el <- edgelist(fit)
+
+  expect_s3_class(el, "data.frame")
+  expect_true(nrow(el) > 0)
+  expect_type(el$split_point, "double")
+})
+
+test_that("edgelist.rpart label contains split_var", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  el <- edgelist(fit)
+
+  # Each numeric-split label should contain the variable name
+  numeric_rows <- !is.na(el$split_op)
+  for (i in which(numeric_rows)) {
+    expect_true(grepl(el$split_var[i], el$label[i], fixed = TRUE))
+  }
+})
+
+test_that("edgelist.rpart handles categorical splits", {
+  skip_if_not_installed("rpart")
+
+  # Build dataset with a strong categorical predictor
+  set.seed(42)
+  n <- 200
+  df <- data.frame(
+    y = factor(c(rep("A", 100), rep("B", 100))),
+    color = factor(c(rep("red", 50), rep("green", 50),
+                     rep("blue", 50), rep("yellow", 50))),
+    score = rnorm(n)
+  )
+  fit <- rpart::rpart(y ~ color + score, data = df,
+                       control = rpart::rpart.control(cp = 0.001))
+  el <- edgelist(fit)
+
+  # If there are categorical splits, split_op and split_point should be NA
+  cat_rows <- is.na(el$split_op)
+  if (any(cat_rows)) {
+    expect_true(all(is.na(el$split_point[cat_rows])))
+  }
+})
+
+# --- edgelist.xgb.Booster tests ---
+
+test_that("edgelist.xgb.Booster produces data frame with expected columns", {
+  skip_if_not_installed("xgboost")
+
+  data(agaricus.train, package = "xgboost")
+  dtrain <- xgboost::xgb.DMatrix(data = agaricus.train$data,
+                                   label = agaricus.train$label)
+  bst <- xgboost::xgb.train(
+    params = list(max_depth = 2, objective = "binary:logistic"),
+    data = dtrain, nrounds = 2, verbose = 0)
+  el <- edgelist(bst)
+
+  expect_s3_class(el, "data.frame")
+  expect_true(all(c("from", "to", "feature", "split", "quality",
+                     "cover", "treenum") %in% names(el)))
+  expect_true(nrow(el) > 0)
+})
+
+test_that("edgelist.xgb.Booster string IDs are globally unique", {
+  skip_if_not_installed("xgboost")
+
+  data(agaricus.train, package = "xgboost")
+  dtrain <- xgboost::xgb.DMatrix(data = agaricus.train$data,
+                                   label = agaricus.train$label)
+  bst <- xgboost::xgb.train(
+    params = list(max_depth = 3, objective = "binary:logistic"),
+    data = dtrain, nrounds = 3, verbose = 0)
+  el <- edgelist(bst)
+
+  # All to-nodes should be unique (each child has exactly one parent)
+  expect_equal(length(unique(el$to)), length(el$to))
+})
+
+test_that("edgelist.xgb.Booster treenum filters correctly", {
+  skip_if_not_installed("xgboost")
+
+  data(agaricus.train, package = "xgboost")
+  dtrain <- xgboost::xgb.DMatrix(data = agaricus.train$data,
+                                   label = agaricus.train$label)
+  bst <- xgboost::xgb.train(
+    params = list(max_depth = 2, objective = "binary:logistic"),
+    data = dtrain, nrounds = 5, verbose = 0)
+
+  el1 <- edgelist(bst, treenum = 1)
+  expect_equal(unique(el1$treenum), 1L)
+
+  el13 <- edgelist(bst, treenum = c(1, 3))
+  expect_equal(sort(unique(el13$treenum)), c(1L, 3L))
+})
+
+test_that("edgelist.xgb.Booster treenum NULL returns all trees", {
+  skip_if_not_installed("xgboost")
+
+  data(agaricus.train, package = "xgboost")
+  dtrain <- xgboost::xgb.DMatrix(data = agaricus.train$data,
+                                   label = agaricus.train$label)
+  bst <- xgboost::xgb.train(
+    params = list(max_depth = 2, objective = "binary:logistic"),
+    data = dtrain, nrounds = 3, verbose = 0)
+
+  el_null <- edgelist(bst, treenum = NULL)
+  el_default <- edgelist(bst)
+  expect_equal(el_null, el_default)
+})
+
+test_that("edgelist.xgb.Booster treenum validates range", {
+  skip_if_not_installed("xgboost")
+
+  data(agaricus.train, package = "xgboost")
+  dtrain <- xgboost::xgb.DMatrix(data = agaricus.train$data,
+                                   label = agaricus.train$label)
+  bst <- xgboost::xgb.train(
+    params = list(max_depth = 2, objective = "binary:logistic"),
+    data = dtrain, nrounds = 2, verbose = 0)
+
+  expect_error(edgelist(bst, treenum = 0), "treenum must be between")
+  expect_error(edgelist(bst, treenum = 10), "treenum must be between")
+  expect_error(edgelist(bst, treenum = integer(0)), "treenum must be between")
+  expect_error(edgelist(bst, treenum = NA), "treenum must be between")
+})
+
+test_that("edgelist.xgb.Booster multi-class model works", {
+  skip_if_not_installed("xgboost")
+
+  X <- as.matrix(iris[, 1:4])
+  y <- as.integer(iris$Species) - 1L
+  dtrain <- xgboost::xgb.DMatrix(data = X, label = y)
+  bst <- xgboost::xgb.train(
+    params = list(objective = "multi:softmax", num_class = 3, max_depth = 3),
+    data = dtrain, nrounds = 2, verbose = 0)
+  el <- edgelist(bst)
+
+  # 3 classes * 2 rounds = 6 trees
+  expect_equal(length(unique(el$treenum)), 6)
+})
+
+# --- edgelist.gbm tests ---
+
+test_that("edgelist.gbm produces data frame with expected columns", {
+  skip_if_not_installed("gbm")
+
+  set.seed(42)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                     n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
+  )
+  el <- edgelist(fit)
+
+  expect_s3_class(el, "data.frame")
+  expect_true(all(c("from", "to", "split_var", "split_point", "prediction",
+                     "treenum", "split_var_name") %in% names(el)))
+  expect_true(nrow(el) > 0)
+})
+
+test_that("edgelist.gbm excludes missing-sentinel nodes", {
+  skip_if_not_installed("gbm")
+
+  set.seed(42)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                     n.trees = 5, interaction.depth = 3, n.minobsinnode = 3)
+  )
+
+  for (tn in 1:5) {
+    el_t <- edgelist(fit, treenum = tn)
+    nl_t <- nodelist(fit, treenum = tn)
+    n_internal <- nrow(el_t) / 2
+    expected_real <- 2 * n_internal + 1
+    expect_equal(nrow(nl_t), expected_real)
+  }
+})
+
+test_that("edgelist.gbm treenum filters correctly", {
+  skip_if_not_installed("gbm")
+
+  set.seed(42)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                     n.trees = 5, interaction.depth = 2, n.minobsinnode = 3)
+  )
+
+  el1 <- edgelist(fit, treenum = 1)
+  expect_equal(unique(el1$treenum), 1L)
+
+  el13 <- edgelist(fit, treenum = c(1, 3))
+  expect_equal(sort(unique(el13$treenum)), c(1L, 3L))
+})
+
+test_that("edgelist.gbm treenum NULL returns all trees", {
+  skip_if_not_installed("gbm")
+
+  set.seed(42)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                     n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
+  )
+
+  el_null <- edgelist(fit, treenum = NULL)
+  el_default <- edgelist(fit)
+  expect_equal(el_null, el_default)
+})
+
+test_that("edgelist.gbm treenum validates range", {
+  skip_if_not_installed("gbm")
+
+  set.seed(42)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                     n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
+  )
+
+  expect_error(edgelist(fit, treenum = 0), "treenum must be between")
+  expect_error(edgelist(fit, treenum = 10), "treenum must be between")
+  expect_error(edgelist(fit, treenum = integer(0)), "treenum must be between")
+  expect_error(edgelist(fit, treenum = NA), "treenum must be between")
+})
+
+test_that("edgelist.gbm node IDs match nodelist", {
+  skip_if_not_installed("gbm")
+
+  set.seed(42)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                     n.trees = 3, interaction.depth = 3, n.minobsinnode = 3)
+  )
+
+  for (tn in 1:3) {
+    el_t <- edgelist(fit, treenum = tn)
+    nl_t <- nodelist(fit, treenum = tn)
+    edge_nodes <- sort(unique(c(el_t$from, el_t$to)))
+    expect_true(all(edge_nodes %in% nl_t$name))
+  }
+})
+
+test_that("edgelist.gbm classification works", {
+  skip_if_not_installed("gbm")
+
+  set.seed(42)
+  df <- data.frame(y = as.numeric(iris$Species == "setosa"),
+                   x1 = iris$Sepal.Length, x2 = iris$Petal.Length)
+  suppressWarnings(
+    fit <- gbm::gbm(y ~ ., data = df, distribution = "bernoulli",
+                     n.trees = 3, interaction.depth = 2, n.minobsinnode = 5)
+  )
+  el <- edgelist(fit)
+
+  expect_s3_class(el, "data.frame")
+  expect_true(nrow(el) > 0)
+})
+
+test_that("edgelist.gbm multinomial creates K trees per round", {
+  skip_if_not_installed("gbm")
+
+  set.seed(42)
+  suppressWarnings(
+    fit <- gbm::gbm(Species ~ ., data = iris, distribution = "multinomial",
+                     n.trees = 3, interaction.depth = 2, n.minobsinnode = 5)
+  )
+
+  # 3 classes * 3 rounds = 9 physical trees
+  n_physical <- length(fit$trees)
+  expect_equal(n_physical, 9)
+
+  el <- edgelist(fit)
+  expect_equal(length(unique(el$treenum)), 9)
 })

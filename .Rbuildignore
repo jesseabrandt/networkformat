@@ -11,3 +11,8 @@
 ^data-raw$
 ^dev$
 ^\.claude$
+^doc$
+^Meta$
+^vignettes/articles$
+^_pkgdown\.yml$
+^CLAUDE\.md$

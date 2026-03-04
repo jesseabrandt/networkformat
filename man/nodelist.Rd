@@ -8,7 +8,7 @@ nodelist(input_object, ...)
 }
 \arguments{
 \item{input_object}{An object containing node information (vector, data.frame,
-  tree model, etc.)}
+tree model, etc.)}
 
 \item{...}{Additional arguments passed to specific methods}
 }
@@ -19,8 +19,9 @@ A data.frame where the first column is the node ID and subsequent
 \description{
 Generic function to extract a node list (with attributes) from various
 object types including atomic vectors (unique values with frequencies),
-data frames, and tree models.  The node list provides metadata about
-each node in the network.
+data frames, and tree models (\code{randomForest}, \code{tree},
+\code{rpart}, \code{xgb.Booster}, \code{gbm}).  The node list provides
+metadata about each node in the network.
 }
 \examples{
 # Vector --- unique values with frequency counts

@@ -18,8 +18,8 @@
 #'   syntax as \code{source_cols}.
 #' @param na.rm Logical; if \code{TRUE} (the default), rows where
 #'   \code{from} or \code{to} is \code{NA} are removed from the
-#'   result.  Set to \code{FALSE} to preserve the old behavior of
-#'   keeping all rows.
+#'   result.  Set to \code{FALSE} to keep all rows including those
+#'   with \code{NA} endpoints.
 #' @param symmetric_cols Target column names that represent undirected
 #'   (symmetric) relationships.  When non-\code{NULL}, a \code{directed}
 #'   column is added: \code{FALSE} for edges from target columns named
@@ -114,8 +114,8 @@ edgelist.data.frame <- function(input_object, source_cols = 1, target_cols = 2,
     target_names_set <- names(target_pos)
     bad <- setdiff(sym_names, target_names_set)
     if (length(bad) > 0) {
-      warning("symmetric_cols not found in target_cols: ",
-              paste(bad, collapse = ", "))
+      stop("symmetric_cols not found in target_cols: ",
+           paste(bad, collapse = ", "))
     }
   }
 

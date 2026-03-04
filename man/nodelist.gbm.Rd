@@ -4,24 +4,43 @@
 \alias{nodelist.gbm}
 \title{Extract Node List from GBM Model}
 \usage{
-\method{nodelist}{gbm}(input_object, ...)
+\method{nodelist}{gbm}(input_object, treenum = NULL, ...)
 }
 \arguments{
-\item{input_object}{A gbm model object from the gbm package}
+\item{input_object}{A gbm model object from the \pkg{gbm} package}
 
-\item{...}{Additional arguments for future implementation}
+\item{treenum}{Integer vector of 1-based tree numbers to extract
+(default: \code{NULL} extracts all trees).}
+
+\item{...}{Additional arguments (currently unused)}
 }
 \value{
-A data.frame with node information (to be implemented)
+A data.frame with one row per real node and the following columns:
+  \describe{
+    \item{name}{0-based node ID within the tree}
+    \item{is_leaf}{Logical: \code{TRUE} for terminal nodes}
+    \item{split_var}{0-based variable index (\code{NA} for leaves)}
+    \item{split_var_name}{Variable name (\code{NA} for leaves)}
+    \item{split_point}{Split threshold (\code{NA} for leaves)}
+    \item{prediction}{Prediction value at the node}
+    \item{treenum}{1-based tree number}
+    \item{label}{Display label: variable name for splits, prediction
+      for leaves}
+  }
 }
 \description{
-Extracts node-level information from a gbm model. This is a
-placeholder implementation that needs to be developed.
+Extracts node-level attributes from a gbm model via
+\code{pretty.gbm.tree()}.  Missing-sentinel nodes are excluded by
+keeping only nodes reachable through \code{LeftNode}/\code{RightNode}
+edges from the root.
 }
 \examples{
-\dontrun{
 if (requireNamespace("gbm", quietly = TRUE)) {
-  # node_list <- nodelist(fit)  # Not yet implemented
-}
+  set.seed(1)
+  fit <- gbm::gbm(mpg ~ ., data = mtcars,
+                   distribution = "gaussian", n.trees = 5,
+                   interaction.depth = 3, n.minobsinnode = 3)
+  nl <- nodelist(fit)
+  head(nl)
 }
 }
