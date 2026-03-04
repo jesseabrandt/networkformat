@@ -587,6 +587,40 @@ test_that("nodelist.xgb.Booster label column exists", {
   expect_equal(internal$label, internal$feature)
 })
 
+test_that("nodelist.xgb.Booster leaf labels show rounded quality scores", {
+  skip_if_not_installed("xgboost")
+
+  data(agaricus.train, package = "xgboost")
+  bst <- xgboost::xgboost(data = agaricus.train$data,
+                            label = agaricus.train$label,
+                            max_depth = 2, nrounds = 2,
+                            objective = "binary:logistic", verbose = 0)
+  nl <- nodelist(bst)
+  leaves <- nl[nl$is_leaf, ]
+
+  # Leaf labels should be the rounded quality score as a string
+  expected <- as.character(round(leaves$quality, 4))
+  expect_equal(leaves$label, expected)
+})
+
+test_that("nodelist.xgb.Booster treenum NULL returns all trees", {
+  skip_if_not_installed("xgboost")
+
+  data(agaricus.train, package = "xgboost")
+  bst <- xgboost::xgboost(data = agaricus.train$data,
+                            label = agaricus.train$label,
+                            max_depth = 2, nrounds = 3,
+                            objective = "binary:logistic", verbose = 0)
+
+  nl_all <- nodelist(bst)
+  nl_1 <- nodelist(bst, treenum = 1)
+  nl_2 <- nodelist(bst, treenum = 2)
+  nl_3 <- nodelist(bst, treenum = 3)
+
+  expect_equal(nrow(nl_all), nrow(nl_1) + nrow(nl_2) + nrow(nl_3))
+  expect_equal(sort(unique(nl_all$treenum)), c(1L, 2L, 3L))
+})
+
 # --- nodelist.gbm tests ---
 
 test_that("nodelist.gbm returns expected columns", {
@@ -688,6 +722,22 @@ test_that("nodelist.gbm label column exists", {
   expect_equal(internal$label, internal$split_var_name)
 })
 
+test_that("nodelist.gbm leaf labels show rounded prediction values", {
+  skip_if_not_installed("gbm")
+
+  set.seed(42)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                     n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
+  )
+  nl <- nodelist(fit)
+  leaves <- nl[nl$is_leaf, ]
+
+  # Leaf labels should be the rounded prediction as a string
+  expected <- as.character(round(leaves$prediction, 4))
+  expect_equal(leaves$label, expected)
+})
+
 test_that("nodelist.gbm node IDs match edgelist", {
   skip_if_not_installed("gbm")
 
@@ -703,4 +753,22 @@ test_that("nodelist.gbm node IDs match edgelist", {
     edge_nodes <- sort(unique(c(el_t$from, el_t$to)))
     expect_true(all(edge_nodes %in% nl_t$name))
   }
+})
+
+test_that("nodelist.gbm treenum NULL returns all trees", {
+  skip_if_not_installed("gbm")
+
+  set.seed(42)
+  suppressWarnings(
+    fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                     n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
+  )
+
+  nl_all <- nodelist(fit)
+  nl_1 <- nodelist(fit, treenum = 1)
+  nl_2 <- nodelist(fit, treenum = 2)
+  nl_3 <- nodelist(fit, treenum = 3)
+
+  expect_equal(nrow(nl_all), nrow(nl_1) + nrow(nl_2) + nrow(nl_3))
+  expect_equal(sort(unique(nl_all$treenum)), c(1L, 2L, 3L))
 })

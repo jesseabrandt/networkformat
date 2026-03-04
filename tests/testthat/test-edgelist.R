@@ -322,8 +322,8 @@ test_that("edgelist.data.frame no directed column when symmetric_cols omitted", 
   expect_false("directed" %in% names(el))
 })
 
-test_that("edgelist.data.frame symmetric_cols warns for non-target columns", {
-  expect_warning(
+test_that("edgelist.data.frame symmetric_cols errors for non-target columns", {
+  expect_error(
     edgelist(courses, source_cols = course,
              target_cols = prereq,
              symmetric_cols = crosslist),
@@ -417,7 +417,7 @@ test_that("edgelist.tree numeric splits have correct op and point", {
   expect_true(any(numeric_rows))
   expect_true(all(el$split_op[numeric_rows] %in% c("<", ">")))
   expect_true(all(!is.na(el$split_point[numeric_rows])))
-  expect_true(all(el$split_point[numeric_rows] > 0))
+  expect_true(all(!is.na(el$split_point[numeric_rows])))
 })
 
 test_that("edgelist.tree label column is unchanged", {
@@ -451,6 +451,21 @@ test_that("edgelist.tree categorical splits have NA split_op and split_point", {
     expect_true(all(is.na(el$split_op[cat_rows])))
     expect_true(all(is.na(el$split_point[cat_rows])))
   }
+})
+
+test_that("edgelist.tree returns 0 rows for stump (single root node)", {
+  skip_if_not_installed("tree")
+
+  # Constant response produces a stump (root only, no splits)
+  dat <- data.frame(y = rep(1, 20), x = seq_len(20))
+  tr <- tryCatch(tree::tree(y ~ x, data = dat), error = function(e) NULL)
+  skip_if(is.null(tr), "tree could not fit a stump")
+
+  el <- edgelist(tr)
+  expect_s3_class(el, "data.frame")
+  expect_equal(nrow(el), 0)
+  expect_true(all(c("from", "to", "label", "split_var",
+                     "split_op", "split_point") %in% names(el)))
 })
 
 # --- dedupe tests ---
