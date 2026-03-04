@@ -67,13 +67,18 @@ edgelist.gbm <- function(input_object, treenum = NULL, ...) {
 
     from_ids <- as.integer(rownames(internal))
 
+    # Map node IDs (from rownames) to their prediction values to avoid
+    # assuming any particular row ordering in pretty.gbm.tree().
+    pred_by_node <- setNames(pt$Prediction, rownames(pt))
+    left_pred  <- pred_by_node[as.character(internal$LeftNode)]
+    right_pred <- pred_by_node[as.character(internal$RightNode)]
+
     edges <- data.frame(
       from           = c(from_ids, from_ids),
       to             = c(internal$LeftNode, internal$RightNode),
       split_var      = c(internal$SplitVar, internal$SplitVar),
       split_point    = c(internal$SplitCodePred, internal$SplitCodePred),
-      prediction     = c(pt$Prediction[internal$LeftNode + 1L],
-                         pt$Prediction[internal$RightNode + 1L]),
+      prediction     = c(left_pred, right_pred),
       treenum        = tn,
       split_var_name = input_object$var.names[
         c(internal$SplitVar, internal$SplitVar) + 1L
