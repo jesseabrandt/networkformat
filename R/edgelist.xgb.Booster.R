@@ -30,7 +30,7 @@
 #'     data = agaricus.train$data,
 #'     label = agaricus.train$label,
 #'     max_depth = 2, nrounds = 2,
-#'     objective = "binary:logistic", verbose = 0
+#'     objective = "reg:logistic", verbose = 0
 #'   )
 #'   el <- edgelist(bst)
 #'   head(el)

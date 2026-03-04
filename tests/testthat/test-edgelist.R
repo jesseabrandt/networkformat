@@ -771,7 +771,7 @@ test_that("edgelist.xgb.Booster produces data frame with expected columns", {
   bst <- xgboost::xgboost(data = agaricus.train$data,
                             label = agaricus.train$label,
                             max_depth = 2, nrounds = 2,
-                            objective = "binary:logistic", verbose = 0)
+                            objective = "reg:logistic", verbose = 0)
   el <- edgelist(bst)
 
   expect_s3_class(el, "data.frame")
@@ -787,7 +787,7 @@ test_that("edgelist.xgb.Booster string IDs are globally unique", {
   bst <- xgboost::xgboost(data = agaricus.train$data,
                             label = agaricus.train$label,
                             max_depth = 3, nrounds = 3,
-                            objective = "binary:logistic", verbose = 0)
+                            objective = "reg:logistic", verbose = 0)
   el <- edgelist(bst)
 
   # All to-nodes should be unique (each child has exactly one parent)
@@ -801,7 +801,7 @@ test_that("edgelist.xgb.Booster treenum filters correctly", {
   bst <- xgboost::xgboost(data = agaricus.train$data,
                             label = agaricus.train$label,
                             max_depth = 2, nrounds = 5,
-                            objective = "binary:logistic", verbose = 0)
+                            objective = "reg:logistic", verbose = 0)
 
   el1 <- edgelist(bst, treenum = 1)
   expect_equal(unique(el1$treenum), 1L)
@@ -817,7 +817,7 @@ test_that("edgelist.xgb.Booster treenum NULL returns all trees", {
   bst <- xgboost::xgboost(data = agaricus.train$data,
                             label = agaricus.train$label,
                             max_depth = 2, nrounds = 3,
-                            objective = "binary:logistic", verbose = 0)
+                            objective = "reg:logistic", verbose = 0)
 
   el_null <- edgelist(bst, treenum = NULL)
   el_default <- edgelist(bst)
@@ -831,7 +831,7 @@ test_that("edgelist.xgb.Booster treenum validates range", {
   bst <- xgboost::xgboost(data = agaricus.train$data,
                             label = agaricus.train$label,
                             max_depth = 2, nrounds = 2,
-                            objective = "binary:logistic", verbose = 0)
+                            objective = "reg:logistic", verbose = 0)
 
   expect_error(edgelist(bst, treenum = 0), "treenum must be between")
   expect_error(edgelist(bst, treenum = 10), "treenum must be between")
@@ -844,9 +844,10 @@ test_that("edgelist.xgb.Booster multi-class model works", {
 
   X <- as.matrix(iris[, 1:4])
   y <- as.integer(iris$Species) - 1L
-  bst <- xgboost::xgboost(data = X, label = y,
-                            objective = "multi:softmax", num_class = 3,
-                            nrounds = 2, max_depth = 3, verbose = 0)
+  dtrain <- xgboost::xgb.DMatrix(data = X, label = y)
+  bst <- xgboost::xgb.train(
+    params = list(objective = "multi:softmax", num_class = 3, max_depth = 3),
+    data = dtrain, nrounds = 2, verbose = 0)
   el <- edgelist(bst)
 
   # 3 classes * 2 rounds = 6 trees
