@@ -1,0 +1,234 @@
+# networkformat
+
+**networkformat** converts R objects into network edgelist/nodelist
+format for visualization and analysis with packages like igraph,
+tidygraph, and ggraph. It works with tree-based ML models
+(`randomForest`, `tree`, `rpart`, `xgboost`, `gbm`), data frames, and
+vectors.
+
+Full documentation at <https://jesseabrandt.github.io/networkformat/>.
+
+## Installation
+
+``` r
+# install.packages("devtools")
+devtools::install_github("jesseabrandt/networkformat")
+```
+
+## Quick start
+
+``` r
+library(networkformat)
+
+# Vectors --- sequential chain of edges
+edgelist(c("A", "B", "C", "D"))
+#>   from to
+#> 1    A  B
+#> 2    B  C
+#> 3    C  D
+
+nodelist(c("A", "B", "A", "C"))
+#>   name n
+#> 1    A 2
+#> 2    B 1
+#> 3    C 1
+
+# Data frames --- column pairs become edges
+edgelist(courses, source_cols = course, target_cols = prereq)
+
+# Tree models --- one-step graph conversion
+library(tree)
+tr <- tree(Species ~ ., data = iris)
+as_igraph(tr)
+```
+
+## Supported inputs
+
+| Input                              | [`edgelist()`](https://jesseabrandt.github.io/networkformat/reference/edgelist.md) | [`nodelist()`](https://jesseabrandt.github.io/networkformat/reference/nodelist.md) | [`as_igraph()`](https://jesseabrandt.github.io/networkformat/reference/as_igraph.md) / [`as_tbl_graph()`](https://jesseabrandt.github.io/networkformat/reference/as_tbl_graph.md) |
+|------------------------------------|:----------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| **vector** (character, numeric, …) |                            sequential edges `i -> i+1`                             |                            unique values with frequency                            |                                                                                         —                                                                                         |
+| **data.frame**                     |                                 column-pair edges                                  |                            reorder with `id_col` first                             |                                                                                         —                                                                                         |
+| **randomForest**                   |                                parent-child splits                                 |                              node attributes per tree                              |                                                                            single or multi-tree graph                                                                             |
+| **tree**                           |                          parent-child splits with labels                           |                                  node attributes                                   |                                                                                  full tree graph                                                                                  |
+| **rpart**                          |                          parent-child splits with labels                           |                                  node attributes                                   |                                                                                  full tree graph                                                                                  |
+| **xgb.Booster** (xgboost)          |                                parent-child splits                                 |                              node attributes per tree                              |                                                                            single or multi-tree graph                                                                             |
+| **gbm**                            |                                parent-child splits                                 |                              node attributes per tree                              |                                                                            single or multi-tree graph                                                                             |
+
+## Vectors
+
+Any atomic vector becomes a sequential edgelist: element `i` connects to
+element `i + 1`.
+
+``` r
+edgelist(c("intro", "basics", "advanced", "project"))
+#>       from       to
+#> 1    intro   basics
+#> 2   basics advanced
+#> 3 advanced  project
+
+# Collapse duplicate edges with a count
+edgelist(c("A", "B", "A", "B", "C"), weights = TRUE)
+#>   from to weight
+#> 1    A  B      2
+#> 2    B  A      1
+#> 3    B  C      1
+
+# Node list gives unique values and frequencies
+nodelist(c("A", "B", "A", "B", "C"))
+#>   name n
+#> 1    A 2
+#> 2    B 2
+#> 3    C 1
+```
+
+## Data frames
+
+Specify which columns are source/target nodes. All other columns are
+carried as edge attributes by default.
+
+``` r
+# Basic edgelist from two columns
+edgelist(courses, source_cols = course, target_cols = prereq)
+
+# Multiple target columns (Cartesian product of source x target)
+edgelist(courses, source_cols = course, target_cols = c(prereq, crosslist))
+
+# Keep only specific attribute columns
+edgelist(courses, source_cols = course, target_cols = prereq,
+         attr_cols = c(dept, credits))
+
+# Symmetric (undirected) edges with deduplication
+edgelist(courses, source_cols = course,
+         target_cols = c(prereq, crosslist),
+         symmetric_cols = crosslist)
+
+# Collapse duplicate rows and count them
+edgelist(courses, source_cols = course, target_cols = prereq,
+         weights = TRUE)
+```
+
+Key parameters:
+
+- `na.rm = TRUE` (default) — remove edges where from or to is `NA`
+- `symmetric_cols` — mark target columns as undirected; adds a
+  `directed` column
+- `dedupe = TRUE` (default) — when using `symmetric_cols`, keep only one
+  direction (`from <= to`)
+- `weights = TRUE` — collapse identical rows and add a `weight` count
+  column
+
+## Tree models
+
+### randomForest
+
+``` r
+library(randomForest)
+
+rf <- randomForest(Species ~ ., data = iris, ntree = 5)
+
+# Edgelist for all trees
+el <- edgelist(rf)
+head(el)
+#> Columns: from, to, split_var, split_point, prediction, treenum, split_var_name
+
+# Extract specific trees
+el_1 <- edgelist(rf, treenum = 1)
+el_13 <- edgelist(rf, treenum = c(1, 3))
+
+# Node list
+nl <- nodelist(rf)
+head(nl)
+#> Columns: name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label
+```
+
+### tree
+
+``` r
+library(tree)
+
+tr <- tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+
+# Edgelist with parsed split components
+el <- edgelist(tr)
+head(el)
+#> Columns: from, to, label, split_var, split_op, split_point
+
+# Node list
+nl <- nodelist(tr)
+head(nl)
+#> Columns: name, var, n, dev, yval, is_leaf, label
+```
+
+## Graph conversion
+
+Skip the edgelist/nodelist step and go straight to an igraph or
+tbl_graph:
+
+``` r
+library(tree)
+
+tr <- tree(Species ~ ., data = iris)
+
+# igraph
+g <- as_igraph(tr)
+
+# tidygraph
+tg <- as_tbl_graph(tr)
+
+# randomForest (single tree or multiple as disconnected components)
+library(randomForest)
+rf <- randomForest(Species ~ ., data = iris, ntree = 3)
+g_rf <- as_igraph(rf, treenum = 1)
+```
+
+## Visualization
+
+``` r
+library(ggraph)
+library(tidygraph)
+library(tree)
+
+tr <- tree(Species ~ ., data = iris)
+
+as_tbl_graph(tr) |>
+  ggraph(layout = "tree") +
+  geom_edge_link(arrow = arrow(length = unit(2, "mm")),
+                 end_cap = circle(3, "mm")) +
+  geom_node_point(aes(color = is_leaf), size = 4) +
+  geom_node_text(aes(label = label), size = 3, vjust = -0.8) +
+  theme_graph()
+```
+
+## Extending the package
+
+To add support for a new model class:
+
+1.  Create `R/edgelist.newclass.R` with
+    `edgelist.newclass(input_object, ...)`
+2.  Add `@export` roxygen tag
+3.  Run `devtools::document()` to update NAMESPACE
+4.  Add tests in `tests/testthat/`
+5.  See `R/edgelist.randomForest.R` as a reference
+
+## Related packages
+
+- [randomForest](https://cran.r-project.org/package=randomForest) —
+  random forest models
+- [tree](https://cran.r-project.org/package=tree) — classification and
+  regression trees
+- [rpart](https://cran.r-project.org/package=rpart) — recursive
+  partitioning trees
+- [xgboost](https://cran.r-project.org/package=xgboost) — gradient
+  boosting
+- [gbm](https://cran.r-project.org/package=gbm) — generalized boosted
+  models
+- [igraph](https://cran.r-project.org/package=igraph) — network analysis
+  and visualization
+- [tidygraph](https://cran.r-project.org/package=tidygraph) — tidy graph
+  manipulation
+- [ggraph](https://cran.r-project.org/package=ggraph) — grammar of
+  graphics for networks
+
+## License
+
+MIT
