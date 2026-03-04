@@ -194,12 +194,11 @@ ggraph(tg_gb, layout = "tree") +
 ## XGBoost (xgb.Booster)
 
 ```{r xgboost, eval = requireNamespace("xgboost", quietly = TRUE)}
-xg_mat <- xgboost::xgb.DMatrix(as.matrix(iris[, 1:4]),
-                                label = as.numeric(iris$Species) - 1)
 set.seed(42)
-xg <- xgboost::xgb.train(
-  params = list(objective = "multi:softmax", num_class = 3, max_depth = 3),
-  data = xg_mat, nrounds = 3, verbose = 0
+xg <- xgboost::xgboost(
+  x = as.matrix(iris[, 1:4]),
+  y = iris$Species,
+  max_depth = 3, nrounds = 3, nthreads = 1
 )
 
 tg_xg <- as_tbl_graph(xg, treenum = 1) %>%

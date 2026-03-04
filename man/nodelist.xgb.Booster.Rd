@@ -39,10 +39,9 @@ columns produced by \code{\link{edgelist.xgb.Booster}}.
 if (requireNamespace("xgboost", quietly = TRUE)) {
   data(agaricus.train, package = "xgboost")
   bst <- xgboost::xgboost(
-    data = agaricus.train$data,
-    label = agaricus.train$label,
-    max_depth = 2, nrounds = 2,
-    objective = "reg:logistic", verbose = 0
+    x = agaricus.train$data,
+    y = factor(agaricus.train$label),
+    max_depth = 2, nrounds = 2, nthreads = 1
   )
   nl <- nodelist(bst)
   head(nl)

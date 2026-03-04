@@ -497,10 +497,11 @@ test_that("nodelist.xgb.Booster returns expected columns", {
   skip_if_not_installed("xgboost")
 
   data(agaricus.train, package = "xgboost")
-  bst <- xgboost::xgboost(data = agaricus.train$data,
-                            label = agaricus.train$label,
-                            max_depth = 2, nrounds = 2,
-                            objective = "reg:logistic", verbose = 0)
+  dtrain <- xgboost::xgb.DMatrix(data = agaricus.train$data,
+                                   label = agaricus.train$label)
+  bst <- xgboost::xgb.train(
+    params = list(max_depth = 2, objective = "binary:logistic"),
+    data = dtrain, nrounds = 2, verbose = 0)
   nl <- nodelist(bst)
 
   expect_s3_class(nl, "data.frame")
@@ -512,10 +513,11 @@ test_that("nodelist.xgb.Booster leaves have NA feature and split", {
   skip_if_not_installed("xgboost")
 
   data(agaricus.train, package = "xgboost")
-  bst <- xgboost::xgboost(data = agaricus.train$data,
-                            label = agaricus.train$label,
-                            max_depth = 2, nrounds = 2,
-                            objective = "reg:logistic", verbose = 0)
+  dtrain <- xgboost::xgb.DMatrix(data = agaricus.train$data,
+                                   label = agaricus.train$label)
+  bst <- xgboost::xgb.train(
+    params = list(max_depth = 2, objective = "binary:logistic"),
+    data = dtrain, nrounds = 2, verbose = 0)
   nl <- nodelist(bst)
 
   leaves <- nl[nl$is_leaf, ]
@@ -527,10 +529,11 @@ test_that("nodelist.xgb.Booster treenum filters correctly", {
   skip_if_not_installed("xgboost")
 
   data(agaricus.train, package = "xgboost")
-  bst <- xgboost::xgboost(data = agaricus.train$data,
-                            label = agaricus.train$label,
-                            max_depth = 2, nrounds = 5,
-                            objective = "reg:logistic", verbose = 0)
+  dtrain <- xgboost::xgb.DMatrix(data = agaricus.train$data,
+                                   label = agaricus.train$label)
+  bst <- xgboost::xgb.train(
+    params = list(max_depth = 2, objective = "binary:logistic"),
+    data = dtrain, nrounds = 5, verbose = 0)
 
   nl1 <- nodelist(bst, treenum = 1)
   expect_equal(unique(nl1$treenum), 1L)
@@ -543,10 +546,11 @@ test_that("nodelist.xgb.Booster treenum validates range", {
   skip_if_not_installed("xgboost")
 
   data(agaricus.train, package = "xgboost")
-  bst <- xgboost::xgboost(data = agaricus.train$data,
-                            label = agaricus.train$label,
-                            max_depth = 2, nrounds = 2,
-                            objective = "reg:logistic", verbose = 0)
+  dtrain <- xgboost::xgb.DMatrix(data = agaricus.train$data,
+                                   label = agaricus.train$label)
+  bst <- xgboost::xgb.train(
+    params = list(max_depth = 2, objective = "binary:logistic"),
+    data = dtrain, nrounds = 2, verbose = 0)
 
   expect_error(nodelist(bst, treenum = 0), "treenum must be between")
   expect_error(nodelist(bst, treenum = 10), "treenum must be between")
@@ -558,10 +562,11 @@ test_that("nodelist.xgb.Booster node IDs match edgelist", {
   skip_if_not_installed("xgboost")
 
   data(agaricus.train, package = "xgboost")
-  bst <- xgboost::xgboost(data = agaricus.train$data,
-                            label = agaricus.train$label,
-                            max_depth = 3, nrounds = 2,
-                            objective = "reg:logistic", verbose = 0)
+  dtrain <- xgboost::xgb.DMatrix(data = agaricus.train$data,
+                                   label = agaricus.train$label)
+  bst <- xgboost::xgb.train(
+    params = list(max_depth = 3, objective = "binary:logistic"),
+    data = dtrain, nrounds = 2, verbose = 0)
 
   nl <- nodelist(bst, treenum = 1)
   el <- edgelist(bst, treenum = 1)
@@ -573,10 +578,11 @@ test_that("nodelist.xgb.Booster label column exists", {
   skip_if_not_installed("xgboost")
 
   data(agaricus.train, package = "xgboost")
-  bst <- xgboost::xgboost(data = agaricus.train$data,
-                            label = agaricus.train$label,
-                            max_depth = 2, nrounds = 2,
-                            objective = "reg:logistic", verbose = 0)
+  dtrain <- xgboost::xgb.DMatrix(data = agaricus.train$data,
+                                   label = agaricus.train$label)
+  bst <- xgboost::xgb.train(
+    params = list(max_depth = 2, objective = "binary:logistic"),
+    data = dtrain, nrounds = 2, verbose = 0)
   nl <- nodelist(bst)
 
   expect_true("label" %in% names(nl))
@@ -591,10 +597,11 @@ test_that("nodelist.xgb.Booster leaf labels show rounded quality scores", {
   skip_if_not_installed("xgboost")
 
   data(agaricus.train, package = "xgboost")
-  bst <- xgboost::xgboost(data = agaricus.train$data,
-                            label = agaricus.train$label,
-                            max_depth = 2, nrounds = 2,
-                            objective = "reg:logistic", verbose = 0)
+  dtrain <- xgboost::xgb.DMatrix(data = agaricus.train$data,
+                                   label = agaricus.train$label)
+  bst <- xgboost::xgb.train(
+    params = list(max_depth = 2, objective = "binary:logistic"),
+    data = dtrain, nrounds = 2, verbose = 0)
   nl <- nodelist(bst)
   leaves <- nl[nl$is_leaf, ]
 
@@ -607,10 +614,11 @@ test_that("nodelist.xgb.Booster treenum NULL returns all trees", {
   skip_if_not_installed("xgboost")
 
   data(agaricus.train, package = "xgboost")
-  bst <- xgboost::xgboost(data = agaricus.train$data,
-                            label = agaricus.train$label,
-                            max_depth = 2, nrounds = 3,
-                            objective = "reg:logistic", verbose = 0)
+  dtrain <- xgboost::xgb.DMatrix(data = agaricus.train$data,
+                                   label = agaricus.train$label)
+  bst <- xgboost::xgb.train(
+    params = list(max_depth = 2, objective = "binary:logistic"),
+    data = dtrain, nrounds = 3, verbose = 0)
 
   nl_all <- nodelist(bst)
   nl_1 <- nodelist(bst, treenum = 1)
