@@ -306,6 +306,8 @@ print(sort(deg_out[deg_out > 0], decreasing = TRUE))
 | `xgb.Booster` | `from`, `to`, `feature`, `split`, `quality`, `cover`, `treenum` |
 | `gbm` | `from`, `to`, `split_var`, `split_point`, `prediction`, `treenum`, `split_var_name` |
 
+> **Note:** rpart uses `<` and `>=` for split operators, while tree uses `<` and `>`.
+
 ## nodelist()
 
 | Input class | Columns returned |

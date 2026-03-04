@@ -22,7 +22,7 @@ library(igraph)
 This article plots every model type supported by networkformat. Use it as a
 visual sanity check --- every node label, edge direction, and colour mapping
 should look reasonable. For the raw output behind these plots, see
-`vignette("complete-method-reference", package = "networkformat")`.
+the [complete method reference](complete-method-reference.html).
 
 ## Decision tree (tree)
 

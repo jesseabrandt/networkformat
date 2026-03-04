@@ -5,9 +5,7 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/jesseabrandt/networkformat/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jesseabrandt/networkformat/actions/workflows/R-CMD-check.yaml)
-[![Codecov test
-coverage](https://codecov.io/gh/jesseabrandt/networkformat/branch/main/graph/badge.svg)](https://codecov.io/gh/jesseabrandt/networkformat?branch=main)
+[![R-CMD-check](https://github.com/jesseabrandt/networkformat/actions/workflows/r.yml/badge.svg)](https://github.com/jesseabrandt/networkformat/actions/workflows/r.yml)
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
@@ -18,8 +16,7 @@ tidygraph, and ggraph. It works with tree-based ML models
 (`randomForest`, `tree`, `rpart`, `xgboost`, `gbm`), data frames, and
 vectors.
 
-Full documentation (pending) at
-<https://jesseabrandt.github.io/networkformat/>.
+Full documentation at <https://jesseabrandt.github.io/networkformat/>.
 
 ## Installation
 
