@@ -103,8 +103,8 @@ edgelist(courses, source_cols = prereq, target_cols = course, weights = TRUE)
 
 ```{r}
 edgelist(courses,
-         source_cols = c(prereq, crosslist),
-         target_cols = course,
+         source_cols = course,
+         target_cols = c(prereq, crosslist),
          symmetric_cols = crosslist)
 ```
 
