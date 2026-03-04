@@ -20,4 +20,4 @@
 #'
 #' # Node list with course as ID (column 2)
 #' nodelist(courses, id_col = 2)
-nodelist <- function(input_object, ...){UseMethod("nodelist")}
+nodelist <- function(input_object, ...) UseMethod("nodelist")

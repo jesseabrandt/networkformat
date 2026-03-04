@@ -47,11 +47,12 @@ edgelist.xgb.Booster <- function(input_object, treenum = NULL, ...) {
     dt$Quality <- dt$Gain
   }
 
+  if (nrow(dt) == 0L) {
+    stop("xgb.model.dt.tree() returned no rows; the model may have no trees.")
+  }
+
   # xgboost uses 0-based tree indices; our treenum is 1-based
   if (!is.null(treenum)) {
-    if (nrow(dt) == 0L) {
-      stop("xgb.model.dt.tree() returned no rows; the model may have no trees.")
-    }
     n_trees <- max(dt$Tree) + 1L
     treenum_int <- .validate_treenum(treenum, n_trees)
     dt <- dt[dt$Tree %in% (treenum_int - 1L), ]

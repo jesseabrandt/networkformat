@@ -1,7 +1,7 @@
 #' Extract Edgelist from RandomForest Model
 #'
 #' Converts a randomForest model object into a network edgelist representation
-#' by extracting parent-child relationships from all trees in the forest. Each
+#' by extracting parent-child relationships from one or more trees in the forest. Each
 #' edge represents a split in the decision tree, with additional attributes
 #' including split variable, split point, and prediction values.
 #'
@@ -65,6 +65,7 @@ edgelist.randomForest <- function(input_object, treenum = NULL, ...){
   }
   forest_edge <- lapply(tree_indices, convert_tree)
   forest_df <- do.call(rbind, forest_edge)
+  rownames(forest_df) <- NULL
   var_names <- names(input_object$forest$ncat)
   forest_df$split_var_name <- var_names[forest_df$split_var]
   return(forest_df)

@@ -67,7 +67,7 @@ edgelist.gbm <- function(input_object, treenum = NULL, ...) {
 
     from_ids <- as.integer(rownames(internal))
 
-    data.frame(
+    edges <- data.frame(
       from           = c(from_ids, from_ids),
       to             = c(internal$LeftNode, internal$RightNode),
       split_var      = c(internal$SplitVar, internal$SplitVar),
@@ -80,8 +80,15 @@ edgelist.gbm <- function(input_object, treenum = NULL, ...) {
       ],
       stringsAsFactors = FALSE
     )
+
+    # Exclude edges pointing to missing-sentinel nodes
+    real_ids <- sort(unique(c(from_ids, internal$LeftNode, internal$RightNode)))
+    edges <- edges[edges$to %in% real_ids, ]
+    edges
   }
 
   edge_list <- lapply(tree_indices, convert_tree)
-  do.call(rbind, edge_list)
+  result <- do.call(rbind, edge_list)
+  rownames(result) <- NULL
+  result
 }

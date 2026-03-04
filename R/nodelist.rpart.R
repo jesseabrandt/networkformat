@@ -42,7 +42,7 @@ nodelist.rpart <- function(input_object, ...) {
   # For classification trees, decode yval to class name
   ylevels <- attr(input_object, "ylevels")
   if (!is.null(ylevels)) {
-    yval <- ylevels[frame$yval]
+    yval <- ylevels[as.integer(frame$yval)]
   } else {
     yval <- frame$yval
   }

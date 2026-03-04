@@ -114,8 +114,8 @@ edgelist.data.frame <- function(input_object, source_cols = 1, target_cols = 2,
     target_names_set <- names(target_pos)
     bad <- setdiff(sym_names, target_names_set)
     if (length(bad) > 0) {
-      warning("symmetric_cols not found in target_cols: ",
-              paste(bad, collapse = ", "))
+      stop("symmetric_cols not found in target_cols: ",
+           paste(bad, collapse = ", "))
     }
   }
 

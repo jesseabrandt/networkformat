@@ -9,6 +9,8 @@
 \alias{as_tbl_graph.gbm}
 \title{Convert to tbl_graph}
 \usage{
+as_tbl_graph(x, ...)
+
 \method{as_tbl_graph}{tree}(x, ...)
 
 \method{as_tbl_graph}{randomForest}(x, treenum = NULL, ...)
@@ -35,7 +37,7 @@ to extract one tree.}
 A \code{\link[tidygraph]{tbl_graph}} object.
 }
 \description{
-S3 methods for the \code{\link[tidygraph]{as_tbl_graph}} generic
-from the \pkg{tidygraph} package.  Each method wraps the
-corresponding \code{\link{as_igraph}} method.
+Generic function and S3 methods for converting tree-based model
+objects into \code{\link[tidygraph]{tbl_graph}} objects.  Each
+method wraps the corresponding \code{\link{as_igraph}} method.
 }

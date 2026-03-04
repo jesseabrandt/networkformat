@@ -44,6 +44,16 @@ edgelist.tree <- function(input_object, ...){
   # tree uses binary heap node IDs: root = 1, left = 2k, right = 2k + 1
   node_ids <- as.integer(rownames(df))
 
+  # Stump: single root node with no children
+  if (length(node_ids) <= 1L) {
+    return(data.frame(
+      from = integer(0), to = integer(0),
+      label = character(0), split_var = character(0),
+      split_op = character(0), split_point = numeric(0),
+      stringsAsFactors = FALSE
+    ))
+  }
+
   # Every non-root node's parent is node_id %/% 2
   child_ids <- node_ids[node_ids != 1L]
   parent_ids <- child_ids %/% 2L

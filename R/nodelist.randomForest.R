@@ -83,5 +83,7 @@ nodelist.randomForest <- function(input_object, treenum = NULL, ...) {
   }
 
   node_list <- lapply(tree_indices, convert_tree)
-  do.call(rbind, node_list)
+  result <- do.call(rbind, node_list)
+  rownames(result) <- NULL
+  result
 }

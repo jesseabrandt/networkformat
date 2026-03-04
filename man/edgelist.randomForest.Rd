@@ -29,7 +29,7 @@ A data.frame with the following columns:
 }
 \description{
 Converts a randomForest model object into a network edgelist representation
-by extracting parent-child relationships from all trees in the forest. Each
+by extracting parent-child relationships from one or more trees in the forest. Each
 edge represents a split in the decision tree, with additional attributes
 including split variable, split point, and prediction values.
 }
