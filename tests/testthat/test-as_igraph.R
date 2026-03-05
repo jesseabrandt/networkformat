@@ -7,7 +7,7 @@ test_that("as.igraph.tree returns igraph object", {
   skip_if_not_installed("igraph")
 
   tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
-  g <- as.igraph(tr)
+  g <- igraph::as.igraph(tr)
 
   expect_true(igraph::is_igraph(g))
   expect_true(igraph::is_directed(g))
@@ -18,7 +18,7 @@ test_that("as.igraph.tree has correct vertex and edge count", {
   skip_if_not_installed("igraph")
 
   tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
-  g <- as.igraph(tr)
+  g <- igraph::as.igraph(tr)
   nl <- nodelist(tr)
   el <- edgelist(tr)
 
@@ -31,7 +31,7 @@ test_that("as.igraph.tree has vertex attributes from nodelist", {
   skip_if_not_installed("igraph")
 
   tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
-  g <- as.igraph(tr)
+  g <- igraph::as.igraph(tr)
 
   vattrs <- igraph::vertex_attr_names(g)
   expect_true("var" %in% vattrs)
@@ -45,7 +45,7 @@ test_that("as.igraph.tree has edge attributes from edgelist", {
   skip_if_not_installed("igraph")
 
   tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
-  g <- as.igraph(tr)
+  g <- igraph::as.igraph(tr)
 
   eattrs <- igraph::edge_attr_names(g)
   expect_true("label" %in% eattrs)
@@ -61,7 +61,7 @@ test_that("as.igraph.randomForest treenum=1 returns single igraph", {
 
   set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
-  g <- as.igraph(rf, treenum = 1)
+  g <- igraph::as.igraph(rf, treenum = 1)
 
   expect_true(igraph::is_igraph(g))
   expect_true(igraph::is_directed(g))
@@ -75,7 +75,7 @@ test_that("as.igraph.randomForest treenum=NULL returns combined graph", {
 
   set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
-  g <- as.igraph(rf, treenum = NULL)
+  g <- igraph::as.igraph(rf, treenum = NULL)
 
   expect_true(igraph::is_igraph(g))
   # Should have 3 disconnected components
@@ -91,7 +91,7 @@ test_that("as.igraph.randomForest multiple treenum returns combined graph", {
 
   set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 5)
-  g <- as.igraph(rf, treenum = c(2, 4))
+  g <- igraph::as.igraph(rf, treenum = c(2, 4))
 
   expect_true(igraph::is_igraph(g))
   expect_equal(igraph::components(g)$no, 2)
@@ -104,7 +104,7 @@ test_that("as.igraph.randomForest has vertex attributes", {
 
   set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
-  g <- as.igraph(rf, treenum = 1)
+  g <- igraph::as.igraph(rf, treenum = 1)
 
   vattrs <- igraph::vertex_attr_names(g)
   expect_true("is_leaf" %in% vattrs)
@@ -124,7 +124,7 @@ test_that("as.igraph.randomForest combined graph has correct total nodes", {
   n2 <- nrow(nodelist(rf, treenum = 2))
   n3 <- nrow(nodelist(rf, treenum = 3))
 
-  g <- as.igraph(rf, treenum = NULL)
+  g <- igraph::as.igraph(rf, treenum = NULL)
   expect_equal(igraph::vcount(g), n1 + n2 + n3)
 })
 
@@ -169,7 +169,7 @@ test_that("as.igraph.rpart returns igraph with correct counts", {
   skip_if_not_installed("igraph")
 
   fit <- rpart::rpart(Species ~ ., data = iris)
-  g <- as.igraph(fit)
+  g <- igraph::as.igraph(fit)
 
   expect_true(igraph::is_igraph(g))
   expect_true(igraph::is_directed(g))
@@ -182,7 +182,7 @@ test_that("as.igraph.rpart has vertex attributes from nodelist", {
   skip_if_not_installed("igraph")
 
   fit <- rpart::rpart(Species ~ ., data = iris)
-  g <- as.igraph(fit)
+  g <- igraph::as.igraph(fit)
 
   vattrs <- igraph::vertex_attr_names(g)
   expect_true("var" %in% vattrs)
@@ -212,7 +212,7 @@ test_that("as.igraph.xgb.Booster treenum=1 returns igraph", {
   bst <- xgboost::xgb.train(list(max_depth = 2, num_class = 3,
                                    objective = "multi:softmax"),
                               dm, nrounds = 2, verbose = 0)
-  g <- as.igraph(bst, treenum = 1)
+  g <- igraph::as.igraph(bst, treenum = 1)
 
   expect_true(igraph::is_igraph(g))
   expect_true(igraph::is_directed(g))
@@ -230,7 +230,7 @@ test_that("as.igraph.xgb.Booster treenum=NULL returns combined graph", {
   bst <- xgboost::xgb.train(list(max_depth = 2, num_class = 3,
                                    objective = "multi:softmax"),
                               dm, nrounds = 1, verbose = 0)
-  g <- as.igraph(bst, treenum = NULL)
+  g <- igraph::as.igraph(bst, treenum = NULL)
 
   expect_true(igraph::is_igraph(g))
   expect_true(igraph::vcount(g) > 0)
@@ -263,7 +263,7 @@ test_that("as.igraph.gbm treenum=1 returns igraph", {
                      distribution = "gaussian", n.trees = 3,
                      interaction.depth = 2, n.minobsinnode = 3)
   )
-  g <- as.igraph(fit, treenum = 1)
+  g <- igraph::as.igraph(fit, treenum = 1)
 
   expect_true(igraph::is_igraph(g))
   expect_true(igraph::is_directed(g))
@@ -281,7 +281,7 @@ test_that("as.igraph.gbm treenum=NULL returns combined graph", {
                      distribution = "gaussian", n.trees = 3,
                      interaction.depth = 2, n.minobsinnode = 3)
   )
-  g <- as.igraph(fit, treenum = NULL)
+  g <- igraph::as.igraph(fit, treenum = NULL)
 
   expect_true(igraph::is_igraph(g))
   expect_equal(igraph::components(g)$no, 3)
@@ -311,8 +311,8 @@ test_that("as.igraph.randomForest validates treenum range", {
   set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
 
-  expect_error(as.igraph(rf, treenum = 0), "treenum must be between")
-  expect_error(as.igraph(rf, treenum = 10), "treenum must be between")
+  expect_error(igraph::as.igraph(rf, treenum = 0), "treenum must be between")
+  expect_error(igraph::as.igraph(rf, treenum = 10), "treenum must be between")
 })
 
 test_that("as.igraph.xgb.Booster validates treenum range", {
@@ -326,8 +326,8 @@ test_that("as.igraph.xgb.Booster validates treenum range", {
                                    objective = "multi:softmax"),
                               dm, nrounds = 1, verbose = 0)
 
-  expect_error(as.igraph(bst, treenum = 0), "treenum must be between")
-  expect_error(as.igraph(bst, treenum = 100), "treenum must be between")
+  expect_error(igraph::as.igraph(bst, treenum = 0), "treenum must be between")
+  expect_error(igraph::as.igraph(bst, treenum = 100), "treenum must be between")
 })
 
 test_that("as.igraph.gbm validates treenum range", {
@@ -341,8 +341,8 @@ test_that("as.igraph.gbm validates treenum range", {
                      interaction.depth = 2, n.minobsinnode = 3)
   )
 
-  expect_error(as.igraph(fit, treenum = 0), "treenum must be between")
-  expect_error(as.igraph(fit, treenum = 10), "treenum must be between")
+  expect_error(igraph::as.igraph(fit, treenum = 0), "treenum must be between")
+  expect_error(igraph::as.igraph(fit, treenum = 10), "treenum must be between")
 })
 
 # --- edge-attribute tests ---
@@ -353,7 +353,7 @@ test_that("as.igraph.randomForest has edge attributes", {
 
   set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
-  g <- as.igraph(rf, treenum = 1)
+  g <- igraph::as.igraph(rf, treenum = 1)
 
   eattrs <- igraph::edge_attr_names(g)
   expect_true("split_var" %in% eattrs)
@@ -366,7 +366,7 @@ test_that("as.igraph.rpart has edge attributes", {
   skip_if_not_installed("igraph")
 
   fit <- rpart::rpart(Species ~ ., data = iris)
-  g <- as.igraph(fit)
+  g <- igraph::as.igraph(fit)
 
   eattrs <- igraph::edge_attr_names(g)
   expect_true("label" %in% eattrs)
@@ -384,7 +384,7 @@ test_that("as.igraph.xgb.Booster has edge attributes", {
   bst <- xgboost::xgb.train(list(max_depth = 2, num_class = 3,
                                    objective = "multi:softmax"),
                               dm, nrounds = 1, verbose = 0)
-  g <- as.igraph(bst, treenum = 1)
+  g <- igraph::as.igraph(bst, treenum = 1)
 
   eattrs <- igraph::edge_attr_names(g)
   expect_true("feature" %in% eattrs)
@@ -402,7 +402,7 @@ test_that("as.igraph.gbm has edge attributes", {
                      distribution = "gaussian", n.trees = 2,
                      interaction.depth = 2, n.minobsinnode = 3)
   )
-  g <- as.igraph(fit, treenum = 1)
+  g <- igraph::as.igraph(fit, treenum = 1)
 
   eattrs <- igraph::edge_attr_names(g)
   expect_true("split_var" %in% eattrs)
@@ -418,7 +418,7 @@ test_that("as.igraph.randomForest combined ecount matches sum of per-tree edgeli
 
   set.seed(42)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
-  g <- as.igraph(rf, treenum = NULL)
+  g <- igraph::as.igraph(rf, treenum = NULL)
 
   total_edges <- sum(vapply(1:3, function(tn) nrow(edgelist(rf, treenum = tn)),
                             integer(1)))
@@ -435,7 +435,7 @@ test_that("as.igraph.gbm combined ecount matches sum of per-tree edgelists", {
                      distribution = "gaussian", n.trees = 3,
                      interaction.depth = 2, n.minobsinnode = 3)
   )
-  g <- as.igraph(fit, treenum = NULL)
+  g <- igraph::as.igraph(fit, treenum = NULL)
 
   total_edges <- sum(vapply(1:3, function(tn) nrow(edgelist(fit, treenum = tn)),
                             integer(1)))
