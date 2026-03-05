@@ -108,7 +108,7 @@ whatever your analysis requires.
 
 ## Currently available
 
-| Input | `edgelist()` | `nodelist()` | `as_igraph()` |
+| Input | `edgelist()` | `nodelist()` | `as.igraph()` |
 |-------|:---:|:---:|:---:|
 | atomic vector | yes | yes | --- |
 | `data.frame` | yes | yes | --- |

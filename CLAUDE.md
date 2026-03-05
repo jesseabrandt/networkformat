@@ -59,20 +59,22 @@ The package uses **S3 method dispatch** with four groups of functions:
 | `nodelist.xgb.Booster` | xgb.Booster | `treenum` | name, is_leaf, feature, split, quality, cover, treenum, label | Complete |
 | `nodelist.gbm` | gbm | `treenum` | name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label | Complete |
 
-### `as_igraph()` / `as_tbl_graph()` — direct graph construction
+### `as.igraph()` / `as_tbl_graph()` — direct graph construction
 
 | Method | Input | Key Parameters | Returns |
 |--------|-------|---------------|---------|
-| `as_igraph.tree` | tree | | igraph |
-| `as_igraph.randomForest` | randomForest | `treenum` (default `NULL` = all) | igraph (multiple trees = disconnected components) |
-| `as_igraph.rpart` | rpart | | igraph |
-| `as_igraph.xgb.Booster` | xgb.Booster | `treenum` (default `NULL` = all) | igraph (string IDs, globally unique) |
-| `as_igraph.gbm` | gbm | `treenum` (default `NULL` = all) | igraph (multi-tree: prefixed IDs) |
+| `as.igraph.tree` | tree | | igraph |
+| `as.igraph.randomForest` | randomForest | `treenum` (default `NULL` = all) | igraph (multiple trees = disconnected components) |
+| `as.igraph.rpart` | rpart | | igraph |
+| `as.igraph.xgb.Booster` | xgb.Booster | `treenum` (default `NULL` = all) | igraph (string IDs, globally unique) |
+| `as.igraph.gbm` | gbm | `treenum` (default `NULL` = all) | igraph (multi-tree: prefixed IDs) |
 | `as_tbl_graph.tree` | tree | | tbl_graph |
 | `as_tbl_graph.randomForest` | randomForest | `treenum` (default `NULL` = all) | tbl_graph |
 | `as_tbl_graph.rpart` | rpart | | tbl_graph |
 | `as_tbl_graph.xgb.Booster` | xgb.Booster | `treenum` (default `NULL` = all) | tbl_graph |
 | `as_tbl_graph.gbm` | gbm | `treenum` (default `NULL` = all) | tbl_graph |
+
+**Both `as.igraph` and `as_tbl_graph` use delayed S3 registration** — the generics belong to igraph and tidygraph respectively, not this package. The methods are registered via `S3method(igraph::as.igraph, class)` and `S3method(tidygraph::as_tbl_graph, class)` in NAMESPACE (R >= 3.6.0 feature), with `@exportS3Method igraph::as.igraph` and `@exportS3Method tidygraph::as_tbl_graph` in roxygen. Do NOT add an `as.igraph` or `as_tbl_graph` generic (`UseMethod`) or `export()` to this package — that creates a competing generic that masks the external package's.
 
 Node IDs in nodelist outputs match the from/to columns in the corresponding edgelist, so they can be passed directly to `igraph::graph_from_data_frame()`.
 
@@ -84,7 +86,7 @@ Node IDs in nodelist outputs match the from/to columns in the corresponding edge
 
 ### File organization
 
-Each S3 method lives in its own file: `R/edgelist.R` (generic), `R/edgelist.data.frame.R`, `R/edgelist.randomForest.R`, etc. Same pattern for `nodelist.*`, `as_igraph.R`, `as_tbl_graph.R`.
+Each S3 method lives in its own file: `R/edgelist.R` (generic), `R/edgelist.data.frame.R`, `R/edgelist.randomForest.R`, etc. Same pattern for `nodelist.*`. Graph conversion methods live in `R/as_igraph.R` (methods for `igraph::as.igraph`) and `R/as_tbl_graph.R` (methods for `tidygraph::as_tbl_graph`).
 
 ### Key algorithms
 
@@ -116,7 +118,7 @@ Each S3 method lives in its own file: `R/edgelist.R` (generic), `R/edgelist.data
 ## Testing
 
 - Framework: testthat 3rd edition
-- Test files: `test-edgelist.R` (~220 tests), `test-nodelist.R` (~171 tests), `test-as_igraph.R`
+- Test files: `test-edgelist.R` (~220 tests), `test-nodelist.R` (~171 tests), `test-as_igraph.R` (tests `as.igraph()` and `as_tbl_graph()` methods)
 - Tests for randomForest/tree use `skip_if_not_installed()`
 - The overlap warning in `test-edgelist.R` is expected (tests that `attr_cols` overlap triggers a warning)
 

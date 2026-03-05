@@ -1,9 +1,13 @@
 #' Convert to igraph
 #'
-#' Generic function to convert tree-based model objects into
-#' \code{\link[igraph]{igraph}} graph objects.  Methods call
+#' S3 methods for converting tree-based model objects into
+#' \code{\link[igraph]{igraph}} graph objects.  Each method calls
 #' \code{\link{edgelist}} and \code{\link{nodelist}} internally and
-#' handle column reconciliation so you get a ready-to-use graph.
+#' handles column reconciliation so you get a ready-to-use graph.
+#' These methods are registered against the
+#' \code{\link[igraph:as.igraph]{as.igraph}} generic from
+#' \pkg{igraph} via delayed S3 registration and are available
+#' whenever \pkg{igraph} is loaded.
 #'
 #' @param x An object to convert (\code{tree}, \code{randomForest},
 #'   \code{rpart}, \code{xgb.Booster}, or \code{gbm}).
@@ -13,31 +17,24 @@
 #'   \code{randomForest} with multiple trees, the graph contains
 #'   disconnected components (one per tree) and a \code{treenum}
 #'   vertex/edge attribute.
-#' @export
-as_igraph <- function(x, ...) UseMethod("as_igraph")
+#' @name as.igraph
+NULL
 
-#' @rdname as_igraph
-#' @export
-as_igraph.tree <- function(x, ...) {
-  if (!requireNamespace("igraph", quietly = TRUE)) {
-    stop("Package 'igraph' is required. Install it with install.packages('igraph').")
-  }
+#' @rdname as.igraph
+#' @exportS3Method igraph::as.igraph
+as.igraph.tree <- function(x, ...) {
   edges <- edgelist(x)
   nodes <- nodelist(x)
   igraph::graph_from_data_frame(edges, directed = TRUE, vertices = nodes)
 }
 
-#' @rdname as_igraph
+#' @rdname as.igraph
 #' @param treenum Integer vector of tree numbers to extract. Default
 #'   \code{NULL} returns all trees combined into one graph with
 #'   disconnected components.  Pass a single integer (e.g. \code{1})
 #'   to extract one tree.
-#' @export
-as_igraph.randomForest <- function(x, treenum = NULL, ...) {
-  if (!requireNamespace("igraph", quietly = TRUE)) {
-    stop("Package 'igraph' is required. Install it with install.packages('igraph').")
-  }
-
+#' @exportS3Method igraph::as.igraph
+as.igraph.randomForest <- function(x, treenum = NULL, ...) {
   tree_indices <- .validate_treenum(treenum, x$ntree)
 
   # Single tree: simple case, no prefixing needed
@@ -60,37 +57,26 @@ as_igraph.randomForest <- function(x, treenum = NULL, ...) {
   igraph::graph_from_data_frame(all_edges, directed = TRUE, vertices = all_nodes)
 }
 
-#' @rdname as_igraph
-#' @export
-as_igraph.rpart <- function(x, ...) {
-  if (!requireNamespace("igraph", quietly = TRUE)) {
-    stop("Package 'igraph' is required. Install it with install.packages('igraph').")
-  }
+#' @rdname as.igraph
+#' @exportS3Method igraph::as.igraph
+as.igraph.rpart <- function(x, ...) {
   edges <- edgelist(x)
   nodes <- nodelist(x)
   igraph::graph_from_data_frame(edges, directed = TRUE, vertices = nodes)
 }
 
-#' @rdname as_igraph
-#' @export
-as_igraph.xgb.Booster <- function(x, treenum = NULL, ...) {
-  if (!requireNamespace("igraph", quietly = TRUE)) {
-    stop("Package 'igraph' is required. Install it with install.packages('igraph').")
-  }
-
+#' @rdname as.igraph
+#' @exportS3Method igraph::as.igraph
+as.igraph.xgb.Booster <- function(x, treenum = NULL, ...) {
   # String IDs from xgboost are already globally unique across trees
   e <- edgelist(x, treenum = treenum)
   n <- nodelist(x, treenum = treenum)
   igraph::graph_from_data_frame(e, directed = TRUE, vertices = n)
 }
 
-#' @rdname as_igraph
-#' @export
-as_igraph.gbm <- function(x, treenum = NULL, ...) {
-  if (!requireNamespace("igraph", quietly = TRUE)) {
-    stop("Package 'igraph' is required. Install it with install.packages('igraph').")
-  }
-
+#' @rdname as.igraph
+#' @exportS3Method igraph::as.igraph
+as.igraph.gbm <- function(x, treenum = NULL, ...) {
   n_physical <- length(x$trees)
   tree_indices <- .validate_treenum(treenum, n_physical)
 

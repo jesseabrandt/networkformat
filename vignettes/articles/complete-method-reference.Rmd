@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 library(networkformat)
 ```
 
-This article demonstrates every `edgelist()`, `nodelist()`, `as_igraph()`, and `as_tbl_graph()` method in the package. For a gentler introduction, see `vignette("networkformat")`.
+This article demonstrates every `edgelist()`, `nodelist()`, `as.igraph()`, and `as_tbl_graph()` method in the package. For a gentler introduction, see `vignette("networkformat")`.
 
 ## Atomic vectors
 
@@ -137,11 +137,11 @@ edgelist(tr)
 nodelist(tr)
 ```
 
-### as_igraph
+### as.igraph
 
 ```{r}
 library(igraph)
-g <- as_igraph(tr)
+g <- as.igraph(tr)
 g
 ```
 
@@ -193,19 +193,19 @@ edgelist(rf, treenum = c(1, 3))
 nodelist(rf, treenum = 1)
 ```
 
-### as_igraph
+### as.igraph
 
 Single tree:
 
 ```{r}
-g <- as_igraph(rf, treenum = 1)
+g <- as.igraph(rf, treenum = 1)
 g
 ```
 
 Multiple trees produce disconnected components:
 
 ```{r}
-g_all <- as_igraph(rf)
+g_all <- as.igraph(rf)
 components(g_all)$no
 ```
 
@@ -236,10 +236,10 @@ edgelist(rp)
 nodelist(rp)
 ```
 
-### as_igraph
+### as.igraph
 
 ```{r}
-g <- as_igraph(rp)
+g <- as.igraph(rp)
 g
 ```
 
@@ -280,10 +280,10 @@ edgelist(gb, treenum = 1)
 nodelist(gb, treenum = 1)
 ```
 
-### as_igraph
+### as.igraph
 
 ```{r}
-g <- as_igraph(gb, treenum = 1)
+g <- as.igraph(gb, treenum = 1)
 g
 ```
 
@@ -327,10 +327,10 @@ edgelist(xg, treenum = 1)
 nodelist(xg, treenum = 1)
 ```
 
-### as_igraph
+### as.igraph
 
 ```{r}
-g <- as_igraph(xg, treenum = 1)
+g <- as.igraph(xg, treenum = 1)
 g
 ```
 
