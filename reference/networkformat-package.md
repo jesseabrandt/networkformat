@@ -5,7 +5,7 @@ visualization and analysis with packages like 'igraph', 'tidygraph', and
 'ggraph'. Works with atomic vectors (sequential edges), data frames
 (column-pair edges with tidyselect), and tree-based model objects
 ('randomForest', 'tree', 'rpart', 'xgboost', 'gbm'). Also provides
-one-step graph construction via as_igraph() and as_tbl_graph() methods
+one-step graph construction via as.igraph() and as_tbl_graph() methods
 for tree models.
 
 ## See also

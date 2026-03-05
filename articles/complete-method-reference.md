@@ -3,9 +3,8 @@
 This article demonstrates every
 [`edgelist()`](https://jesseabrandt.github.io/networkformat/reference/edgelist.md),
 [`nodelist()`](https://jesseabrandt.github.io/networkformat/reference/nodelist.md),
-[`as_igraph()`](https://jesseabrandt.github.io/networkformat/reference/as_igraph.md),
-and
-[`as_tbl_graph()`](https://jesseabrandt.github.io/networkformat/reference/as_tbl_graph.md)
+[`as.igraph()`](https://r.igraph.org/reference/as.igraph.html), and
+[`as_tbl_graph()`](https://tidygraph.data-imaginist.com/reference/tbl_graph.html)
 method in the package. For a gentler introduction, see
 [`vignette("networkformat")`](https://jesseabrandt.github.io/networkformat/articles/networkformat.md).
 
@@ -289,7 +288,7 @@ nodelist(tr)
 #> 11   15       <leaf>  40   0.000000  virginica    TRUE     virginica\nn=40
 ```
 
-### as_igraph
+### as.igraph
 
 ``` r
 library(igraph)
@@ -304,13 +303,13 @@ library(igraph)
 #> The following object is masked from 'package:base':
 #> 
 #>     union
-g <- as_igraph(tr)
+g <- as.igraph(tr)
 g
-#> IGRAPH d7c730d DN-- 11 10 -- 
+#> IGRAPH bf661fd DN-- 11 10 -- 
 #> + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf
 #> | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),
 #> | split_point (e/n)
-#> + edges from d7c730d (vertex names):
+#> + edges from bf661fd (vertex names):
 #>  [1] 1 ->2  1 ->3  3 ->6  6 ->12 12->24 12->25 6 ->13 3 ->7  7 ->14 7 ->15
 ```
 
@@ -330,9 +329,6 @@ library(tidygraph)
 #> The following object is masked from 'package:igraph':
 #> 
 #>     groups
-#> The following object is masked from 'package:networkformat':
-#> 
-#>     as_tbl_graph
 #> The following object is masked from 'package:stats':
 #> 
 #>     filter
@@ -480,26 +476,26 @@ nodelist(rf, treenum = 1)
 #> 9    virginica
 ```
 
-### as_igraph
+### as.igraph
 
 Single tree:
 
 ``` r
-g <- as_igraph(rf, treenum = 1)
+g <- as.igraph(rf, treenum = 1)
 g
-#> IGRAPH 4c998ab DN-- 9 8 -- 
+#> IGRAPH 036d172 DN-- 9 8 -- 
 #> + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name
 #> | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label
 #> | (v/c), split_var (e/n), split_point (e/n), prediction (e/n), treenum
 #> | (e/n), split_var_name (e/c)
-#> + edges from 4c998ab (vertex names):
+#> + edges from 036d172 (vertex names):
 #> [1] 1->2 2->4 3->6 6->8 1->3 2->5 3->7 6->9
 ```
 
 Multiple trees produce disconnected components:
 
 ``` r
-g_all <- as_igraph(rf)
+g_all <- as.igraph(rf)
 components(g_all)$no
 #> [1] 3
 ```
@@ -566,16 +562,16 @@ nodelist(rp)
 #> 5    7       <leaf>  46   1  virginica    TRUE     virginica\nn=46
 ```
 
-### as_igraph
+### as.igraph
 
 ``` r
-g <- as_igraph(rp)
+g <- as.igraph(rp)
 g
-#> IGRAPH 8fbaada DN-- 5 4 -- 
+#> IGRAPH 320b9f7 DN-- 5 4 -- 
 #> + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf
 #> | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),
 #> | split_point (e/n)
-#> + edges from 8fbaada (vertex names):
+#> + edges from 320b9f7 (vertex names):
 #> [1] 1->2 1->3 3->6 3->7
 ```
 
@@ -680,17 +676,17 @@ nodelist(gb, treenum = 1)
 #> 7        -0.15
 ```
 
-### as_igraph
+### as.igraph
 
 ``` r
-g <- as_igraph(gb, treenum = 1)
+g <- as.igraph(gb, treenum = 1)
 g
-#> IGRAPH 3f6ce51 DN-- 7 6 -- 
+#> IGRAPH 681ef61 DN-- 7 6 -- 
 #> + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name
 #> | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label
 #> | (v/c), split_var (e/n), split_point (e/n), prediction (e/n), treenum
 #> | (e/n), split_var_name (e/c)
-#> + edges from 3f6ce51 (vertex names):
+#> + edges from 681ef61 (vertex names):
 #> [1] 0->1 2->3 4->5 0->2 2->4 4->6
 ```
 
@@ -818,16 +814,16 @@ nodelist(xg, treenum = 1)
 #> 3  0-2    TRUE         <NA>    NA -0.2200489 44.44444       1        -0.22
 ```
 
-### as_igraph
+### as.igraph
 
 ``` r
-g <- as_igraph(xg, treenum = 1)
+g <- as.igraph(xg, treenum = 1)
 g
-#> IGRAPH b998aba DN-- 3 2 -- 
+#> IGRAPH 5381a97 DN-- 3 2 -- 
 #> + attr: name (v/c), is_leaf (v/l), feature (v/c), split (v/n), quality
 #> | (v/n), cover (v/n), treenum (v/n), label (v/c), feature (e/c), split
 #> | (e/n), quality (e/n), cover (e/n), treenum (e/n)
-#> + edges from b998aba (vertex names):
+#> + edges from 5381a97 (vertex names):
 #> [1] 0-0->0-1 0-0->0-2
 ```
 

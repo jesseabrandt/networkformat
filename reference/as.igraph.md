@@ -1,33 +1,34 @@
 # Convert to igraph
 
-Generic function to convert tree-based model objects into
+S3 methods for converting tree-based model objects into
 [`igraph`](https://r.igraph.org/reference/aaa-igraph-package.html) graph
-objects. Methods call
+objects. Each method calls
 [`edgelist`](https://jesseabrandt.github.io/networkformat/reference/edgelist.md)
 and
 [`nodelist`](https://jesseabrandt.github.io/networkformat/reference/nodelist.md)
-internally and handle column reconciliation so you get a ready-to-use
-graph.
+internally and handles column reconciliation so you get a ready-to-use
+graph. These methods are registered against the
+[`as.igraph`](https://r.igraph.org/reference/as.igraph.html) generic
+from igraph via delayed S3 registration and are available whenever
+igraph is loaded.
 
 ## Usage
 
 ``` r
-as_igraph(x, ...)
-
 # S3 method for class 'tree'
-as_igraph(x, ...)
+as.igraph(x, ...)
 
 # S3 method for class 'randomForest'
-as_igraph(x, treenum = NULL, ...)
+as.igraph(x, treenum = NULL, ...)
 
 # S3 method for class 'rpart'
-as_igraph(x, ...)
+as.igraph(x, ...)
 
 # S3 method for class 'xgb.Booster'
-as_igraph(x, treenum = NULL, ...)
+as.igraph(x, treenum = NULL, ...)
 
 # S3 method for class 'gbm'
-as_igraph(x, treenum = NULL, ...)
+as.igraph(x, treenum = NULL, ...)
 ```
 
 ## Arguments

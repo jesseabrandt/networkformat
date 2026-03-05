@@ -11,9 +11,17 @@ The main generic functions exported by networkformat.
   : Extract Edgelist from Various Object Types
 - [`nodelist()`](https://jesseabrandt.github.io/networkformat/reference/nodelist.md)
   : Extract Node List from Various Objects
-- [`as_igraph()`](https://jesseabrandt.github.io/networkformat/reference/as_igraph.md)
+- [`as.igraph(`*`<tree>`*`)`](https://jesseabrandt.github.io/networkformat/reference/as.igraph.md)
+  [`as.igraph(`*`<randomForest>`*`)`](https://jesseabrandt.github.io/networkformat/reference/as.igraph.md)
+  [`as.igraph(`*`<rpart>`*`)`](https://jesseabrandt.github.io/networkformat/reference/as.igraph.md)
+  [`as.igraph(`*`<xgb.Booster>`*`)`](https://jesseabrandt.github.io/networkformat/reference/as.igraph.md)
+  [`as.igraph(`*`<gbm>`*`)`](https://jesseabrandt.github.io/networkformat/reference/as.igraph.md)
   : Convert to igraph
-- [`as_tbl_graph()`](https://jesseabrandt.github.io/networkformat/reference/as_tbl_graph.md)
+- [`as_tbl_graph(`*`<tree>`*`)`](https://jesseabrandt.github.io/networkformat/reference/as_tbl_graph.md)
+  [`as_tbl_graph(`*`<randomForest>`*`)`](https://jesseabrandt.github.io/networkformat/reference/as_tbl_graph.md)
+  [`as_tbl_graph(`*`<rpart>`*`)`](https://jesseabrandt.github.io/networkformat/reference/as_tbl_graph.md)
+  [`as_tbl_graph(`*`<xgb.Booster>`*`)`](https://jesseabrandt.github.io/networkformat/reference/as_tbl_graph.md)
+  [`as_tbl_graph(`*`<gbm>`*`)`](https://jesseabrandt.github.io/networkformat/reference/as_tbl_graph.md)
   : Convert to tbl_graph
 
 ## Vector and data frame methods

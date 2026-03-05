@@ -39,20 +39,20 @@ edgelist(courses, source_cols = course, target_cols = prereq)
 # Tree models --- one-step graph conversion
 library(tree)
 tr <- tree(Species ~ ., data = iris)
-as_igraph(tr)
+as.igraph(tr)
 ```
 
 ## Supported inputs
 
-| Input                              | [`edgelist()`](https://jesseabrandt.github.io/networkformat/reference/edgelist.md) | [`nodelist()`](https://jesseabrandt.github.io/networkformat/reference/nodelist.md) | [`as_igraph()`](https://jesseabrandt.github.io/networkformat/reference/as_igraph.md) / [`as_tbl_graph()`](https://jesseabrandt.github.io/networkformat/reference/as_tbl_graph.md) |
-|------------------------------------|:----------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-| **vector** (character, numeric, …) |                            sequential edges `i -> i+1`                             |                            unique values with frequency                            |                                                                                         —                                                                                         |
-| **data.frame**                     |                                 column-pair edges                                  |                            reorder with `id_col` first                             |                                                                                         —                                                                                         |
-| **randomForest**                   |                                parent-child splits                                 |                              node attributes per tree                              |                                                                            single or multi-tree graph                                                                             |
-| **tree**                           |                          parent-child splits with labels                           |                                  node attributes                                   |                                                                                  full tree graph                                                                                  |
-| **rpart**                          |                          parent-child splits with labels                           |                                  node attributes                                   |                                                                                  full tree graph                                                                                  |
-| **xgb.Booster** (xgboost)          |                                parent-child splits                                 |                              node attributes per tree                              |                                                                            single or multi-tree graph                                                                             |
-| **gbm**                            |                                parent-child splits                                 |                              node attributes per tree                              |                                                                            single or multi-tree graph                                                                             |
+| Input                              | [`edgelist()`](https://jesseabrandt.github.io/networkformat/reference/edgelist.md) | [`nodelist()`](https://jesseabrandt.github.io/networkformat/reference/nodelist.md) | [`as.igraph()`](https://r.igraph.org/reference/as.igraph.html) / [`as_tbl_graph()`](https://tidygraph.data-imaginist.com/reference/tbl_graph.html) |
+|------------------------------------|:----------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------:|
+| **vector** (character, numeric, …) |                            sequential edges `i -> i+1`                             |                            unique values with frequency                            |                                                                         —                                                                          |
+| **data.frame**                     |                                 column-pair edges                                  |                            reorder with `id_col` first                             |                                                                         —                                                                          |
+| **randomForest**                   |                                parent-child splits                                 |                            node attributes with labels                             |                                                             single or multi-tree graph                                                             |
+| **tree**                           |                                parent-child splits                                 |                            node attributes with labels                             |                                                                  full tree graph                                                                   |
+| **rpart**                          |                                parent-child splits                                 |                            node attributes with labels                             |                                                                  full tree graph                                                                   |
+| **xgb.Booster** (xgboost)          |                                parent-child splits                                 |                            node attributes with labels                             |                                                             single or multi-tree graph                                                             |
+| **gbm**                            |                                parent-child splits                                 |                            node attributes with labels                             |                                                             single or multi-tree graph                                                             |
 
 ## Vectors
 
@@ -170,7 +170,7 @@ library(tree)
 tr <- tree(Species ~ ., data = iris)
 
 # igraph
-g <- as_igraph(tr)
+g <- as.igraph(tr)
 
 # tidygraph
 tg <- as_tbl_graph(tr)
@@ -178,7 +178,7 @@ tg <- as_tbl_graph(tr)
 # randomForest (single tree or multiple as disconnected components)
 library(randomForest)
 rf <- randomForest(Species ~ ., data = iris, ntree = 3)
-g_rf <- as_igraph(rf, treenum = 1)
+g_rf <- as.igraph(rf, treenum = 1)
 ```
 
 ## Visualization

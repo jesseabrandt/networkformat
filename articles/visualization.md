@@ -9,7 +9,7 @@ library(tidygraph)
 **networkformat** converts R objects into graph-ready format for
 visualization with ggraph. For tree models, the quickest path is:
 
-- `as_igraph(x)` — convert a model to an igraph object
+- `as.igraph(x)` — convert a model to an igraph object
 - `as_tbl_graph(x)` — convert to a tidygraph tbl_graph (for use with
   ggraph)
 

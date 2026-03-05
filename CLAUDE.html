@@ -163,31 +163,31 @@
 <td>Complete</td>
 </tr></tbody></table></div>
 <div class="section level3">
-<h3 id="as_igraph--as_tbl_graph--direct-graph-construction">
-<code>as_igraph()</code> / <code>as_tbl_graph()</code> — direct graph construction<a class="anchor" aria-label="anchor" href="#as_igraph--as_tbl_graph--direct-graph-construction"></a></h3>
+<h3 id="asigraph--as_tbl_graph--direct-graph-construction">
+<code>as.igraph()</code> / <code>as_tbl_graph()</code> — direct graph construction<a class="anchor" aria-label="anchor" href="#asigraph--as_tbl_graph--direct-graph-construction"></a></h3>
 <table class="table"><colgroup><col width="20%"><col width="17%"><col width="38%"><col width="23%"></colgroup><thead><tr class="header"><th>Method</th>
 <th>Input</th>
 <th>Key Parameters</th>
 <th>Returns</th>
-</tr></thead><tbody><tr class="odd"><td><code>as_igraph.tree</code></td>
+</tr></thead><tbody><tr class="odd"><td><code>as.igraph.tree</code></td>
 <td>tree</td>
 <td></td>
 <td>igraph</td>
-</tr><tr class="even"><td><code>as_igraph.randomForest</code></td>
+</tr><tr class="even"><td><code>as.igraph.randomForest</code></td>
 <td>randomForest</td>
 <td>
 <code>treenum</code> (default <code>NULL</code> = all)</td>
 <td>igraph (multiple trees = disconnected components)</td>
-</tr><tr class="odd"><td><code>as_igraph.rpart</code></td>
+</tr><tr class="odd"><td><code>as.igraph.rpart</code></td>
 <td>rpart</td>
 <td></td>
 <td>igraph</td>
-</tr><tr class="even"><td><code>as_igraph.xgb.Booster</code></td>
+</tr><tr class="even"><td><code>as.igraph.xgb.Booster</code></td>
 <td>xgb.Booster</td>
 <td>
 <code>treenum</code> (default <code>NULL</code> = all)</td>
 <td>igraph (string IDs, globally unique)</td>
-</tr><tr class="odd"><td><code>as_igraph.gbm</code></td>
+</tr><tr class="odd"><td><code>as.igraph.gbm</code></td>
 <td>gbm</td>
 <td>
 <code>treenum</code> (default <code>NULL</code> = all)</td>
@@ -215,7 +215,8 @@
 <td>
 <code>treenum</code> (default <code>NULL</code> = all)</td>
 <td>tbl_graph</td>
-</tr></tbody></table><p>Node IDs in nodelist outputs match the from/to columns in the corresponding edgelist, so they can be passed directly to <code><a href="https://r.igraph.org/reference/graph_from_data_frame.html" class="external-link">igraph::graph_from_data_frame()</a></code>.</p>
+</tr></tbody></table><p><strong>Both <code>as.igraph</code> and <code>as_tbl_graph</code> use delayed S3 registration</strong> — the generics belong to igraph and tidygraph respectively, not this package. The methods are registered via <code>S3method(igraph::as.igraph, class)</code> and <code>S3method(tidygraph::as_tbl_graph, class)</code> in NAMESPACE (R &gt;= 3.6.0 feature), with <code>@exportS3Method igraph::as.igraph</code> and <code>@exportS3Method tidygraph::as_tbl_graph</code> in roxygen. Do NOT add an <code>as.igraph</code> or <code>as_tbl_graph</code> generic (<code>UseMethod</code>) or <code>export()</code> to this package — that creates a competing generic that masks the external package’s.</p>
+<p>Node IDs in nodelist outputs match the from/to columns in the corresponding edgelist, so they can be passed directly to <code><a href="https://r.igraph.org/reference/graph_from_data_frame.html" class="external-link">igraph::graph_from_data_frame()</a></code>.</p>
 </div>
 <div class="section level3">
 <h3 id="duplicate-handling">Duplicate handling<a class="anchor" aria-label="anchor" href="#duplicate-handling"></a></h3>
@@ -228,7 +229,7 @@
 </ul></div>
 <div class="section level3">
 <h3 id="file-organization">File organization<a class="anchor" aria-label="anchor" href="#file-organization"></a></h3>
-<p>Each S3 method lives in its own file: <code>R/edgelist.R</code> (generic), <code>R/edgelist.data.frame.R</code>, <code>R/edgelist.randomForest.R</code>, etc. Same pattern for <code>nodelist.*</code>, <code>as_igraph.R</code>, <code>as_tbl_graph.R</code>.</p>
+<p>Each S3 method lives in its own file: <code>R/edgelist.R</code> (generic), <code>R/edgelist.data.frame.R</code>, <code>R/edgelist.randomForest.R</code>, etc. Same pattern for <code>nodelist.*</code>. Graph conversion methods live in <code>R/as_igraph.R</code> (methods for <code><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">igraph::as.igraph</a></code>) and <code>R/as_tbl_graph.R</code> (methods for <code><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">tidygraph::as_tbl_graph</a></code>).</p>
 </div>
 <div class="section level3">
 <h3 id="key-algorithms">Key algorithms<a class="anchor" aria-label="anchor" href="#key-algorithms"></a></h3>
@@ -276,8 +277,7 @@
 <div class="section level2">
 <h2 id="testing">Testing<a class="anchor" aria-label="anchor" href="#testing"></a></h2>
 <ul><li>Framework: testthat 3rd edition</li>
-<li>Test files: <code>test-edgelist.R</code> (~220 tests), <code>test-nodelist.R</code> (~171 tests), <code>test-as_igraph.R</code>
-</li>
+<li>Test files: <code>test-edgelist.R</code> (~220 tests), <code>test-nodelist.R</code> (~171 tests), <code>test-as_igraph.R</code> (tests <code>as.igraph()</code> and <code>as_tbl_graph()</code> methods)</li>
 <li>Tests for randomForest/tree use <code>skip_if_not_installed()</code>
 </li>
 <li>The overlap warning in <code>test-edgelist.R</code> is expected (tests that <code>attr_cols</code> overlap triggers a warning)</li>

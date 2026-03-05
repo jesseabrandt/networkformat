@@ -52,6 +52,12 @@
 <code>randomForest</code> — parent-child splits with <code>treenum</code> filtering</li>
 <li>
 <code>tree</code> — parent-child splits with parsed split components</li>
+<li>
+<code>rpart</code> — parent-child splits with parsed split components</li>
+<li>
+<code>xgb.Booster</code> — parent-child splits with feature/split/quality/cover</li>
+<li>
+<code>gbm</code> — parent-child splits with <code>treenum</code> filtering</li>
 </ul></li>
 <li>
 <code><a href="../reference/nodelist.html">nodelist()</a></code> generic with methods for:
@@ -62,20 +68,22 @@
 <code>randomForest</code> — node attributes per tree</li>
 <li>
 <code>tree</code> — node attributes with labels</li>
+<li>
+<code>rpart</code> — node attributes with labels</li>
+<li>
+<code>xgb.Booster</code> — node attributes with labels</li>
+<li>
+<code>gbm</code> — node attributes per tree</li>
 </ul></li>
 <li>
-<code><a href="../reference/as_igraph.html">as_igraph()</a></code> and <code><a href="../reference/as_tbl_graph.html">as_tbl_graph()</a></code> for one-step graph construction from <code>tree</code> and <code>randomForest</code> models</li>
+<code><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph()</a></code> methods for one-step igraph construction from <code>tree</code>, <code>randomForest</code>, <code>rpart</code>, <code>xgb.Booster</code>, and <code>gbm</code> models — registered against igraph’s <code><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph()</a></code> generic via delayed S3 registration</li>
+<li>
+<code><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph()</a></code> methods for one-step tbl_graph construction from the same model types — registered against tidygraph’s <code><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph()</a></code> generic via delayed S3 registration</li>
 <li>
 <code>weights</code> parameter for <code>edgelist.data.frame</code> and vector method — collapses duplicate rows and adds a <code>weight</code> count column</li>
 <li>Bundled <code>courses</code> dataset for examples</li>
 <li>3 vignettes: package introduction, edgelist/nodelist guide, visualization</li>
 <li>Comprehensive test suite (275+ tests)</li>
-</ul></div>
-<div class="section level3">
-<h3 id="stubs-not-yet-implemented-0-0-0-9000">Stubs (not yet implemented)<a class="anchor" aria-label="anchor" href="#stubs-not-yet-implemented-0-0-0-9000"></a></h3>
-<ul><li>
-<code><a href="../reference/edgelist.html">edgelist()</a></code> / <code><a href="../reference/nodelist.html">nodelist()</a></code> for <code>xgb.Booster</code>, <code>gbm</code>, <code>rpart</code>
-</li>
 </ul></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

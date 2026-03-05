@@ -132,18 +132,18 @@ whatever your analysis requires.
 
 ### Currently available
 
-| Input                   | [`edgelist()`](https://jesseabrandt.github.io/networkformat/reference/edgelist.md) | [`nodelist()`](https://jesseabrandt.github.io/networkformat/reference/nodelist.md) | [`as_igraph()`](https://jesseabrandt.github.io/networkformat/reference/as_igraph.md) |
-|-------------------------|:----------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------:|
-| atomic vector           |                                        yes                                         |                                        yes                                         |                                          —                                           |
-| `data.frame`            |                                        yes                                         |                                        yes                                         |                                          —                                           |
-| `tree`                  |                                        yes                                         |                                        yes                                         |                                         yes                                          |
-| `randomForest`          |                                        yes                                         |                                        yes                                         |                                         yes                                          |
-| `rpart`                 |                                        yes                                         |                                        yes                                         |                                         yes                                          |
-| `xgb.Booster` (xgboost) |                                        yes                                         |                                        yes                                         |                                         yes                                          |
-| `gbm`                   |                                        yes                                         |                                        yes                                         |                                         yes                                          |
+| Input                   | [`edgelist()`](https://jesseabrandt.github.io/networkformat/reference/edgelist.md) | [`nodelist()`](https://jesseabrandt.github.io/networkformat/reference/nodelist.md) | [`as.igraph()`](https://r.igraph.org/reference/as.igraph.html) |
+|-------------------------|:----------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------:|:--------------------------------------------------------------:|
+| atomic vector           |                                        yes                                         |                                        yes                                         |                               —                                |
+| `data.frame`            |                                        yes                                         |                                        yes                                         |                               —                                |
+| `tree`                  |                                        yes                                         |                                        yes                                         |                              yes                               |
+| `randomForest`          |                                        yes                                         |                                        yes                                         |                              yes                               |
+| `rpart`                 |                                        yes                                         |                                        yes                                         |                              yes                               |
+| `xgb.Booster` (xgboost) |                                        yes                                         |                                        yes                                         |                              yes                               |
+| `gbm`                   |                                        yes                                         |                                        yes                                         |                              yes                               |
 
 For data frames, tidygraph’s
-[`as_tbl_graph()`](https://jesseabrandt.github.io/networkformat/reference/as_tbl_graph.md)
+[`as_tbl_graph()`](https://tidygraph.data-imaginist.com/reference/tbl_graph.html)
 already handles the conversion from edge data frames to graph objects,
 so networkformat does not duplicate that method.
 

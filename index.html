@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Convert R Objects to Network Edgelists and Nodelists">
-<meta name="description" content="Converts R objects into network edgelist and nodelist format for visualization and analysis with packages like igraph, tidygraph, and ggraph. Works with atomic vectors (sequential edges), data frames (column-pair edges with tidyselect), and tree-based model objects (randomForest, tree, rpart, xgboost, gbm). Also provides one-step graph construction via as_igraph() and as_tbl_graph() methods for tree models.">
-<meta property="og:description" content="Converts R objects into network edgelist and nodelist format for visualization and analysis with packages like igraph, tidygraph, and ggraph. Works with atomic vectors (sequential edges), data frames (column-pair edges with tidyselect), and tree-based model objects (randomForest, tree, rpart, xgboost, gbm). Also provides one-step graph construction via as_igraph() and as_tbl_graph() methods for tree models.">
+<meta name="description" content="Converts R objects into network edgelist and nodelist format for visualization and analysis with packages like igraph, tidygraph, and ggraph. Works with atomic vectors (sequential edges), data frames (column-pair edges with tidyselect), and tree-based model objects (randomForest, tree, rpart, xgboost, gbm). Also provides one-step graph construction via as.igraph() and as_tbl_graph() methods for tree models.">
+<meta property="og:description" content="Converts R objects into network edgelist and nodelist format for visualization and analysis with packages like igraph, tidygraph, and ggraph. Works with atomic vectors (sequential edges), data frames (column-pair edges with tidyselect), and tree-based model objects (randomForest, tree, rpart, xgboost, gbm). Also provides one-step graph construction via as.igraph() and as_tbl_graph() methods for tree models.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -92,7 +92,7 @@
 <span><span class="co"># Tree models --- one-step graph conversion</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">tree</span><span class="op">)</span></span>
 <span><span class="va">tr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/tree/man/tree.html" class="external-link">tree</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/as_igraph.html">as_igraph</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">as.igraph</span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="supported-inputs">Supported inputs<a class="anchor" aria-label="anchor" href="#supported-inputs"></a>
@@ -100,16 +100,16 @@
 <table class="table">
 <colgroup>
 <col width="27%">
-<col width="24%">
 <col width="22%">
-<col width="25%">
+<col width="23%">
+<col width="26%">
 </colgroup>
 <thead><tr class="header">
 <th>Input</th>
 <th align="center"><code><a href="reference/edgelist.html">edgelist()</a></code></th>
 <th align="center"><code><a href="reference/nodelist.html">nodelist()</a></code></th>
 <th align="center">
-<code><a href="reference/as_igraph.html">as_igraph()</a></code> / <code><a href="reference/as_tbl_graph.html">as_tbl_graph()</a></code>
+<code><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph()</a></code> / <code><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph()</a></code>
 </th>
 </tr></thead>
 <tbody>
@@ -130,32 +130,32 @@
 <tr class="odd">
 <td><strong>randomForest</strong></td>
 <td align="center">parent-child splits</td>
-<td align="center">node attributes per tree</td>
+<td align="center">node attributes with labels</td>
 <td align="center">single or multi-tree graph</td>
 </tr>
 <tr class="even">
 <td><strong>tree</strong></td>
-<td align="center">parent-child splits with labels</td>
-<td align="center">node attributes</td>
+<td align="center">parent-child splits</td>
+<td align="center">node attributes with labels</td>
 <td align="center">full tree graph</td>
 </tr>
 <tr class="odd">
 <td><strong>rpart</strong></td>
-<td align="center">parent-child splits with labels</td>
-<td align="center">node attributes</td>
+<td align="center">parent-child splits</td>
+<td align="center">node attributes with labels</td>
 <td align="center">full tree graph</td>
 </tr>
 <tr class="even">
 <td>
 <strong>xgb.Booster</strong> (xgboost)</td>
 <td align="center">parent-child splits</td>
-<td align="center">node attributes per tree</td>
+<td align="center">node attributes with labels</td>
 <td align="center">single or multi-tree graph</td>
 </tr>
 <tr class="odd">
 <td><strong>gbm</strong></td>
 <td align="center">parent-child splits</td>
-<td align="center">node attributes per tree</td>
+<td align="center">node attributes with labels</td>
 <td align="center">single or multi-tree graph</td>
 </tr>
 </tbody>
@@ -276,15 +276,15 @@
 <span><span class="va">tr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/tree/man/tree.html" class="external-link">tree</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># igraph</span></span>
-<span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/as_igraph.html">as_igraph</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span>
+<span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu">as.igraph</span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># tidygraph</span></span>
-<span><span class="va">tg</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/as_tbl_graph.html">as_tbl_graph</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span>
+<span><span class="va">tg</span> <span class="op">&lt;-</span> <span class="fu">as_tbl_graph</span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># randomForest (single tree or multiple as disconnected components)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.stat.berkeley.edu/~breiman/RandomForests/" class="external-link">randomForest</a></span><span class="op">)</span></span>
 <span><span class="va">rf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/randomForest/man/randomForest.html" class="external-link">randomForest</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span>, ntree <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="va">g_rf</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/as_igraph.html">as_igraph</a></span><span class="op">(</span><span class="va">rf</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">g_rf</span> <span class="op">&lt;-</span> <span class="fu">as.igraph</span><span class="op">(</span><span class="va">rf</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="visualization">Visualization<a class="anchor" aria-label="anchor" href="#visualization"></a>
@@ -296,7 +296,7 @@
 <span></span>
 <span><span class="va">tr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/tree/man/tree.html" class="external-link">tree</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="reference/as_tbl_graph.html">as_tbl_graph</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span><span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/ggraph.html" class="external-link">ggraph</a></span><span class="op">(</span>layout <span class="op">=</span> <span class="st">"tree"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/geom_edge_link.html" class="external-link">geom_edge_link</a></span><span class="op">(</span>arrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grid/arrow.html" class="external-link">arrow</a></span><span class="op">(</span>length <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fl">2</span>, <span class="st">"mm"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>                 end_cap <span class="op">=</span> <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/geometry.html" class="external-link">circle</a></span><span class="op">(</span><span class="fl">3</span>, <span class="st">"mm"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>

@@ -141,7 +141,7 @@ cat("Nodes:", vcount(g), " Edges:", ecount(g), "\n")
 #> Nodes: 15  Edges: 14
 ```
 
-Or use `as_igraph(tr)` for the same result in one step.
+Or use `as.igraph(tr)` for the same result in one step.
 
 ### Visualizing the edgelist pipeline
 
@@ -541,7 +541,7 @@ print(sort(deg_out[deg_out > 0], decreasing = TRUE))
 | `xgb.Booster`  | `name`, `is_leaf`, `feature`, `split`, `quality`, `cover`, `treenum`, `label`                     |
 | `gbm`          | `name`, `is_leaf`, `split_var`, `split_var_name`, `split_point`, `prediction`, `treenum`, `label` |
 
-### as_igraph() / as_tbl_graph()
+### as.igraph() / as_tbl_graph()
 
 | Input class    | `treenum`        | Returns                                              |
 |----------------|------------------|------------------------------------------------------|

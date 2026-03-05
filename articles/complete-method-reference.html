@@ -67,8 +67,8 @@
     
     
 <p>This article demonstrates every <code><a href="../reference/edgelist.html">edgelist()</a></code>,
-<code><a href="../reference/nodelist.html">nodelist()</a></code>, <code><a href="../reference/as_igraph.html">as_igraph()</a></code>, and
-<code><a href="../reference/as_tbl_graph.html">as_tbl_graph()</a></code> method in the package. For a gentler
+<code><a href="../reference/nodelist.html">nodelist()</a></code>, <code><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph()</a></code>, and
+<code><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph()</a></code> method in the package. For a gentler
 introduction, see <code><a href="../articles/networkformat.html">vignette("networkformat")</a></code>.</p>
 <div class="section level2">
 <h2 id="atomic-vectors">Atomic vectors<a class="anchor" aria-label="anchor" href="#atomic-vectors"></a>
@@ -327,7 +327,7 @@ count:</p>
 <span><span class="co">#&gt; 11   15       &lt;leaf&gt;  40   0.000000  virginica    TRUE     virginica\nn=40</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="as_igraph">as_igraph<a class="anchor" aria-label="anchor" href="#as_igraph"></a>
+<h3 id="as-igraph">as.igraph<a class="anchor" aria-label="anchor" href="#as-igraph"></a>
 </h3>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
@@ -342,13 +342,13 @@ count:</p>
 <span><span class="co">#&gt; The following object is masked from 'package:base':</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     union</span></span>
-<span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_igraph.html">as_igraph</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span>
+<span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH d7c730d DN-- 11 10 -- </span></span>
+<span><span class="co">#&gt; IGRAPH bf661fd DN-- 11 10 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf</span></span>
 <span><span class="co">#&gt; | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),</span></span>
 <span><span class="co">#&gt; | split_point (e/n)</span></span>
-<span><span class="co">#&gt; + edges from d7c730d (vertex names):</span></span>
+<span><span class="co">#&gt; + edges from bf661fd (vertex names):</span></span>
 <span><span class="co">#&gt;  [1] 1 -&gt;2  1 -&gt;3  3 -&gt;6  6 -&gt;12 12-&gt;24 12-&gt;25 6 -&gt;13 3 -&gt;7  7 -&gt;14 7 -&gt;15</span></span></code></pre></div>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://r.igraph.org/reference/gorder.html" class="external-link">vcount</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span></span>
@@ -366,13 +366,10 @@ count:</p>
 <span><span class="co">#&gt; The following object is masked from 'package:igraph':</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     groups</span></span>
-<span><span class="co">#&gt; The following object is masked from 'package:networkformat':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     as_tbl_graph</span></span>
 <span><span class="co">#&gt; The following object is masked from 'package:stats':</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     filter</span></span>
-<span><span class="fu"><a href="../reference/as_tbl_graph.html">as_tbl_graph</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tbl_graph: 11 nodes and 10 edges</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # A rooted tree</span></span></span>
@@ -508,22 +505,22 @@ count:</p>
 <span><span class="co">#&gt; 9    virginica</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="as_igraph-1">as_igraph<a class="anchor" aria-label="anchor" href="#as_igraph-1"></a>
+<h3 id="as-igraph-1">as.igraph<a class="anchor" aria-label="anchor" href="#as-igraph-1"></a>
 </h3>
 <p>Single tree:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_igraph.html">as_igraph</a></span><span class="op">(</span><span class="va">rf</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">rf</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH 4c998ab DN-- 9 8 -- </span></span>
+<span><span class="co">#&gt; IGRAPH 036d172 DN-- 9 8 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name</span></span>
 <span><span class="co">#&gt; | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label</span></span>
 <span><span class="co">#&gt; | (v/c), split_var (e/n), split_point (e/n), prediction (e/n), treenum</span></span>
 <span><span class="co">#&gt; | (e/n), split_var_name (e/c)</span></span>
-<span><span class="co">#&gt; + edges from 4c998ab (vertex names):</span></span>
+<span><span class="co">#&gt; + edges from 036d172 (vertex names):</span></span>
 <span><span class="co">#&gt; [1] 1-&gt;2 2-&gt;4 3-&gt;6 6-&gt;8 1-&gt;3 2-&gt;5 3-&gt;7 6-&gt;9</span></span></code></pre></div>
 <p>Multiple trees produce disconnected components:</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">g_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_igraph.html">as_igraph</a></span><span class="op">(</span><span class="va">rf</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">g_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">rf</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://r.igraph.org/reference/components.html" class="external-link">components</a></span><span class="op">(</span><span class="va">g_all</span><span class="op">)</span><span class="op">$</span><span class="va">no</span></span>
 <span><span class="co">#&gt; [1] 3</span></span></code></pre></div>
 </div>
@@ -531,7 +528,7 @@ count:</p>
 <h3 id="as_tbl_graph-1">as_tbl_graph<a class="anchor" aria-label="anchor" href="#as_tbl_graph-1"></a>
 </h3>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/as_tbl_graph.html">as_tbl_graph</a></span><span class="op">(</span><span class="va">rf</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph</a></span><span class="op">(</span><span class="va">rf</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tbl_graph: 9 nodes and 8 edges</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # A rooted tree</span></span></span>
@@ -589,23 +586,23 @@ count:</p>
 <span><span class="co">#&gt; 5    7       &lt;leaf&gt;  46   1  virginica    TRUE     virginica\nn=46</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="as_igraph-2">as_igraph<a class="anchor" aria-label="anchor" href="#as_igraph-2"></a>
+<h3 id="as-igraph-2">as.igraph<a class="anchor" aria-label="anchor" href="#as-igraph-2"></a>
 </h3>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_igraph.html">as_igraph</a></span><span class="op">(</span><span class="va">rp</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">rp</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH 8fbaada DN-- 5 4 -- </span></span>
+<span><span class="co">#&gt; IGRAPH 320b9f7 DN-- 5 4 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf</span></span>
 <span><span class="co">#&gt; | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),</span></span>
 <span><span class="co">#&gt; | split_point (e/n)</span></span>
-<span><span class="co">#&gt; + edges from 8fbaada (vertex names):</span></span>
+<span><span class="co">#&gt; + edges from 320b9f7 (vertex names):</span></span>
 <span><span class="co">#&gt; [1] 1-&gt;2 1-&gt;3 3-&gt;6 3-&gt;7</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="as_tbl_graph-2">as_tbl_graph<a class="anchor" aria-label="anchor" href="#as_tbl_graph-2"></a>
 </h3>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/as_tbl_graph.html">as_tbl_graph</a></span><span class="op">(</span><span class="va">rp</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph</a></span><span class="op">(</span><span class="va">rp</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tbl_graph: 5 nodes and 4 edges</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # A rooted tree</span></span></span>
@@ -698,24 +695,24 @@ count:</p>
 <span><span class="co">#&gt; 7        -0.15</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="as_igraph-3">as_igraph<a class="anchor" aria-label="anchor" href="#as_igraph-3"></a>
+<h3 id="as-igraph-3">as.igraph<a class="anchor" aria-label="anchor" href="#as-igraph-3"></a>
 </h3>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_igraph.html">as_igraph</a></span><span class="op">(</span><span class="va">gb</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">gb</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH 3f6ce51 DN-- 7 6 -- </span></span>
+<span><span class="co">#&gt; IGRAPH 681ef61 DN-- 7 6 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name</span></span>
 <span><span class="co">#&gt; | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label</span></span>
 <span><span class="co">#&gt; | (v/c), split_var (e/n), split_point (e/n), prediction (e/n), treenum</span></span>
 <span><span class="co">#&gt; | (e/n), split_var_name (e/c)</span></span>
-<span><span class="co">#&gt; + edges from 3f6ce51 (vertex names):</span></span>
+<span><span class="co">#&gt; + edges from 681ef61 (vertex names):</span></span>
 <span><span class="co">#&gt; [1] 0-&gt;1 2-&gt;3 4-&gt;5 0-&gt;2 2-&gt;4 4-&gt;6</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="as_tbl_graph-3">as_tbl_graph<a class="anchor" aria-label="anchor" href="#as_tbl_graph-3"></a>
 </h3>
 <div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/as_tbl_graph.html">as_tbl_graph</a></span><span class="op">(</span><span class="va">gb</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph</a></span><span class="op">(</span><span class="va">gb</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tbl_graph: 7 nodes and 6 edges</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # A rooted tree</span></span></span>
@@ -831,23 +828,23 @@ count:</p>
 <span><span class="co">#&gt; 3  0-2    TRUE         &lt;NA&gt;    NA -0.2200489 44.44444       1        -0.22</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="as_igraph-4">as_igraph<a class="anchor" aria-label="anchor" href="#as_igraph-4"></a>
+<h3 id="as-igraph-4">as.igraph<a class="anchor" aria-label="anchor" href="#as-igraph-4"></a>
 </h3>
 <div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_igraph.html">as_igraph</a></span><span class="op">(</span><span class="va">xg</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">xg</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH b998aba DN-- 3 2 -- </span></span>
+<span><span class="co">#&gt; IGRAPH 5381a97 DN-- 3 2 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), is_leaf (v/l), feature (v/c), split (v/n), quality</span></span>
 <span><span class="co">#&gt; | (v/n), cover (v/n), treenum (v/n), label (v/c), feature (e/c), split</span></span>
 <span><span class="co">#&gt; | (e/n), quality (e/n), cover (e/n), treenum (e/n)</span></span>
-<span><span class="co">#&gt; + edges from b998aba (vertex names):</span></span>
+<span><span class="co">#&gt; + edges from 5381a97 (vertex names):</span></span>
 <span><span class="co">#&gt; [1] 0-0-&gt;0-1 0-0-&gt;0-2</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="as_tbl_graph-4">as_tbl_graph<a class="anchor" aria-label="anchor" href="#as_tbl_graph-4"></a>
 </h3>
 <div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/as_tbl_graph.html">as_tbl_graph</a></span><span class="op">(</span><span class="va">xg</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph</a></span><span class="op">(</span><span class="va">xg</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tbl_graph: 3 nodes and 2 edges</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # A rooted tree</span></span></span>
