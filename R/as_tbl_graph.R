@@ -1,25 +1,26 @@
 #' Convert to tbl_graph
 #'
-#' Generic function and S3 methods for converting tree-based model
-#' objects into \code{\link[tidygraph]{tbl_graph}} objects.  Each
-#' method wraps the corresponding \code{\link{as_igraph}} method.
+#' S3 methods for converting tree-based model objects into
+#' \code{\link[tidygraph]{tbl_graph}} objects.  Each method wraps the
+#' corresponding \code{\link{as.igraph}} method.  These methods are
+#' registered against the
+#' \code{\link[tidygraph:as_tbl_graph]{as_tbl_graph}} generic from
+#' \pkg{tidygraph} via delayed S3 registration and are available
+#' whenever \pkg{tidygraph} is loaded.
 #'
 #' @param x An object to convert (currently \code{tree},
 #'   \code{randomForest}, \code{rpart}, \code{xgb.Booster}, or
 #'   \code{gbm}).
-#' @param ... Additional arguments passed to \code{as_igraph}.
+#' @param ... Additional arguments passed to \code{\link[igraph:as.igraph]{as.igraph}}.
 #'
 #' @returns A \code{\link[tidygraph]{tbl_graph}} object.
-#' @export
-as_tbl_graph <- function(x, ...) UseMethod("as_tbl_graph")
+#' @name as_tbl_graph
+NULL
 
 #' @rdname as_tbl_graph
-#' @export
+#' @exportS3Method tidygraph::as_tbl_graph
 as_tbl_graph.tree <- function(x, ...) {
-  if (!requireNamespace("tidygraph", quietly = TRUE)) {
-    stop("Package 'tidygraph' is required. Install it with install.packages('tidygraph').")
-  }
-  tidygraph::as_tbl_graph(as_igraph(x, ...))
+  tidygraph::as_tbl_graph(igraph::as.igraph(x, ...))
 }
 
 #' @rdname as_tbl_graph
@@ -27,37 +28,25 @@ as_tbl_graph.tree <- function(x, ...) {
 #'   \code{NULL} returns all trees combined into one graph with
 #'   disconnected components.  Pass a single integer (e.g. \code{1})
 #'   to extract one tree.
-#' @export
+#' @exportS3Method tidygraph::as_tbl_graph
 as_tbl_graph.randomForest <- function(x, treenum = NULL, ...) {
-  if (!requireNamespace("tidygraph", quietly = TRUE)) {
-    stop("Package 'tidygraph' is required. Install it with install.packages('tidygraph').")
-  }
-  tidygraph::as_tbl_graph(as_igraph(x, treenum = treenum, ...))
+  tidygraph::as_tbl_graph(igraph::as.igraph(x, treenum = treenum, ...))
 }
 
 #' @rdname as_tbl_graph
-#' @export
+#' @exportS3Method tidygraph::as_tbl_graph
 as_tbl_graph.rpart <- function(x, ...) {
-  if (!requireNamespace("tidygraph", quietly = TRUE)) {
-    stop("Package 'tidygraph' is required. Install it with install.packages('tidygraph').")
-  }
-  tidygraph::as_tbl_graph(as_igraph(x, ...))
+  tidygraph::as_tbl_graph(igraph::as.igraph(x, ...))
 }
 
 #' @rdname as_tbl_graph
-#' @export
+#' @exportS3Method tidygraph::as_tbl_graph
 as_tbl_graph.xgb.Booster <- function(x, treenum = NULL, ...) {
-  if (!requireNamespace("tidygraph", quietly = TRUE)) {
-    stop("Package 'tidygraph' is required. Install it with install.packages('tidygraph').")
-  }
-  tidygraph::as_tbl_graph(as_igraph(x, treenum = treenum, ...))
+  tidygraph::as_tbl_graph(igraph::as.igraph(x, treenum = treenum, ...))
 }
 
 #' @rdname as_tbl_graph
-#' @export
+#' @exportS3Method tidygraph::as_tbl_graph
 as_tbl_graph.gbm <- function(x, treenum = NULL, ...) {
-  if (!requireNamespace("tidygraph", quietly = TRUE)) {
-    stop("Package 'tidygraph' is required. Install it with install.packages('tidygraph').")
-  }
-  tidygraph::as_tbl_graph(as_igraph(x, treenum = treenum, ...))
+  tidygraph::as_tbl_graph(igraph::as.igraph(x, treenum = treenum, ...))
 }

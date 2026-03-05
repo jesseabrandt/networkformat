@@ -34,7 +34,7 @@ reference:
   - "`networkformat-package`"
   - edgelist
   - nodelist
-  - as_igraph
+  - as.igraph
   - as_tbl_graph
 
 - title: Vector and data frame methods
