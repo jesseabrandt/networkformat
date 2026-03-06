@@ -84,7 +84,9 @@ read_keras_hdf5 <- function(path) {
 
     if (is.null(kernel)) next
 
-    kernel_mat <- kernel$read()
+    # HDF5 stores in row-major (C) order; R reads column-major, so the
+    # Keras kernel shape [in_features, out_features] appears transposed.
+    kernel_mat <- t(kernel$read())
     bias_vec   <- if (!is.null(bias)) bias$read() else rep(0, ncol(kernel_mat))
 
     layers[[length(layers) + 1L]] <- list(
@@ -148,98 +150,97 @@ read_onnx <- function(path) {
     stop("File not found: ", path)
   }
 
-  onnx <- reticulate::import("onnx")
-  np   <- reticulate::import("numpy")
+  # Parse the ONNX graph entirely in Python to avoid protobuf
 
-  model <- onnx$load(path)
-  graph <- model$graph
+  # RepeatedCompositeContainer iteration issues in reticulate.
+  py_code <- sprintf('
+import onnx
+from onnx import numpy_helper
 
-  # Build lookup of initializer tensors (weights/biases) by name
-  inits <- list()
-  for (init in graph$initializer) {
-    arr <- onnx$numpy_helper$to_array(init)
-    inits[[init$name]] <- arr
-  }
+_model = onnx.load(%s)
+_graph = _model.graph
 
-  # Walk graph nodes and extract Gemm/MatMul + Add pairs as Dense layers
-  layers <- list()
-  layer_idx <- 0L
+# Collect initializers as numpy arrays
+_inits = {}
+for init in _graph.initializer:
+    _inits[init.name] = numpy_helper.to_array(init)
 
-  nodes <- graph$node
-  for (i in seq_along(nodes)) {
-    node <- nodes[[i]]
-    op <- node$op_type
+# Walk nodes and extract Dense (Gemm/MatMul) layers
+_layers = []
+_nodes = list(_graph.node)
+for i, node in enumerate(_nodes):
+    if node.op_type not in ("Gemm", "MatMul"):
+        continue
 
-    if (op %in% c("Gemm", "MatMul")) {
-      # Identify weight tensor among the inputs
-      kernel <- NULL
-      for (inp in node$input) {
-        if (!is.null(inits[[inp]]) && length(dim(inits[[inp]])) == 2L) {
-          kernel <- inits[[inp]]
-          break
-        }
-      }
-      if (is.null(kernel)) next
-
-      # Gemm may store weights transposed (transB=1 is common)
-      if (op == "Gemm") {
-        for (attr in node$attribute) {
-          if (attr$name == "transB" && attr$i == 1L) {
-            kernel <- t(kernel)
+    # Find weight tensor (2-D initializer)
+    kernel = None
+    for inp in node.input:
+        if inp in _inits and _inits[inp].ndim == 2:
+            kernel = _inits[inp].copy()
             break
-          }
-        }
-      }
+    if kernel is None:
+        continue
 
-      # Look for a subsequent Add node to find the bias
-      bias <- rep(0, ncol(kernel))
-      if (i < length(nodes)) {
-        next_node <- nodes[[i + 1L]]
-        if (next_node$op_type == "Add") {
-          for (inp in next_node$input) {
-            if (!is.null(inits[[inp]]) && length(dim(inits[[inp]])) <= 1L) {
-              bias <- as.vector(inits[[inp]])
-              break
-            }
-          }
-        }
-      }
+    # Gemm transB=1: transpose kernel
+    if node.op_type == "Gemm":
+        for attr in node.attribute:
+            if attr.name == "transB" and attr.i == 1:
+                kernel = kernel.T
+                break
 
-      # For Gemm, bias may be the third input
-      if (op == "Gemm" && length(node$input) >= 3L) {
-        bias_name <- node$input[[3]]
-        if (!is.null(inits[[bias_name]])) {
-          bias <- as.vector(inits[[bias_name]])
-        }
-      }
+    # Bias: Gemm 3rd input, or subsequent Add node
+    bias = None
+    if node.op_type == "Gemm" and len(node.input) >= 3:
+        bname = node.input[2]
+        if bname in _inits:
+            bias = _inits[bname].flatten()
+    if bias is None and i + 1 < len(_nodes):
+        nxt = _nodes[i + 1]
+        if nxt.op_type == "Add":
+            for inp in nxt.input:
+                if inp in _inits and _inits[inp].ndim <= 1:
+                    bias = _inits[inp].flatten()
+                    break
+    if bias is None:
+        import numpy as np
+        bias = np.zeros(kernel.shape[1])
 
-      layer_idx <- layer_idx + 1L
+    # Activation from following node
+    activation = "linear"
+    check_idx = i + 1 if node.op_type == "Gemm" else i + 2
+    if check_idx < len(_nodes):
+        act_op = _nodes[check_idx].op_type.lower()
+        if act_op in ("relu", "sigmoid", "tanh", "softmax", "leakyrelu"):
+            activation = act_op
 
-      # Try to extract activation from a following Relu/Sigmoid/Tanh node
-      activation <- "linear"
-      check_idx <- if (op == "Gemm") i + 1L else i + 2L
-      if (check_idx <= length(nodes)) {
-        act_node <- nodes[[check_idx]]
-        act_op <- tolower(act_node$op_type)
-        if (act_op %in% c("relu", "sigmoid", "tanh", "softmax", "leakyrelu")) {
-          activation <- act_op
-        }
-      }
+    name = node.name if node.name else "dense_" + str(len(_layers) + 1)
+    _layers.append({
+        "name": name,
+        "units": int(kernel.shape[1]),
+        "input_dim": int(kernel.shape[0]),
+        "activation": activation,
+        "kernel": kernel,
+        "bias": bias,
+    })
+', deparse(normalizePath(path)))
 
-      layers[[length(layers) + 1L]] <- list(
-        name       = node$name %||% paste0("dense_", layer_idx),
-        units      = ncol(kernel),
-        input_dim  = nrow(kernel),
-        activation = activation,
-        kernel     = kernel,
-        bias       = bias
-      )
-    }
-  }
+  reticulate::py_run_string(py_code)
+  py_layers <- reticulate::py_eval("_layers")
 
-  if (length(layers) == 0L) {
+  if (length(py_layers) == 0L) {
     stop("No Dense (Gemm/MatMul) layers found in ", path)
   }
+
+  layers <- lapply(py_layers, function(pl) {
+    list(
+      name       = pl$name,
+      units      = as.integer(pl$units),
+      input_dim  = as.integer(pl$input_dim),
+      activation = pl$activation,
+      kernel     = as.matrix(pl$kernel),
+      bias       = as.vector(pl$bias)
+    )
+  })
 
   input_dim <- layers[[1L]]$input_dim
 
