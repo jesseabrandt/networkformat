@@ -150,14 +150,24 @@ read_onnx <- function(path) {
     stop("File not found: ", path)
   }
 
-  # Parse the ONNX graph entirely in Python to avoid protobuf
+  # Check Python package availability before running code
+  if (!reticulate::py_module_available("onnx")) {
+    stop("Python 'onnx' package is required. Install it with: pip install onnx")
+  }
+  if (!reticulate::py_module_available("numpy")) {
+    stop("Python 'numpy' package is required. Install it with: pip install numpy")
+  }
 
+  # Parse the ONNX graph entirely in Python to avoid protobuf
   # RepeatedCompositeContainer iteration issues in reticulate.
-  py_code <- sprintf('
+  # Pass path as a Python variable to avoid code injection.
+  reticulate::py_run_string(paste0("_onnx_path = ", deparse(normalizePath(path, winslash = "/"))))
+
+  py_code <- '
 import onnx
 from onnx import numpy_helper
 
-_model = onnx.load(%s)
+_model = onnx.load(_onnx_path)
 _graph = _model.graph
 
 # Collect initializers as numpy arrays
@@ -205,9 +215,11 @@ for i, node in enumerate(_nodes):
         import numpy as np
         bias = np.zeros(kernel.shape[1])
 
-    # Activation from following node
+    # Activation from following node: skip past any Add (bias) node
     activation = "linear"
-    check_idx = i + 1 if node.op_type == "Gemm" else i + 2
+    check_idx = i + 1
+    if check_idx < len(_nodes) and _nodes[check_idx].op_type == "Add":
+        check_idx = check_idx + 1
     if check_idx < len(_nodes):
         act_op = _nodes[check_idx].op_type.lower()
         if act_op in ("relu", "sigmoid", "tanh", "softmax", "leakyrelu"):
@@ -222,7 +234,8 @@ for i, node in enumerate(_nodes):
         "kernel": kernel,
         "bias": bias,
     })
-', deparse(normalizePath(path)))
+del _onnx_path
+'
 
   reticulate::py_run_string(py_code)
   py_layers <- reticulate::py_eval("_layers")
