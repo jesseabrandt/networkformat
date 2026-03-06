@@ -7,6 +7,7 @@
   n_layers <- length(layers)
   if (!is.null(layer)) {
     layer <- as.integer(layer)
+    if (length(layer) == 0L) stop("layer must not be empty")
     if (any(layer < 1L | layer > n_layers)) {
       stop("layer must be between 1 and ", n_layers)
     }
@@ -68,6 +69,7 @@
   # Determine which layers to include (0 = input layer)
   if (!is.null(layer)) {
     layer <- as.integer(layer)
+    if (length(layer) == 0L) stop("layer must not be empty")
     if (any(layer < 0L | layer > n_layers)) {
       stop("layer must be between 0 and ", n_layers)
     }

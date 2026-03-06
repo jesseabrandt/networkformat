@@ -27,6 +27,6 @@ nodes_from_edges <- function(edges) {
     stop("edges must be a data.frame with 'from' and 'to' columns")
   }
   ids <- unique(c(as.character(edges$from), as.character(edges$to)))
-  ids <- sort(ids)
+  ids <- sort(ids[!is.na(ids)])
   data.frame(name = ids, stringsAsFactors = FALSE)
 }
