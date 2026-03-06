@@ -355,6 +355,25 @@ test_that("nodelist.data.frame attr_cols with id_col included dedupes", {
   expect_equal(names(nl), c("course", "dept"))
 })
 
+test_that("nodelist.data.frame unique deduplicates on id_col", {
+  df <- data.frame(
+    id = c("A", "A", "B", "C", "C"),
+    val = c(1, 2, 3, 4, 5)
+  )
+  nl <- nodelist(df, id_col = id, unique = TRUE)
+
+  expect_equal(nrow(nl), 3L)
+  expect_equal(nl$id, c("A", "B", "C"))
+  # Keeps first occurrence
+  expect_equal(nl$val, c(1, 3, 4))
+})
+
+test_that("nodelist.data.frame unique = FALSE preserves duplicates (default)", {
+  df <- data.frame(id = c("A", "A"), val = c(1, 2))
+  nl <- nodelist(df, id_col = id)
+  expect_equal(nrow(nl), 2L)
+})
+
 # --- vector nodelist tests ---
 
 test_that("nodelist on character vector returns unique values with counts", {

@@ -130,9 +130,13 @@ edgelist.data.frame <- function(input_object, source_cols = 1, target_cols = 2,
   for (si in seq_along(source_pos)) {
     for (ti in seq_along(target_pos)) {
       k <- k + 1L
+      from_val <- input_object[[source_pos[si]]]
+      to_val   <- input_object[[target_pos[ti]]]
+      if (is.factor(from_val)) from_val <- as.character(from_val)
+      if (is.factor(to_val))   to_val   <- as.character(to_val)
       block <- data.frame(
-        from     = input_object[[source_pos[si]]],
-        to       = input_object[[target_pos[ti]]],
+        from     = from_val,
+        to       = to_val,
         from_col = rep(source_names[si], n),
         to_col   = rep(target_names[ti], n),
         stringsAsFactors = FALSE

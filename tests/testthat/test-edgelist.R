@@ -578,6 +578,18 @@ test_that("edgelist.data.frame weights collapses fully identical rows", {
   expect_equal(el$weight[el$w == 20], 1L)
 })
 
+test_that("edgelist.data.frame coerces factor columns to character", {
+  df <- data.frame(
+    src = factor(c("A", "B", "C")),
+    tgt = factor(c("X", "Y", "Z"))
+  )
+  el <- edgelist(df)
+
+  expect_type(el$from, "character")
+  expect_type(el$to, "character")
+  expect_equal(el$from, c("A", "B", "C"))
+})
+
 # --- vector edgelist tests ---
 
 test_that("edgelist on character vector creates sequential edges", {

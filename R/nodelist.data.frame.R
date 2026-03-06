@@ -17,6 +17,10 @@
 #'   empty \code{c()} to return only the ID column.  Accepts the same
 #'   \href{https://tidyselect.r-lib.org/reference/language.html}{tidyselect}
 #'   syntax as \code{id_col}.
+#' @param unique Logical; if \code{TRUE}, deduplicate rows on
+#'   \code{id_col}, keeping the first occurrence.  Useful when the
+#'   input has repeated node IDs (e.g.\ long-format attribute tables).
+#'   Defaults to \code{FALSE}.
 #' @param ... Additional arguments (currently unused)
 #'
 #' @returns A data.frame with the ID column first, followed by
@@ -36,9 +40,13 @@
 #' # ID column only (no attributes)
 #' nodelist(courses, id_col = course, attr_cols = c())
 #'
+#' # Deduplicate on ID column
+#' nodelist(courses, id_col = dept, unique = TRUE)
+#'
 #' # Numeric index still works
 #' nodelist(courses, id_col = 2)
-nodelist.data.frame <- function(input_object, id_col = 1, attr_cols = NULL, ...) {
+nodelist.data.frame <- function(input_object, id_col = 1, attr_cols = NULL,
+                                unique = FALSE, ...) {
   id_pos <- tidyselect::eval_select(rlang::enquo(id_col), input_object)
   if (length(id_pos) != 1L) stop("id_col must select exactly one column")
   idx <- unname(id_pos)
@@ -54,5 +62,12 @@ nodelist.data.frame <- function(input_object, id_col = 1, attr_cols = NULL, ...)
     cols <- unique(cols)
   }
 
-  input_object[, cols, drop = FALSE]
+  result <- input_object[, cols, drop = FALSE]
+
+  if (isTRUE(unique)) {
+    result <- result[!duplicated(result[[1L]]), , drop = FALSE]
+    rownames(result) <- NULL
+  }
+
+  result
 }
