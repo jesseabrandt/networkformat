@@ -328,6 +328,33 @@ test_that("nodelist.data.frame errors when id_col selects multiple columns", {
   )
 })
 
+test_that("nodelist.data.frame attr_cols selects specific columns", {
+  nl <- nodelist(courses, id_col = course, attr_cols = c(dept, credits))
+
+  expect_equal(names(nl), c("course", "dept", "credits"))
+  expect_equal(nrow(nl), nrow(courses))
+})
+
+test_that("nodelist.data.frame attr_cols = c() returns ID only", {
+  nl <- nodelist(courses, id_col = course, attr_cols = c())
+
+  expect_equal(names(nl), "course")
+  expect_equal(nrow(nl), nrow(courses))
+})
+
+test_that("nodelist.data.frame attr_cols NULL keeps all columns", {
+  nl <- nodelist(courses, id_col = course)
+
+  expect_equal(ncol(nl), ncol(courses))
+  expect_equal(names(nl)[1], "course")
+})
+
+test_that("nodelist.data.frame attr_cols with id_col included dedupes", {
+  nl <- nodelist(courses, id_col = course, attr_cols = c(course, dept))
+
+  expect_equal(names(nl), c("course", "dept"))
+})
+
 # --- vector nodelist tests ---
 
 test_that("nodelist on character vector returns unique values with counts", {
