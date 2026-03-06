@@ -50,3 +50,19 @@ as_tbl_graph.xgb.Booster <- function(x, treenum = NULL, ...) {
 as_tbl_graph.gbm <- function(x, treenum = NULL, ...) {
   tidygraph::as_tbl_graph(igraph::as.igraph(x, treenum = treenum, ...))
 }
+
+#' @rdname as_tbl_graph
+#' @param layer Integer vector of layer indices to include (default
+#'   \code{NULL} = all layers).
+#' @param threshold Numeric; only include edges with
+#'   \code{abs(weight) >= threshold} (default \code{0}).
+#' @exportS3Method tidygraph::as_tbl_graph
+as_tbl_graph.keras_hdf5 <- function(x, layer = NULL, threshold = 0, ...) {
+  tidygraph::as_tbl_graph(igraph::as.igraph(x, layer = layer, threshold = threshold, ...))
+}
+
+#' @rdname as_tbl_graph
+#' @exportS3Method tidygraph::as_tbl_graph
+as_tbl_graph.onnx_model <- function(x, layer = NULL, threshold = 0, ...) {
+  tidygraph::as_tbl_graph(igraph::as.igraph(x, layer = layer, threshold = threshold, ...))
+}

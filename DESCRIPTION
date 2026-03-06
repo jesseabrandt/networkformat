@@ -12,9 +12,10 @@ Description: Converts R objects into network edgelist and nodelist format for
     visualization and analysis with packages like 'igraph', 'tidygraph', and
     'ggraph'. Works with atomic vectors (sequential edges), data frames
     (column-pair edges with tidyselect), and tree-based model objects
-    ('randomForest', 'tree', 'rpart', 'xgboost', 'gbm'). Also provides
-    one-step graph construction
-    via as.igraph() and as_tbl_graph() methods for tree models.
+    ('randomForest', 'tree', 'rpart', 'xgboost', 'gbm'), and neural networks
+    (Keras HDF5 and ONNX formats, extracting neuron-level weights and biases).
+    Also provides one-step graph construction via as.igraph() and
+    as_tbl_graph() methods.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -30,6 +31,9 @@ Suggests:
     xgboost,
     gbm,
     rpart,
+    hdf5r,
+    reticulate,
+    jsonlite,
     testthat (>= 3.0.0),
     covr,
     igraph,

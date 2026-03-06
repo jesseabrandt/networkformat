@@ -1,16 +1,17 @@
 #' Convert to igraph
 #'
-#' S3 methods for converting tree-based model objects into
-#' \code{\link[igraph]{igraph}} graph objects.  Each method calls
-#' \code{\link{edgelist}} and \code{\link{nodelist}} internally and
-#' handles column reconciliation so you get a ready-to-use graph.
-#' These methods are registered against the
-#' \code{\link[igraph:as.igraph]{as.igraph}} generic from
-#' \pkg{igraph} via delayed S3 registration and are available
-#' whenever \pkg{igraph} is loaded.
+#' S3 methods for converting tree-based model objects and neural
+#' networks into \code{\link[igraph]{igraph}} graph objects.  Each
+#' method calls \code{\link{edgelist}} and \code{\link{nodelist}}
+#' internally and handles column reconciliation so you get a
+#' ready-to-use graph.  These methods are registered against the
+#' \code{\link[igraph:as.igraph]{as.igraph}} generic from \pkg{igraph}
+#' via delayed S3 registration and are available whenever \pkg{igraph}
+#' is loaded.
 #'
 #' @param x An object to convert (\code{tree}, \code{randomForest},
-#'   \code{rpart}, \code{xgb.Booster}, or \code{gbm}).
+#'   \code{rpart}, \code{xgb.Booster}, \code{gbm},
+#'   \code{keras_hdf5}, or \code{onnx_model}).
 #' @param ... Additional arguments passed to methods.
 #'
 #' @returns An \code{\link[igraph]{igraph}} object.  For
@@ -96,4 +97,24 @@ as.igraph.gbm <- function(x, treenum = NULL, ...) {
   all_nodes$name <- paste0(all_nodes$treenum, ".", all_nodes$name)
 
   igraph::graph_from_data_frame(all_edges, directed = TRUE, vertices = all_nodes)
+}
+
+#' @rdname as.igraph
+#' @param layer Integer vector of layer indices to include (default
+#'   \code{NULL} = all layers).
+#' @param threshold Numeric; only include edges with
+#'   \code{abs(weight) >= threshold} (default \code{0}).
+#' @exportS3Method igraph::as.igraph
+as.igraph.keras_hdf5 <- function(x, layer = NULL, threshold = 0, ...) {
+  e <- edgelist(x, layer = layer, threshold = threshold)
+  n <- nodelist(x, layer = layer)
+  igraph::graph_from_data_frame(e, directed = TRUE, vertices = n)
+}
+
+#' @rdname as.igraph
+#' @exportS3Method igraph::as.igraph
+as.igraph.onnx_model <- function(x, layer = NULL, threshold = 0, ...) {
+  e <- edgelist(x, layer = layer, threshold = threshold)
+  n <- nodelist(x, layer = layer)
+  igraph::graph_from_data_frame(e, directed = TRUE, vertices = n)
 }
