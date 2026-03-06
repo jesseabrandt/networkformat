@@ -81,8 +81,10 @@ test_that("edgelist node IDs follow L{layer}_N{index} format", {
 
 test_that("edgelist invalid layer errors", {
   model <- make_nn("keras_hdf5")
-  expect_error(edgelist(model, layer = 0), "layer must be between 1 and 2")
-  expect_error(edgelist(model, layer = 3), "layer must be between 1 and 2")
+  expect_error(edgelist(model, layer = 0), "layer must be between")
+  expect_error(edgelist(model, layer = 3), "layer must be between")
+  expect_error(edgelist(model, layer = integer(0)), "layer must not be empty")
+  expect_error(nodelist(model, layer = integer(0)), "layer must not be empty")
 })
 
 # ---- nodelist tests ----
@@ -194,4 +196,54 @@ test_that("edgelist weights match kernel matrix values", {
   # The kernel is [3, 4]. Column-major vectorization means
   # from_idx cycles 1..3 for each to_idx 1..4
   expect_equal(edges$weight, as.vector(kernel))
+})
+
+# ---- as.igraph / as_tbl_graph tests ----
+
+test_that("as.igraph works for keras_hdf5", {
+  skip_if_not_installed("igraph")
+  model <- make_nn("keras_hdf5")
+
+  g <- igraph::as.igraph(model)
+  expect_s3_class(g, "igraph")
+  expect_equal(igraph::vcount(g), 9L)   # 3 + 4 + 2
+  expect_equal(igraph::ecount(g), 20L)  # 12 + 8
+})
+
+test_that("as.igraph with layer filter includes source neurons", {
+  skip_if_not_installed("igraph")
+  model <- make_nn("keras_hdf5")
+
+  # Layer 1 edges connect L0 (input) -> L1 (hidden)
+  g <- igraph::as.igraph(model, layer = 1)
+  vnames <- igraph::V(g)$name
+  expect_true(any(grepl("^L0_N", vnames)))  # source layer included
+  expect_true(any(grepl("^L1_N", vnames)))  # target layer included
+})
+
+test_that("as.igraph works for onnx_model", {
+  skip_if_not_installed("igraph")
+  model <- make_nn("onnx_model")
+
+  g <- igraph::as.igraph(model)
+  expect_s3_class(g, "igraph")
+  expect_equal(igraph::vcount(g), 9L)
+})
+
+test_that("as_tbl_graph works for keras_hdf5", {
+  skip_if_not_installed("igraph")
+  skip_if_not_installed("tidygraph")
+  model <- make_nn("keras_hdf5")
+
+  tg <- tidygraph::as_tbl_graph(model)
+  expect_s3_class(tg, "tbl_graph")
+})
+
+test_that("as_tbl_graph works for onnx_model", {
+  skip_if_not_installed("igraph")
+  skip_if_not_installed("tidygraph")
+  model <- make_nn("onnx_model")
+
+  tg <- tidygraph::as_tbl_graph(model)
+  expect_s3_class(tg, "tbl_graph")
 })
