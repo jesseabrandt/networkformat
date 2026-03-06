@@ -8,9 +8,9 @@
 #' \pkg{tidygraph} via delayed S3 registration and are available
 #' whenever \pkg{tidygraph} is loaded.
 #'
-#' @param x An object to convert (currently \code{tree},
-#'   \code{randomForest}, \code{rpart}, \code{xgb.Booster}, or
-#'   \code{gbm}).
+#' @param x An object to convert (\code{tree}, \code{randomForest},
+#'   \code{rpart}, \code{xgb.Booster}, \code{gbm}, \code{keras_hdf5},
+#'   or \code{onnx_model}).
 #' @param ... Additional arguments passed to \code{\link[igraph:as.igraph]{as.igraph}}.
 #'
 #' @returns A \code{\link[tidygraph]{tbl_graph}} object.

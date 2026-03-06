@@ -107,7 +107,11 @@ as.igraph.gbm <- function(x, treenum = NULL, ...) {
 #' @exportS3Method igraph::as.igraph
 as.igraph.keras_hdf5 <- function(x, layer = NULL, threshold = 0, ...) {
   e <- edgelist(x, layer = layer, threshold = threshold)
-  n <- nodelist(x, layer = layer)
+  # Edges for layer L connect neurons in layer L-1 to layer L,
+
+  # so the nodelist must include both source and target layers.
+  node_layers <- if (is.null(layer)) NULL else sort(unique(c(as.integer(layer) - 1L, as.integer(layer))))
+  n <- nodelist(x, layer = node_layers)
   igraph::graph_from_data_frame(e, directed = TRUE, vertices = n)
 }
 
@@ -115,6 +119,7 @@ as.igraph.keras_hdf5 <- function(x, layer = NULL, threshold = 0, ...) {
 #' @exportS3Method igraph::as.igraph
 as.igraph.onnx_model <- function(x, layer = NULL, threshold = 0, ...) {
   e <- edgelist(x, layer = layer, threshold = threshold)
-  n <- nodelist(x, layer = layer)
+  node_layers <- if (is.null(layer)) NULL else sort(unique(c(as.integer(layer) - 1L, as.integer(layer))))
+  n <- nodelist(x, layer = node_layers)
   igraph::graph_from_data_frame(e, directed = TRUE, vertices = n)
 }
