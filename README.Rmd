@@ -176,6 +176,8 @@ Skip the edgelist/nodelist step and go straight to an igraph or tbl_graph:
 
 ```{r graph-example, eval=FALSE}
 library(tree)
+library(igraph)
+library(tidygraph)
 
 tr <- tree(Species ~ ., data = iris)
 
