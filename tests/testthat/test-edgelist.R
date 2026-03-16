@@ -58,7 +58,7 @@ test_that("edgelist.tree produces data frame with from, to, label columns", {
 
 test_that("edgelist.default raises error for unsupported types", {
   expect_error(
-    edgelist(list(a = 1, b = 2)),
+    edgelist(as.formula(y ~ x)),
     "does not support"
   )
 })
@@ -988,4 +988,105 @@ test_that("edgelist.gbm multinomial creates K trees per round", {
 
   el <- edgelist(fit)
   expect_equal(length(unique(el$treenum)), 9)
+})
+
+# --- edgelist.list tests ---
+
+test_that("edgelist.list simple named list produces correct edges", {
+  el <- edgelist(list(a = 1, b = 2))
+
+  expect_s3_class(el, "data.frame")
+  expect_equal(names(el), c("from", "to", "depth"))
+  expect_equal(nrow(el), 2)
+  expect_equal(el$from, c("root", "root"))
+  expect_equal(el$to, c("root/a", "root/b"))
+  expect_equal(el$depth, c(1L, 1L))
+})
+
+test_that("edgelist.list nested list produces correct edges", {
+  el <- edgelist(list(a = list(b = 1, c = 2), d = 3))
+
+  expect_equal(nrow(el), 4)
+  expect_equal(el$from, c("root", "root/a", "root/a", "root"))
+  expect_equal(el$to, c("root/a", "root/a/b", "root/a/c", "root/d"))
+  expect_equal(el$depth, c(1L, 2L, 2L, 1L))
+})
+
+test_that("edgelist.list deeply nested verifies depth column", {
+  el <- edgelist(list(a = list(b = list(c = list(d = 1)))))
+
+  expect_equal(nrow(el), 4)
+  expect_equal(el$depth, 1:4)
+  expect_equal(el$to[4], "root/a/b/c/d")
+})
+
+test_that("edgelist.list unnamed elements use positional indices", {
+  el <- edgelist(list(1, 2, list(3)))
+
+  expect_equal(nrow(el), 4)
+  expect_equal(el$to[1], "root/[[1]]")
+  expect_equal(el$to[2], "root/[[2]]")
+  expect_equal(el$to[3], "root/[[3]]")
+  expect_equal(el$to[4], "root/[[3]]/[[1]]")
+})
+
+test_that("edgelist.list mixed named and unnamed elements", {
+  el <- edgelist(list(a = 1, 2, b = 3))
+
+  expect_equal(nrow(el), 3)
+  expect_equal(el$to, c("root/a", "root/[[2]]", "root/b"))
+})
+
+test_that("edgelist.list empty list returns zero-row data.frame", {
+  el <- edgelist(list())
+
+  expect_s3_class(el, "data.frame")
+  expect_equal(nrow(el), 0)
+  expect_equal(names(el), c("from", "to", "depth"))
+})
+
+test_that("edgelist.list single element list produces one edge", {
+  el <- edgelist(list(a = 1))
+
+  expect_equal(nrow(el), 1)
+  expect_equal(el$from, "root")
+  expect_equal(el$to, "root/a")
+})
+
+test_that("edgelist.list max_depth truncates recursion", {
+  el <- edgelist(list(a = list(b = list(c = 1))), max_depth = 1)
+
+  # max_depth = 1: recurse into depth-1 lists, so edges at depth 1 and 2
+  expect_equal(nrow(el), 2)
+  expect_equal(el$depth, c(1L, 2L))
+  expect_true(all(el$depth <= 2L))
+})
+
+test_that("edgelist.list max_depth = 2 allows two levels", {
+  el <- edgelist(list(a = list(b = list(c = 1))), max_depth = 2)
+
+  expect_equal(nrow(el), 3)
+  expect_equal(max(el$depth), 3L)
+})
+
+test_that("edgelist.list custom name_root", {
+  el <- edgelist(list(a = 1), name_root = "top")
+
+  expect_equal(el$from, "top")
+  expect_equal(el$to, "top/a")
+})
+
+test_that("edgelist.list S3 object emits fallthrough message", {
+  fit <- lm(Sepal.Length ~ Sepal.Width, data = iris)
+
+  expect_message(edgelist(fit), "No edgelist method for class")
+  el <- suppressMessages(edgelist(fit))
+  expect_s3_class(el, "data.frame")
+  expect_true(nrow(el) > 0)
+  # lm objects have named components like coefficients, residuals, etc.
+  expect_true("root/coefficients" %in% el$to)
+})
+
+test_that("edgelist.list plain list produces no message", {
+  expect_silent(edgelist(list(a = 1, b = 2)))
 })
