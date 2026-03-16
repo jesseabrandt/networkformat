@@ -23,7 +23,7 @@
 #' nodelist(c(1, 2, 3, 2, 1))
 #'
 #' # Unsupported type
-#' try(nodelist(list(a = 1, b = 2)))
+#' try(nodelist(as.formula(y ~ x)))
 nodelist.default <- function(input_object, ...) {
   if (is.atomic(input_object) && is.null(dim(input_object))) {
     n <- length(input_object)
@@ -40,7 +40,13 @@ nodelist.default <- function(input_object, ...) {
                       stringsAsFactors = FALSE))
   }
 
+  # S3 objects whose class vector doesn't include "list" but are structurally
+  # lists (e.g. lm, glm) — forward to nodelist.list for structural decomposition
+  if (is.list(input_object)) {
+    return(nodelist.list(input_object, ...))
+  }
+
   stop("nodelist() does not support objects of class '",
        paste(class(input_object), collapse = "', '"),
-       "'. Supported classes: vector, data.frame, randomForest, tree, rpart, xgb.Booster, gbm.")
+       "'. Supported classes: vector, data.frame, list, randomForest, tree, rpart, xgb.Booster, gbm.")
 }
