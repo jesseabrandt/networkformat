@@ -1,3 +1,4 @@
+
 ---
 title: "Visual QA: every model type plotted"
 output:
@@ -96,18 +97,13 @@ All trees as disconnected components:
 set.seed(42)
 rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3, maxnodes = 5)
 tg_rf <- as_tbl_graph(rf) %>%
-  mutate(
-    pred_class = rf$classes[replace(prediction, prediction == 0, NA)],
-    display_label = ifelse(
-      is_leaf, pred_class,
-      paste0(split_var_name, "\n< ", round(split_point, 1))
-    ),
-    fill_var = ifelse(is_leaf, pred_class, split_var_name)
-  )
+  mutate(fill_var = ifelse(is_leaf,
+    ifelse(prediction == 0, NA_character_, rf$classes[prediction]),
+    split_var_name))
 
 node_df <- as.data.frame(tg_rf, what = "vertices")
 pred_vars   <- sort(unique(na.omit(node_df$split_var_name)))
-leaf_classes <- sort(unique(na.omit(node_df$pred_class)))
+leaf_classes <- sort(unique(na.omit(node_df$fill_var[node_df$is_leaf])))
 pal_rf <- c(
   setNames(c("#3B8EA5", "#D4A373", "#7B68AE", "#E07B54")[seq_along(pred_vars)], pred_vars),
   setNames(c("#66c2a5", "#fc8d62", "#8da0cb")[seq_along(leaf_classes)], leaf_classes)
@@ -118,7 +114,7 @@ ggraph(tg_rf, layout = "tree") +
     arrow = arrow(length = unit(1.5, "mm"), type = "closed"),
     end_cap = circle(5, "mm"), colour = "grey70", width = 0.3) +
   geom_node_label(
-    aes(label = display_label, fill = fill_var),
+    aes(label = label, fill = fill_var),
     size = 2.5, colour = "black", fontface = "bold",
     label.padding = unit(0.2, "lines"), label.r = unit(0.15, "lines"),
     alpha = 0.85) +
@@ -133,24 +129,19 @@ Single-tree closeup with dendrogram layout:
 
 ```{r rf-single, eval = requireNamespace("randomForest", quietly = TRUE), fig.width = 8, fig.height = 5}
 tg1 <- as_tbl_graph(rf, treenum = 1) %>%
-  mutate(
-    pred_class = rf$classes[replace(prediction, prediction == 0, NA)],
-    display_label = ifelse(
-      is_leaf, pred_class,
-      paste0(split_var_name, "\n< ", round(split_point, 1))
-    ),
-    fill_var = ifelse(is_leaf, pred_class, split_var_name)
-  )
+  mutate(fill_var = ifelse(is_leaf,
+    ifelse(prediction == 0, NA_character_, rf$classes[prediction]),
+    split_var_name))
 
 ggraph(tg1, layout = "dendrogram") +
   geom_edge_elbow(colour = "grey65", width = 0.4) +
   geom_node_label(
-    aes(label = display_label, fill = fill_var),
+    aes(label = label, fill = fill_var),
     colour = "black", size = 2.5, fontface = "bold",
     label.padding = unit(0.25, "lines"), label.r = unit(0.2, "lines"),
     label.size = 0.4, alpha = 0.2) +
   geom_node_text(
-    aes(label = display_label),
+    aes(label = label),
     colour = "black", size = 2.5, fontface = "bold") +
   scale_fill_manual(values = pal_rf, name = NULL) +
   theme_graph(base_family = "sans") +
@@ -167,18 +158,12 @@ gb <- gbm::gbm(mpg ~ ., data = mtcars,
                 n.minobsinnode = 3, bag.fraction = 0.8)
 
 tg_gb <- as_tbl_graph(gb, treenum = 1) %>%
-  mutate(
-    display_label = ifelse(
-      is_leaf, round(prediction, 1),
-      paste0(split_var_name, "\n< ", round(split_point, 1))
-    ),
-    fill_var = ifelse(is_leaf, prediction, NA_real_)
-  )
+  mutate(fill_var = ifelse(is_leaf, prediction, NA_real_))
 
 ggraph(tg_gb, layout = "tree") +
   geom_edge_diagonal(colour = "grey60", width = 0.5) +
   geom_node_label(
-    aes(label = display_label, fill = fill_var),
+    aes(label = label, fill = fill_var),
     size = 2.5, fontface = "bold",
     label.padding = unit(0.25, "lines"), label.r = unit(0.2, "lines")) +
   scale_fill_gradient2(
@@ -189,6 +174,28 @@ ggraph(tg_gb, layout = "tree") +
   theme(legend.position = "bottom") +
   labs(title = "GBM — tree 1 (mtcars mpg)",
        subtitle = "Leaf colour encodes predicted MPG; grey = internal split nodes")
+```
+
+All trees as disconnected components:
+
+```{r gbm-all, eval = requireNamespace("gbm", quietly = TRUE), fig.width = 14}
+tg_gb_all <- as_tbl_graph(gb) %>%
+  mutate(fill_var = ifelse(is_leaf, prediction, NA_real_))
+
+ggraph(tg_gb_all, layout = "tree") +
+  geom_edge_diagonal(colour = "grey60", width = 0.5) +
+  geom_node_label(
+    aes(label = label, fill = fill_var),
+    size = 2.5, fontface = "bold",
+    label.padding = unit(0.2, "lines"), label.r = unit(0.15, "lines")) +
+  scale_fill_gradient2(
+    low = "#d73027", mid = "white", high = "#1a9850",
+    midpoint = mean(mtcars$mpg),
+    na.value = "#B0BEC5", name = "Predicted MPG") +
+  theme_graph(base_family = "sans") +
+  theme(legend.position = "bottom") +
+  labs(title = "GBM — all 3 trees",
+       subtitle = "Each disconnected component is one boosting iteration")
 ```
 
 ## XGBoost (xgb.Booster)
@@ -202,18 +209,12 @@ xg <- xgboost::xgboost(
 )
 
 tg_xg <- as_tbl_graph(xg, treenum = 1) %>%
-  mutate(
-    display_label = ifelse(
-      is_leaf, paste0("leaf\n", round(quality, 2)),
-      paste0(feature, "\n< ", round(split, 2))
-    ),
-    fill_var = ifelse(is_leaf, quality, NA_real_)
-  )
+  mutate(fill_var = ifelse(is_leaf, quality, NA_real_))
 
 ggraph(tg_xg, layout = "tree") +
   geom_edge_diagonal(colour = "grey60", width = 0.5) +
   geom_node_label(
-    aes(label = display_label, fill = fill_var),
+    aes(label = label, fill = fill_var),
     size = 2.5, fontface = "bold",
     label.padding = unit(0.25, "lines"), label.r = unit(0.2, "lines")) +
   scale_fill_gradient2(
@@ -223,6 +224,27 @@ ggraph(tg_xg, layout = "tree") +
   theme(legend.position = "bottom") +
   labs(title = "XGBoost — tree 1",
        subtitle = "String node IDs; leaf colour encodes quality score")
+```
+
+All trees as disconnected components:
+
+```{r xgboost-all, eval = requireNamespace("xgboost", quietly = TRUE), fig.width = 14, fig.height = 8}
+tg_xg_all <- as_tbl_graph(xg) %>%
+  mutate(fill_var = ifelse(is_leaf, quality, NA_real_))
+
+ggraph(tg_xg_all, layout = "tree") +
+  geom_edge_diagonal(colour = "grey60", width = 0.4) +
+  geom_node_label(
+    aes(label = label, fill = fill_var),
+    size = 2, fontface = "bold",
+    label.padding = unit(0.15, "lines"), label.r = unit(0.1, "lines")) +
+  scale_fill_gradient2(
+    low = "#d73027", mid = "white", high = "#1a9850", midpoint = 0,
+    na.value = "#B0BEC5", name = "Quality") +
+  theme_graph(base_family = "sans") +
+  theme(legend.position = "bottom") +
+  labs(title = "XGBoost — all 3 trees",
+       subtitle = "Each disconnected component is one boosting round; string node IDs are globally unique")
 ```
 
 ## Course prerequisite network (data.frame)
@@ -259,6 +281,45 @@ ggraph(tg_courses, layout = "stress") +
   theme(legend.position = "bottom") +
   labs(title = "Course prerequisite network",
        subtitle = "Arrows = prerequisites | Dashed = crosslisted")
+```
+
+## List
+
+```{r list, fig.width = 10, fig.height = 7}
+x <- list(
+  model = list(
+    coefficients = 0.5,
+    residuals = list(train = 0.1, test = 0.2)
+  ),
+  data = list(
+    features = list(x1 = 1, x2 = 2, x3 = 3),
+    target = "y"
+  ),
+  metadata = list(
+    created = "2024-01-01",
+    version = 1L
+  )
+)
+
+el <- edgelist(x, name_root = "config")
+nl <- nodelist(x, name_root = "config")
+g <- graph_from_data_frame(el, directed = TRUE, vertices = nl)
+tg_list <- as_tbl_graph(g)
+
+type_pal <- c(list = "#3B8EA5", numeric = "#66c2a5",
+              character = "#fc8d62", integer = "#8da0cb")
+
+ggraph(tg_list, layout = "tree") +
+  geom_edge_diagonal(colour = "grey60", width = 0.5) +
+  geom_node_label(
+    aes(label = label, fill = type),
+    size = 2.5, colour = "white", fontface = "bold",
+    label.padding = unit(0.25, "lines"), label.r = unit(0.2, "lines")) +
+  scale_fill_manual(values = type_pal, name = "Type") +
+  theme_graph(base_family = "sans") +
+  theme(legend.position = "bottom") +
+  labs(title = "List — recursive structure",
+       subtitle = "Node colour encodes element type; labels show element names")
 ```
 
 ## Vector
