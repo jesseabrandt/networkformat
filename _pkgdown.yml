@@ -47,6 +47,13 @@ reference:
   - edgelist.data.frame
   - nodelist.data.frame
 
+- title: List methods
+  desc: >
+    Methods for lists and S3 objects (recursive parent-child decomposition).
+  contents:
+  - edgelist.list
+  - nodelist.list
+
 - title: Tree model methods
   desc: >
     Methods for tree-based machine learning models.

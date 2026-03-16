@@ -38,5 +38,5 @@ edgelist(1:5)
 edgelist(c("A", "B", "A", "B", "C"), weights = TRUE)
 
 # Unsupported type
-try(edgelist(list(a = 1, b = 2)))
+try(edgelist(as.formula(y ~ x)))
 }

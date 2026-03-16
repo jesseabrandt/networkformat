@@ -48,6 +48,46 @@ nodelist(c("A", "B", "A", "B", "C"))
 
 ---
 
+## Lists
+
+Lists produce recursive parent-child edges. Each element becomes a node with a path-style ID.
+
+### edgelist
+
+```{r}
+edgelist(list(a = list(b = 1, c = 2), d = 3))
+```
+
+Unnamed elements use positional indices:
+
+```{r}
+edgelist(list(1, 2, list(3, 4)))
+```
+
+Limit recursion with `max_depth`:
+
+```{r}
+edgelist(list(a = list(b = list(c = 1))), max_depth = 1)
+```
+
+### nodelist
+
+```{r}
+nodelist(list(a = list(b = 1, c = 2), d = 3))
+```
+
+### S3 object fallthrough
+
+S3 objects without a dedicated method are decomposed as plain lists:
+
+```{r eval = FALSE}
+fit <- lm(Sepal.Length ~ Sepal.Width, data = iris)
+edgelist(fit)
+#> No edgelist method for class 'lm'; treating as a plain list.
+```
+
+---
+
 ## Data frames
 
 Data frame methods use tidyselect to specify which columns form edges.
@@ -349,6 +389,7 @@ as_tbl_graph(xg, treenum = 1)
 | Input | Columns |
 |-------|---------|
 | vector | `from`, `to`, [`weight`] |
+| list | `from`, `to`, `depth` |
 | data.frame | `from`, `to`, `from_col`, `to_col`, [`directed`], [`weight`], \<attrs\> |
 | tree | `from`, `to`, `label`, `split_var`, `split_op`, `split_point` |
 | rpart | `from`, `to`, `label`, `split_var`, `split_op`, `split_point` |
@@ -361,6 +402,7 @@ as_tbl_graph(xg, treenum = 1)
 | Input | Columns |
 |-------|---------|
 | vector | `name`, `n` |
+| list | `name`, `depth`, `type`, `n_children`, `label` |
 | data.frame | (input columns reordered, `id_col` first) |
 | tree | `name`, `var`, `n`, `dev`, `yval`, `is_leaf`, `label` |
 | rpart | `name`, `var`, `n`, `dev`, `yval`, `is_leaf`, `label` |

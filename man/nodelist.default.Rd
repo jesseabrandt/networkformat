@@ -32,5 +32,5 @@ nodelist(c("A", "B", "C", "A", "B"))
 nodelist(c(1, 2, 3, 2, 1))
 
 # Unsupported type
-try(nodelist(list(a = 1, b = 2)))
+try(nodelist(as.formula(y ~ x)))
 }

@@ -19,8 +19,8 @@ library(networkformat)
 ```
 
 `edgelist()` and `nodelist()` are the core functions of **networkformat**.
-They extract network structure from vectors, data frames, and tree models
-as plain data frames, giving you full control over filtering, transforming,
+They extract network structure from vectors, data frames, lists, and tree
+models as plain data frames, giving you full control over filtering, transforming,
 and passing the results to igraph or any other tool.
 
 For quick visualization without touching the raw data, see
@@ -292,6 +292,65 @@ cat("\nMost depended-on:\n")
 print(sort(deg_out[deg_out > 0], decreasing = TRUE))
 ```
 
+# Lists
+
+Lists produce a recursive parent-child edgelist. Each element becomes a node,
+and nested lists create deeper edges. Path-style IDs (e.g. `root/a/b`) ensure
+uniqueness.
+
+## edgelist()
+
+```{r list-edges}
+edgelist(list(a = list(b = 1, c = 2), d = 3))
+```
+
+Columns:
+
+| Column | Description |
+|--------|-------------|
+| `from` | Parent node path-style ID |
+| `to` | Child node path-style ID |
+| `depth` | Integer depth of the child node (root children are 1) |
+
+Unnamed elements use positional indices:
+
+```{r list-unnamed}
+edgelist(list(1, 2, list(3, 4)))
+```
+
+Use `max_depth` to limit recursion:
+
+```{r list-maxdepth}
+edgelist(list(a = list(b = list(c = 1))), max_depth = 1)
+```
+
+## nodelist()
+
+```{r list-nodes}
+nodelist(list(a = list(b = 1, c = 2), d = 3))
+```
+
+Columns:
+
+| Column | Description |
+|--------|-------------|
+| `name` | Path-style node ID |
+| `depth` | Integer depth (root is 0) |
+| `type` | Element class (`"numeric"`, `"character"`, `"list"`, etc.) |
+| `n_children` | Number of direct children (0 for leaves) |
+| `label` | Element name or positional index |
+
+## S3 object fallthrough
+
+S3 objects without a dedicated method (e.g. `lm`) are decomposed as plain
+lists with a diagnostic message:
+
+```{r list-s3, eval = FALSE}
+fit <- lm(Sepal.Length ~ Sepal.Width, data = iris)
+edgelist(fit)
+#> No edgelist method for class 'lm'; treating as a plain list.
+```
+
 # Output reference
 
 ## edgelist()
@@ -299,6 +358,7 @@ print(sort(deg_out[deg_out > 0], decreasing = TRUE))
 | Input class | Columns returned |
 |-------------|-----------------|
 | atomic vector | `from`, `to`, [`weight`] |
+| `list` | `from`, `to`, `depth` |
 | `data.frame` | `from`, `to`, `from_col`, `to_col`, [`directed`], [`weight`], `<attr_cols>` |
 | `tree` | `from`, `to`, `label`, `split_var`, `split_op`, `split_point` |
 | `randomForest` | `from`, `to`, `split_var`, `split_point`, `prediction`, `treenum`, `split_var_name` |
@@ -313,6 +373,7 @@ print(sort(deg_out[deg_out > 0], decreasing = TRUE))
 | Input class | Columns returned |
 |-------------|-----------------|
 | atomic vector | `name`, `n` |
+| `list` | `name`, `depth`, `type`, `n_children`, `label` |
 | `data.frame` | Reordered input (ID column first) |
 | `tree` | `name`, `var`, `n`, `dev`, `yval`, `is_leaf`, `label` |
 | `randomForest` | `name`, `is_leaf`, `split_var`, `split_var_name`, `split_point`, `prediction`, `treenum`, `label` |
