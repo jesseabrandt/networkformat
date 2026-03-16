@@ -24,8 +24,8 @@ A data.frame with one row per real node and the following columns:
     \item{split_point}{Split threshold (\code{NA} for leaves)}
     \item{prediction}{Prediction value at the node}
     \item{treenum}{1-based tree number}
-    \item{label}{Display label: variable name for splits, prediction
-      for leaves}
+    \item{label}{Display label: \code{"<var>\n< <threshold>"} for
+      splits, rounded prediction for leaves}
   }
 }
 \description{

@@ -20,8 +20,8 @@
 #'     \item{quality}{Information gain for splits, leaf score for leaves}
 #'     \item{cover}{Cover (sum of second-order gradient)}
 #'     \item{treenum}{1-based tree number}
-#'     \item{label}{Display label: feature name for splits, leaf score
-#'       for leaves}
+#'     \item{label}{Display label: \code{"<feature>\\n< <threshold>"} for
+#'       splits, rounded leaf score for leaves}
 #'   }
 #' @export
 #'
@@ -71,7 +71,7 @@ nodelist.xgb.Booster <- function(input_object, treenum = NULL, ...) {
     treenum = dt$Tree + 1L,
     label   = ifelse(is_leaf,
                      as.character(round(dt$Quality, 4)),
-                     dt$Feature),
+                     paste0(dt$Feature, "\n< ", round(dt$Split, 2))),
     stringsAsFactors = FALSE
   )
 }

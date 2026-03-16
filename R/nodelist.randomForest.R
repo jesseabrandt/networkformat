@@ -28,9 +28,9 @@
 #'     \item{prediction}{Predicted value (numeric for regression, integer
 #'       class index for classification)}
 #'     \item{treenum}{Integer identifying which tree the node belongs to}
-#'     \item{label}{Display label: split variable name for internal nodes,
-#'       predicted class name (classification) or numeric value (regression)
-#'       for leaves}
+#'     \item{label}{Display label: \code{"<var>\\n< <threshold>"} for
+#'       internal nodes, predicted class name (classification) or numeric
+#'       value (regression) for leaves}
 #'   }
 #' @export
 #'
@@ -77,7 +77,9 @@ nodelist.randomForest <- function(input_object, treenum = NULL, ...) {
       split_point    = ifelse(is_leaf, NA_real_, tree_df$`split point`),
       prediction     = tree_df$prediction,
       treenum        = tn,
-      label          = ifelse(is_leaf, leaf_label, split_var_name),
+      label          = ifelse(is_leaf, leaf_label,
+                              paste0(split_var_name, "\n< ",
+                                     round(tree_df$`split point`, 2))),
       stringsAsFactors = FALSE
     )
   }
