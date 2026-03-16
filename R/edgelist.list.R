@@ -41,6 +41,8 @@ edgelist.list <- function(input_object, name_root = "root", max_depth = NULL, ..
     input_object <- unclass(input_object)
   }
 
+  name_root <- gsub("/", "%2F", name_root, fixed = TRUE)
+
   empty <- data.frame(from = character(0), to = character(0),
                       depth = integer(0), stringsAsFactors = FALSE)
 

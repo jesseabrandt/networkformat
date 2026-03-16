@@ -36,6 +36,8 @@ nodelist.list <- function(input_object, name_root = "root", max_depth = NULL, ..
     input_object <- unclass(input_object)
   }
 
+  name_root <- gsub("/", "%2F", name_root, fixed = TRUE)
+
   root_type <- "list"
   root <- data.frame(name = name_root, depth = 0L, type = root_type,
                      n_children = length(input_object), label = name_root,
