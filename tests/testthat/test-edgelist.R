@@ -1097,3 +1097,12 @@ test_that("edgelist.list S3 object emits fallthrough message", {
 test_that("edgelist.list plain list produces no message", {
   expect_silent(edgelist(list(a = 1, b = 2)))
 })
+
+test_that("edgelist.list escapes / in element names", {
+  el <- edgelist(list("a/b" = 1, c = list("d/e" = 2)))
+
+  expect_equal(el$to[1], "root/a%2Fb")
+  expect_equal(el$to[3], "root/c/d%2Fe")
+  # No ambiguity with nested path root/c
+  expect_false("root/a/b" %in% el$to)
+})

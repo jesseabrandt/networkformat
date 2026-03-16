@@ -883,3 +883,11 @@ test_that("nodelist.list S3 object emits fallthrough message", {
 test_that("nodelist.list plain list produces no message", {
   expect_silent(nodelist(list(a = 1, b = 2)))
 })
+
+test_that("nodelist.list escapes / in element names", {
+  nl <- nodelist(list("a/b" = 1))
+
+  # Path uses %2F, display label keeps original
+  expect_equal(nl$name[2], "root/a%2Fb")
+  expect_equal(nl$label[2], "a/b")
+})

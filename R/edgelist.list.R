@@ -64,7 +64,7 @@ edgelist.list <- function(input_object, name_root = "root", max_depth = NULL, ..
 
   for (i in seq_along(obj)) {
     label <- if (!is.null(nms) && nzchar(nms[i])) nms[i] else paste0("[[", i, "]]")
-    child_name <- paste0(parent_name, "/", label)
+    child_name <- paste0(parent_name, "/", gsub("/", "%2F", label, fixed = TRUE))
 
     edge <- data.frame(from = parent_name, to = child_name, depth = depth,
                        stringsAsFactors = FALSE)
