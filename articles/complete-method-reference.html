@@ -344,11 +344,11 @@ count:</p>
 <span><span class="co">#&gt;     union</span></span>
 <span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH bf661fd DN-- 11 10 -- </span></span>
+<span><span class="co">#&gt; IGRAPH 59eea06 DN-- 11 10 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf</span></span>
 <span><span class="co">#&gt; | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),</span></span>
 <span><span class="co">#&gt; | split_point (e/n)</span></span>
-<span><span class="co">#&gt; + edges from bf661fd (vertex names):</span></span>
+<span><span class="co">#&gt; + edges from 59eea06 (vertex names):</span></span>
 <span><span class="co">#&gt;  [1] 1 -&gt;2  1 -&gt;3  3 -&gt;6  6 -&gt;12 12-&gt;24 12-&gt;25 6 -&gt;13 3 -&gt;7  7 -&gt;14 7 -&gt;15</span></span></code></pre></div>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://r.igraph.org/reference/gorder.html" class="external-link">vcount</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span></span>
@@ -511,12 +511,12 @@ count:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">rf</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH 036d172 DN-- 9 8 -- </span></span>
+<span><span class="co">#&gt; IGRAPH 6f17027 DN-- 9 8 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name</span></span>
 <span><span class="co">#&gt; | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label</span></span>
 <span><span class="co">#&gt; | (v/c), split_var (e/n), split_point (e/n), prediction (e/n), treenum</span></span>
 <span><span class="co">#&gt; | (e/n), split_var_name (e/c)</span></span>
-<span><span class="co">#&gt; + edges from 036d172 (vertex names):</span></span>
+<span><span class="co">#&gt; + edges from 6f17027 (vertex names):</span></span>
 <span><span class="co">#&gt; [1] 1-&gt;2 2-&gt;4 3-&gt;6 6-&gt;8 1-&gt;3 2-&gt;5 3-&gt;7 6-&gt;9</span></span></code></pre></div>
 <p>Multiple trees produce disconnected components:</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
@@ -591,11 +591,11 @@ count:</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">rp</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH 320b9f7 DN-- 5 4 -- </span></span>
+<span><span class="co">#&gt; IGRAPH b20465c DN-- 5 4 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf</span></span>
 <span><span class="co">#&gt; | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),</span></span>
 <span><span class="co">#&gt; | split_point (e/n)</span></span>
-<span><span class="co">#&gt; + edges from 320b9f7 (vertex names):</span></span>
+<span><span class="co">#&gt; + edges from b20465c (vertex names):</span></span>
 <span><span class="co">#&gt; [1] 1-&gt;2 1-&gt;3 3-&gt;6 3-&gt;7</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -700,12 +700,12 @@ count:</p>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">gb</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH 681ef61 DN-- 7 6 -- </span></span>
+<span><span class="co">#&gt; IGRAPH 2c6212d DN-- 7 6 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name</span></span>
 <span><span class="co">#&gt; | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label</span></span>
 <span><span class="co">#&gt; | (v/c), split_var (e/n), split_point (e/n), prediction (e/n), treenum</span></span>
 <span><span class="co">#&gt; | (e/n), split_var_name (e/c)</span></span>
-<span><span class="co">#&gt; + edges from 681ef61 (vertex names):</span></span>
+<span><span class="co">#&gt; + edges from 2c6212d (vertex names):</span></span>
 <span><span class="co">#&gt; [1] 0-&gt;1 2-&gt;3 4-&gt;5 0-&gt;2 2-&gt;4 4-&gt;6</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -833,11 +833,11 @@ count:</p>
 <div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">xg</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH 5381a97 DN-- 3 2 -- </span></span>
+<span><span class="co">#&gt; IGRAPH 3ba19cb DN-- 3 2 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), is_leaf (v/l), feature (v/c), split (v/n), quality</span></span>
 <span><span class="co">#&gt; | (v/n), cover (v/n), treenum (v/n), label (v/c), feature (e/c), split</span></span>
 <span><span class="co">#&gt; | (e/n), quality (e/n), cover (e/n), treenum (e/n)</span></span>
-<span><span class="co">#&gt; + edges from 5381a97 (vertex names):</span></span>
+<span><span class="co">#&gt; + edges from 3ba19cb (vertex names):</span></span>
 <span><span class="co">#&gt; [1] 0-0-&gt;0-1 0-0-&gt;0-2</span></span></code></pre></div>
 </div>
 <div class="section level3">

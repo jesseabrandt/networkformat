@@ -305,11 +305,11 @@ library(igraph)
 #>     union
 g <- as.igraph(tr)
 g
-#> IGRAPH bf661fd DN-- 11 10 -- 
+#> IGRAPH 59eea06 DN-- 11 10 -- 
 #> + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf
 #> | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),
 #> | split_point (e/n)
-#> + edges from bf661fd (vertex names):
+#> + edges from 59eea06 (vertex names):
 #>  [1] 1 ->2  1 ->3  3 ->6  6 ->12 12->24 12->25 6 ->13 3 ->7  7 ->14 7 ->15
 ```
 
@@ -483,12 +483,12 @@ Single tree:
 ``` r
 g <- as.igraph(rf, treenum = 1)
 g
-#> IGRAPH 036d172 DN-- 9 8 -- 
+#> IGRAPH 6f17027 DN-- 9 8 -- 
 #> + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name
 #> | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label
 #> | (v/c), split_var (e/n), split_point (e/n), prediction (e/n), treenum
 #> | (e/n), split_var_name (e/c)
-#> + edges from 036d172 (vertex names):
+#> + edges from 6f17027 (vertex names):
 #> [1] 1->2 2->4 3->6 6->8 1->3 2->5 3->7 6->9
 ```
 
@@ -567,11 +567,11 @@ nodelist(rp)
 ``` r
 g <- as.igraph(rp)
 g
-#> IGRAPH 320b9f7 DN-- 5 4 -- 
+#> IGRAPH b20465c DN-- 5 4 -- 
 #> + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf
 #> | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),
 #> | split_point (e/n)
-#> + edges from 320b9f7 (vertex names):
+#> + edges from b20465c (vertex names):
 #> [1] 1->2 1->3 3->6 3->7
 ```
 
@@ -681,12 +681,12 @@ nodelist(gb, treenum = 1)
 ``` r
 g <- as.igraph(gb, treenum = 1)
 g
-#> IGRAPH 681ef61 DN-- 7 6 -- 
+#> IGRAPH 2c6212d DN-- 7 6 -- 
 #> + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name
 #> | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label
 #> | (v/c), split_var (e/n), split_point (e/n), prediction (e/n), treenum
 #> | (e/n), split_var_name (e/c)
-#> + edges from 681ef61 (vertex names):
+#> + edges from 2c6212d (vertex names):
 #> [1] 0->1 2->3 4->5 0->2 2->4 4->6
 ```
 
@@ -819,11 +819,11 @@ nodelist(xg, treenum = 1)
 ``` r
 g <- as.igraph(xg, treenum = 1)
 g
-#> IGRAPH 5381a97 DN-- 3 2 -- 
+#> IGRAPH 3ba19cb DN-- 3 2 -- 
 #> + attr: name (v/c), is_leaf (v/l), feature (v/c), split (v/n), quality
 #> | (v/n), cover (v/n), treenum (v/n), label (v/c), feature (e/c), split
 #> | (e/n), quality (e/n), cover (e/n), treenum (e/n)
-#> + edges from 5381a97 (vertex names):
+#> + edges from 3ba19cb (vertex names):
 #> [1] 0-0->0-1 0-0->0-2
 ```
 

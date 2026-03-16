@@ -60,11 +60,11 @@ if (requireNamespace("randomForest", quietly = TRUE)) {
 }
 #>   from to split_var split_point prediction treenum split_var_name
 #> 1    1  2         3        2.60          1       1   Petal.Length
-#> 2    3  4         3        4.75          0       1   Petal.Length
-#> 3    4  6         4        1.65          2       1    Petal.Width
+#> 2    3  4         4        1.65          0       1    Petal.Width
+#> 3    4  6         3        5.00          2       1   Petal.Length
 #> 4    5  8         4        1.75          0       1    Petal.Width
-#> 5    8 10         1        6.50          0       1   Sepal.Length
-#> 6    9 12         1        5.95          0       1   Sepal.Length
+#> 5    7 10         2        2.75          2       1    Sepal.Width
+#> 6    8 12         1        5.80          3       1   Sepal.Length
 
 # Tree example
 if (requireNamespace("tree", quietly = TRUE)) {
