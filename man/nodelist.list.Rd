@@ -12,8 +12,9 @@
 \item{name_root}{Character; label for the root node.
   Defaults to \code{"root"}.}
 
-\item{max_depth}{Integer or \code{NULL}; maximum recursion depth.
-  \code{NULL} (the default) means unlimited.}
+\item{max_depth}{Integer or \code{NULL}; maximum node depth to include
+  (root is depth 0, its children are depth 1).  \code{NULL} (the default)
+  means unlimited.  \code{max_depth = 0} returns the root node only.}
 
 \item{...}{Additional arguments (currently unused).}
 }

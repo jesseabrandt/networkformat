@@ -64,10 +64,10 @@ Unnamed elements use positional indices:
 edgelist(list(1, 2, list(3, 4)))
 ```
 
-Limit recursion with `max_depth`:
+Limit depth (root = 0, children = 1, ...):
 
 ```{r}
-edgelist(list(a = list(b = list(c = 1))), max_depth = 1)
+edgelist(list(a = list(b = list(c = 1))), max_depth = 2)
 ```
 
 ### nodelist

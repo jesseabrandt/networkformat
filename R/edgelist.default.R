@@ -55,7 +55,6 @@ edgelist.default <- function(input_object, weights = FALSE, ...) {
   }
 
   # S3 objects whose class vector doesn't include "list" but are structurally
-
   # lists (e.g. lm, glm) — forward to edgelist.list for structural decomposition
   if (is.list(input_object)) {
     return(edgelist.list(input_object, ...))

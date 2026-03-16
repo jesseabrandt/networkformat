@@ -12,8 +12,10 @@
 \item{name_root}{Character; label for the root node.
   Defaults to \code{"root"}.}
 
-\item{max_depth}{Integer or \code{NULL}; maximum recursion depth.
-  \code{NULL} (the default) means unlimited.}
+\item{max_depth}{Integer or \code{NULL}; maximum node depth to include
+  (root is depth 0, its children are depth 1).  \code{NULL} (the default)
+  means unlimited.  \code{max_depth = 0} returns an empty edgelist (root
+  only).}
 
 \item{...}{Additional arguments (currently unused).}
 }
@@ -44,6 +46,6 @@ edgelist(list(a = 1, b = list(c = 2, d = 3)))
 # Unnamed elements use positional indices
 edgelist(list(1, 2, list(3, 4)))
 
-# Limit recursion depth
-edgelist(list(a = list(b = list(c = 1))), max_depth = 1)
+# Limit depth (root = 0, children = 1, ...)
+edgelist(list(a = list(b = list(c = 1))), max_depth = 2)
 }

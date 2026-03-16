@@ -11,8 +11,9 @@
 #' @param input_object A list (or S3 object falling through to this method).
 #' @param name_root Character; label for the root node.
 #'   Defaults to \code{"root"}.
-#' @param max_depth Integer or \code{NULL}; maximum recursion depth.
-#'   \code{NULL} (the default) means unlimited.
+#' @param max_depth Integer or \code{NULL}; maximum node depth to include
+#'   (root is depth 0, its children are depth 1).  \code{NULL} (the default)
+#'   means unlimited.  \code{max_depth = 0} returns the root node only.
 #' @param ... Additional arguments (currently unused).
 #'
 #' @returns A data.frame with columns \code{name} (path-style ID),
@@ -35,7 +36,7 @@ nodelist.list <- function(input_object, name_root = "root", max_depth = NULL, ..
     input_object <- unclass(input_object)
   }
 
-  root_type <- if (length(input_object) > 0L) "list" else "list"
+  root_type <- "list"
   root <- data.frame(name = name_root, depth = 0L, type = root_type,
                      n_children = length(input_object), label = name_root,
                      stringsAsFactors = FALSE)
@@ -52,6 +53,8 @@ nodelist.list <- function(input_object, name_root = "root", max_depth = NULL, ..
 #' Recursive helper to collect nodes from a nested list
 #' @noRd
 .list_nodes <- function(obj, parent_name, depth, max_depth) {
+  if (!is.null(max_depth) && depth > max_depth) return(list())
+
   nms <- names(obj)
   nodes <- vector("list", length(obj))
 
@@ -69,7 +72,7 @@ nodelist.list <- function(input_object, name_root = "root", max_depth = NULL, ..
                        stringsAsFactors = FALSE)
 
     if (is_child_list && length(child) > 0L &&
-        (is.null(max_depth) || depth <= max_depth)) {
+        (is.null(max_depth) || depth < max_depth)) {
       sub_nodes <- .list_nodes(child, parent_name = child_name,
                                depth = depth + 1L, max_depth = max_depth)
       nodes[[i]] <- do.call(rbind, c(list(node), sub_nodes))

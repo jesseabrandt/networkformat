@@ -840,12 +840,28 @@ test_that("nodelist.list reports correct type for varied elements", {
   expect_equal(types, c("integer", "character", "logical", "NULL", "list"))
 })
 
-test_that("nodelist.list max_depth truncates recursion", {
-  nl <- nodelist(list(a = list(b = list(c = 1))), max_depth = 1)
+test_that("nodelist.list max_depth limits node depth", {
+  # list: root(0) -> a(1) -> b(2) -> c(3)
+  x <- list(a = list(b = list(c = 1)))
 
-  # max_depth = 1: recurse into depth-1 lists; root + a + b = 3 nodes
-  expect_equal(nrow(nl), 3)
-  expect_equal(max(nl$depth), 2L)
+  # max_depth = 0: root only
+  nl0 <- nodelist(x, max_depth = 0)
+  expect_equal(nrow(nl0), 1)
+  expect_equal(nl0$name, "root")
+
+  # max_depth = 1: root + depth-1 children
+  nl1 <- nodelist(x, max_depth = 1)
+  expect_equal(nrow(nl1), 2)
+  expect_equal(max(nl1$depth), 1L)
+
+  # max_depth = 2: root + depth 1 + depth 2
+  nl2 <- nodelist(x, max_depth = 2)
+  expect_equal(nrow(nl2), 3)
+  expect_equal(max(nl2$depth), 2L)
+
+  # max_depth = NULL (unlimited): all 4 nodes
+  nl_all <- nodelist(x)
+  expect_equal(nrow(nl_all), 4)
 })
 
 test_that("nodelist.list custom name_root", {

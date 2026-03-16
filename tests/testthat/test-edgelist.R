@@ -1053,20 +1053,27 @@ test_that("edgelist.list single element list produces one edge", {
   expect_equal(el$to, "root/a")
 })
 
-test_that("edgelist.list max_depth truncates recursion", {
-  el <- edgelist(list(a = list(b = list(c = 1))), max_depth = 1)
+test_that("edgelist.list max_depth limits node depth", {
+  # list: root(0) -> a(1) -> b(2) -> c(3)
+  x <- list(a = list(b = list(c = 1)))
 
-  # max_depth = 1: recurse into depth-1 lists, so edges at depth 1 and 2
-  expect_equal(nrow(el), 2)
-  expect_equal(el$depth, c(1L, 2L))
-  expect_true(all(el$depth <= 2L))
-})
+  # max_depth = 0: root only, no edges
+  el0 <- edgelist(x, max_depth = 0)
+  expect_equal(nrow(el0), 0)
 
-test_that("edgelist.list max_depth = 2 allows two levels", {
-  el <- edgelist(list(a = list(b = list(c = 1))), max_depth = 2)
+  # max_depth = 1: include nodes up to depth 1 (root + children)
+  el1 <- edgelist(x, max_depth = 1)
+  expect_equal(nrow(el1), 1)
+  expect_equal(el1$depth, 1L)
 
-  expect_equal(nrow(el), 3)
-  expect_equal(max(el$depth), 3L)
+  # max_depth = 2: include nodes up to depth 2
+  el2 <- edgelist(x, max_depth = 2)
+  expect_equal(nrow(el2), 2)
+  expect_equal(el2$depth, c(1L, 2L))
+
+  # max_depth = NULL (unlimited): all 3 edges
+  el_all <- edgelist(x)
+  expect_equal(nrow(el_all), 3)
 })
 
 test_that("edgelist.list custom name_root", {
