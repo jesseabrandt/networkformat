@@ -185,6 +185,27 @@ test_that("nodelist.randomForest works for regression", {
   expect_true(all(na.omit(nl$split_var_name) %in% c("cyl", "disp", "hp")))
 })
 
+test_that("nodelist.randomForest split_var_name is correct when leaves precede internal nodes", {
+  skip_if_not_installed("randomForest")
+
+  # Regression test: leaf nodes have split_var = 0. R drops 0-indices from vectors,
+  # so naive indexing var_names[split_var] produces a shorter vector; ifelse() then
+  # recycles it, assigning wrong variable names to internal nodes that follow leaves.
+  # This seed produces a tree where a leaf (split_var=0) appears at row 4 and 5,
+  # before the internal node at row 6 (split_var=4, Petal.Width).
+  set.seed(42)
+  rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 1)
+  nl <- nodelist(rf, treenum = 1)
+
+  tree_df <- as.data.frame(randomForest::getTree(rf, 1))
+  var_names <- names(rf$forest$ncat)
+  internal_rows <- tree_df[tree_df$`left daughter` != 0, ]
+  expected_names <- var_names[internal_rows$`split var`]
+
+  actual_names <- nl$split_var_name[!nl$is_leaf]
+  expect_equal(actual_names, expected_names)
+})
+
 # --- nodelist.randomForest label tests ---
 
 test_that("nodelist.randomForest label column exists", {
