@@ -417,7 +417,6 @@ test_that("edgelist.tree numeric splits have correct op and point", {
   expect_true(any(numeric_rows))
   expect_true(all(el$split_op[numeric_rows] %in% c("<", ">")))
   expect_true(all(!is.na(el$split_point[numeric_rows])))
-  expect_true(all(!is.na(el$split_point[numeric_rows])))
 })
 
 test_that("edgelist.tree label column is unchanged", {
@@ -1096,6 +1095,12 @@ test_that("edgelist.list S3 object emits fallthrough message", {
 
 test_that("edgelist.list plain list produces no message", {
   expect_silent(edgelist(list(a = 1, b = 2)))
+})
+
+test_that("edgelist.list escapes / in name_root", {
+  el <- edgelist(list(a = 1), name_root = "my/root")
+  expect_equal(el$from, "my%2Froot")
+  expect_equal(el$to, "my%2Froot/a")
 })
 
 test_that("edgelist.list escapes / in element names", {

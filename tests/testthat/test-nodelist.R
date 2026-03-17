@@ -912,3 +912,9 @@ test_that("nodelist.list escapes / in element names", {
   expect_equal(nl$name[2], "root/a%2Fb")
   expect_equal(nl$label[2], "a/b")
 })
+
+test_that("nodelist.list escapes / in name_root", {
+  nl <- nodelist(list(a = 1), name_root = "my/root")
+  expect_equal(nl$name[1], "my%2Froot")
+  expect_equal(nl$name[2], "my%2Froot/a")
+})
