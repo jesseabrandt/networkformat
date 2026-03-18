@@ -60,7 +60,7 @@ edgelist(c("A", "B", "A", "B", "C"), weights = TRUE)
 #> 3    B  C      1
 
 # Unsupported type
-try(edgelist(list(a = 1, b = 2)))
-#> Error in edgelist.default(list(a = 1, b = 2)) : 
-#>   edgelist() does not support objects of class 'list'. Supported classes: vector, data.frame, randomForest, tree, rpart, xgb.Booster, gbm.
+try(edgelist(as.formula(y ~ x)))
+#> Error in edgelist.default(as.formula(y ~ x)) : 
+#>   edgelist() does not support objects of class 'formula'. Supported classes: vector, data.frame, list, randomForest, tree, rpart, xgb.Booster, gbm.
 ```

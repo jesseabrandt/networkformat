@@ -2,9 +2,10 @@
 
 Generic function to extract a network edgelist from various object
 types. Methods exist for atomic vectors (sequential edges), data frames
-(column-pair edges), and tree-based model objects (`randomForest`,
-`tree`, `rpart`, `xgb.Booster`, `gbm`). The specific columns returned
-depend on the input type.
+(column-pair edges), lists (recursive parent-child edges), and
+tree-based model objects (`randomForest`, `tree`, `rpart`,
+`xgb.Booster`, `gbm`). The specific columns returned depend on the input
+type.
 
 ## Usage
 

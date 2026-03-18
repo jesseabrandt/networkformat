@@ -6,9 +6,9 @@ with code in this repository.
 ## What This Package Does
 
 **networkformat** is an R package that converts R objects — vectors,
-data frames, and tree-based ML models — into network edgelist/nodelist
-format for visualization and analysis with igraph/tidygraph/ggraph.
-Version 0.0.0.9000 (experimental).
+data frames, lists, and tree-based ML models — into network
+edgelist/nodelist format for visualization and analysis with
+igraph/tidygraph/ggraph. Version 0.0.0.9000 (experimental).
 
 ## Development Commands
 
@@ -46,6 +46,7 @@ The package uses **S3 method dispatch** with four groups of functions:
 | Method                  | Input         | Key Parameters                                                                            | Output Columns                                                        | Status   |
 |-------------------------|---------------|-------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|----------|
 | `edgelist.default`      | atomic vector | `weights`                                                                                 | from, to, \[weight\]                                                  | Complete |
+| `edgelist.list`         | list          | `name_root`, `max_depth`                                                                  | from, to, depth                                                       | Complete |
 | `edgelist.data.frame`   | data.frame    | `source_cols`, `target_cols`, `attr_cols`, `na.rm`, `symmetric_cols`, `dedupe`, `weights` | from, to, from_col, to_col, \[directed\], \[weight\], \<attrs\>       | Complete |
 | `edgelist.randomForest` | randomForest  | `treenum`                                                                                 | from, to, split_var, split_point, prediction, treenum, split_var_name | Complete |
 | `edgelist.tree`         | tree          |                                                                                           | from, to, label, split_var, split_op, split_point                     | Complete |
@@ -55,15 +56,16 @@ The package uses **S3 method dispatch** with four groups of functions:
 
 ### `nodelist()` — extract node attributes
 
-| Method                  | Input         | Key Parameters | Output Columns                                                                    | Status   |
-|-------------------------|---------------|----------------|-----------------------------------------------------------------------------------|----------|
-| `nodelist.default`      | atomic vector |                | name, n                                                                           | Complete |
-| `nodelist.data.frame`   | data.frame    | `id_col`       | (reordered input, id_col first)                                                   | Complete |
-| `nodelist.randomForest` | randomForest  | `treenum`      | name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label | Complete |
-| `nodelist.tree`         | tree          |                | name, var, n, dev, yval, is_leaf, label                                           | Complete |
-| `nodelist.rpart`        | rpart         |                | name, var, n, dev, yval, is_leaf, label                                           | Complete |
-| `nodelist.xgb.Booster`  | xgb.Booster   | `treenum`      | name, is_leaf, feature, split, quality, cover, treenum, label                     | Complete |
-| `nodelist.gbm`          | gbm           | `treenum`      | name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label | Complete |
+| Method                  | Input         | Key Parameters           | Output Columns                                                                    | Status   |
+|-------------------------|---------------|--------------------------|-----------------------------------------------------------------------------------|----------|
+| `nodelist.default`      | atomic vector |                          | name, n                                                                           | Complete |
+| `nodelist.list`         | list          | `name_root`, `max_depth` | name, depth, type, n_children, label                                              | Complete |
+| `nodelist.data.frame`   | data.frame    | `id_col`                 | (reordered input, id_col first)                                                   | Complete |
+| `nodelist.randomForest` | randomForest  | `treenum`                | name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label | Complete |
+| `nodelist.tree`         | tree          |                          | name, var, n, dev, yval, is_leaf, label                                           | Complete |
+| `nodelist.rpart`        | rpart         |                          | name, var, n, dev, yval, is_leaf, label                                           | Complete |
+| `nodelist.xgb.Booster`  | xgb.Booster   | `treenum`                | name, is_leaf, feature, split, quality, cover, treenum, label                     | Complete |
+| `nodelist.gbm`          | gbm           | `treenum`                | name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label | Complete |
 
 ### `as.igraph()` / `as_tbl_graph()` — direct graph construction
 
@@ -105,6 +107,8 @@ corresponding edgelist, so they can be passed directly to
   columns must match, not just from/to) and adds a `weight` column. This
   is separate from `symmetric_cols` + `dedupe`, which normalizes edge
   direction.
+- **list**: Edges are structurally unique (one edge per parent-child
+  pair); duplicates cannot occur.
 - **randomForest / tree / rpart / xgboost / gbm**: Edges are
   structurally unique (tree topology); duplicates cannot occur.
 
@@ -113,7 +117,7 @@ corresponding edgelist, so they can be passed directly to
 Each S3 method lives in its own file: `R/edgelist.R` (generic),
 `R/edgelist.data.frame.R`, `R/edgelist.randomForest.R`, etc. Same
 pattern for `nodelist.*`. Graph conversion methods live in
-`R/as_igraph.R` (methods for
+`R/as.igraph.R` (methods for
 [`igraph::as.igraph`](https://r.igraph.org/reference/as.igraph.html))
 and `R/as_tbl_graph.R` (methods for
 [`tidygraph::as_tbl_graph`](https://tidygraph.data-imaginist.com/reference/tbl_graph.html)).
@@ -122,6 +126,13 @@ and `R/as_tbl_graph.R` (methods for
 
 - **vector (default)**: Sequential edges: element `i` connects to
   element `i + 1`, producing `n - 1` edges from a length-`n` vector.
+- **list**: Recursive traversal of nested list structure. Each element
+  produces a parent-child edge. Path-style IDs (`root/a/b`) ensure
+  uniqueness. Named elements use their names; unnamed elements use
+  positional indices (`[[1]]`). `max_depth` limits recursion. S3 objects
+  without a dedicated method fall through from `edgelist.default` via
+  [`is.list()`](https://rdrr.io/r/base/list.html) check and are
+  unclassed before traversal.
 - **randomForest**: Iterates trees via
   [`randomForest::getTree()`](https://rdrr.io/pkg/randomForest/man/getTree.html),
   identifies parent nodes (`left_daughter != 0`), creates edges to both
@@ -173,7 +184,7 @@ and `R/as_tbl_graph.R` (methods for
 
 - Framework: testthat 3rd edition
 - Test files: `test-edgelist.R` (~220 tests), `test-nodelist.R` (~171
-  tests), `test-as_igraph.R` (tests `as.igraph()` and `as_tbl_graph()`
+  tests), `test-as.igraph.R` (tests `as.igraph()` and `as_tbl_graph()`
   methods)
 - Tests for randomForest/tree use `skip_if_not_installed()`
 - The overlap warning in `test-edgelist.R` is expected (tests that

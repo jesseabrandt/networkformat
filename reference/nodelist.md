@@ -2,9 +2,9 @@
 
 Generic function to extract a node list (with attributes) from various
 object types including atomic vectors (unique values with frequencies),
-data frames, and tree models (`randomForest`, `tree`, `rpart`,
-`xgb.Booster`, `gbm`). The node list provides metadata about each node
-in the network.
+data frames, lists (recursive node decomposition), and tree models
+(`randomForest`, `tree`, `rpart`, `xgb.Booster`, `gbm`). The node list
+provides metadata about each node in the network.
 
 ## Usage
 

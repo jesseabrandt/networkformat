@@ -61,7 +61,8 @@ A data.frame with one row per node and the following columns:
 
 - label:
 
-  Display label: feature name for splits, leaf score for leaves
+  Display label: `"<feature>\n< <threshold>"` for splits, rounded leaf
+  score for leaves
 
 ## Examples
 
@@ -83,11 +84,11 @@ if (requireNamespace("xgboost", quietly = TRUE)) {
 #> 4  0-3    TRUE                    <NA>      NA    0.5785417   13.23304       1
 #> 5  0-4    TRUE                    <NA>      NA   -0.5614965  689.61627       1
 #> 6  0-5    TRUE                    <NA>      NA   -0.4894775  112.35602       1
-#>                     label
-#> 1               odor=none
-#> 2 spore-print-color=green
-#> 3         stalk-root=club
-#> 4                  0.5785
-#> 5                 -0.5615
-#> 6                 -0.4895
+#>                          label
+#> 1               odor=none\n< 2
+#> 2 spore-print-color=green\n< 2
+#> 3         stalk-root=club\n< 2
+#> 4                       0.5785
+#> 5                      -0.5615
+#> 6                      -0.4895
 ```

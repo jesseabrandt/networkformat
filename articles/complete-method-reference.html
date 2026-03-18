@@ -113,16 +113,71 @@ element <em>i + 1</em>.</p>
 </div>
 </div>
 <div class="section level2">
+<h2 id="lists">Lists<a class="anchor" aria-label="anchor" href="#lists"></a>
+</h2>
+<p>Lists produce recursive parent-child edges. Each element becomes a
+node with a path-style ID.</p>
+<div class="section level3">
+<h3 id="edgelist-1">edgelist<a class="anchor" aria-label="anchor" href="#edgelist-1"></a>
+</h3>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>a <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>b <span class="op">=</span> <span class="fl">1</span>, c <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, d <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     from       to depth</span></span>
+<span><span class="co">#&gt; 1   root   root/a     1</span></span>
+<span><span class="co">#&gt; 2 root/a root/a/b     2</span></span>
+<span><span class="co">#&gt; 3 root/a root/a/c     2</span></span>
+<span><span class="co">#&gt; 4   root   root/d     1</span></span></code></pre></div>
+<p>Unnamed elements use positional indices:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         from               to depth</span></span>
+<span><span class="co">#&gt; 1       root       root/[[1]]     1</span></span>
+<span><span class="co">#&gt; 2       root       root/[[2]]     1</span></span>
+<span><span class="co">#&gt; 3       root       root/[[3]]     1</span></span>
+<span><span class="co">#&gt; 4 root/[[3]] root/[[3]]/[[1]]     2</span></span>
+<span><span class="co">#&gt; 5 root/[[3]] root/[[3]]/[[2]]     2</span></span></code></pre></div>
+<p>Limit depth (root = 0, children = 1, …):</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>a <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>b <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>c <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, max_depth <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     from       to depth</span></span>
+<span><span class="co">#&gt; 1   root   root/a     1</span></span>
+<span><span class="co">#&gt; 2 root/a root/a/b     2</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="nodelist-1">nodelist<a class="anchor" aria-label="anchor" href="#nodelist-1"></a>
+</h3>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/nodelist.html">nodelist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>a <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>b <span class="op">=</span> <span class="fl">1</span>, c <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, d <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;       name depth    type n_children label</span></span>
+<span><span class="co">#&gt; 1     root     0    list          2  root</span></span>
+<span><span class="co">#&gt; 2   root/a     1    list          2     a</span></span>
+<span><span class="co">#&gt; 3 root/a/b     2 numeric          0     b</span></span>
+<span><span class="co">#&gt; 4 root/a/c     2 numeric          0     c</span></span>
+<span><span class="co">#&gt; 5   root/d     1 numeric          0     d</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="s3-object-fallthrough">S3 object fallthrough<a class="anchor" aria-label="anchor" href="#s3-object-fallthrough"></a>
+</h3>
+<p>S3 objects without a dedicated method are decomposed as plain
+lists:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">Sepal.Length</span> <span class="op">~</span> <span class="va">Sepal.Width</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="co">#&gt; No edgelist method for class 'lm'; treating as a plain list.</span></span></code></pre></div>
+<hr>
+</div>
+</div>
+<div class="section level2">
 <h2 id="data-frames">Data frames<a class="anchor" aria-label="anchor" href="#data-frames"></a>
 </h2>
 <p>Data frame methods use tidyselect to specify which columns form
 edges.</p>
 <div class="section level3">
-<h3 id="edgelist-1">edgelist<a class="anchor" aria-label="anchor" href="#edgelist-1"></a>
+<h3 id="edgelist-2">edgelist<a class="anchor" aria-label="anchor" href="#edgelist-2"></a>
 </h3>
 <p><strong>Basic usage</strong> with the bundled <code>courses</code>
 dataset:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">courses</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">courses</span>, source_cols <span class="op">=</span> <span class="va">prereq</span>, target_cols <span class="op">=</span> <span class="va">course</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       from      to from_col to_col dept prereq2 crosslist credits level</span></span>
@@ -139,7 +194,7 @@ dataset:</p>
 <span><span class="co">#&gt; 11 stat202 stat301   prereq course STAT   cs201   data301       4   300</span></span></code></pre></div>
 <p><strong>Multiple source columns</strong> — each source column
 produces a block of edges, identified by <code>from_col</code>:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">courses</span>, source_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">prereq</span>, <span class="va">prereq2</span><span class="op">)</span>, target_cols <span class="op">=</span> <span class="va">course</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       from      to from_col to_col dept crosslist credits level</span></span>
 <span><span class="co">#&gt; 1  math101 stat101   prereq course STAT      &lt;NA&gt;       3   100</span></span>
@@ -159,7 +214,7 @@ produces a block of edges, identified by <code>from_col</code>:</p>
 <span><span class="co">#&gt; 15   cs201 stat301  prereq2 course STAT   data301       4   300</span></span></code></pre></div>
 <p><strong>Keeping NAs</strong> (default is
 <code>na.rm = TRUE</code>):</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">courses</span>, source_cols <span class="op">=</span> <span class="va">prereq</span>, target_cols <span class="op">=</span> <span class="va">course</span>, na.rm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       from      to from_col to_col dept prereq2 crosslist credits level</span></span>
 <span><span class="co">#&gt; 1  math101 stat101   prereq course STAT    &lt;NA&gt;      &lt;NA&gt;       3   100</span></span>
@@ -178,7 +233,7 @@ produces a block of edges, identified by <code>from_col</code>:</p>
 <p><strong>Controlling attribute columns</strong> — by default all
 non-edge columns are carried through. Use <code>attr_cols</code> to
 select specific ones:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">courses</span>, source_cols <span class="op">=</span> <span class="va">prereq</span>, target_cols <span class="op">=</span> <span class="va">course</span>,</span>
 <span>         attr_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">dept</span>, <span class="va">credits</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       from      to from_col to_col dept credits</span></span>
@@ -194,7 +249,7 @@ select specific ones:</p>
 <span><span class="co">#&gt; 10 stat202 data301   prereq course DATA       3</span></span>
 <span><span class="co">#&gt; 11 stat202 stat301   prereq course STAT       4</span></span></code></pre></div>
 <p>Or pass <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> to drop all attributes:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">courses</span>, source_cols <span class="op">=</span> <span class="va">prereq</span>, target_cols <span class="op">=</span> <span class="va">course</span>, attr_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       from      to from_col to_col</span></span>
 <span><span class="co">#&gt; 1  math101 stat101   prereq course</span></span>
@@ -210,7 +265,7 @@ select specific ones:</p>
 <span><span class="co">#&gt; 11 stat202 stat301   prereq course</span></span></code></pre></div>
 <p><strong>Symmetric (undirected) edges</strong> with automatic
 deduplication:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">courses</span>, source_cols <span class="op">=</span> <span class="va">course</span>, target_cols <span class="op">=</span> <span class="va">crosslist</span>,</span>
 <span>         symmetric_cols <span class="op">=</span> <span class="va">crosslist</span>, dedupe <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      from      to from_col    to_col directed dept  prereq prereq2 credits</span></span>
@@ -225,7 +280,7 @@ deduplication:</p>
 <span><span class="co">#&gt; 4   300</span></span></code></pre></div>
 <p><strong>Edge weights</strong> — collapse identical rows and
 count:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">courses</span>, source_cols <span class="op">=</span> <span class="va">prereq</span>, target_cols <span class="op">=</span> <span class="va">course</span>, weights <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       from      to from_col to_col dept prereq2 crosslist credits level weight</span></span>
 <span><span class="co">#&gt; 1  math101 stat101   prereq course STAT    &lt;NA&gt;      &lt;NA&gt;       3   100      1</span></span>
@@ -240,7 +295,7 @@ count:</p>
 <span><span class="co">#&gt; 10 stat202 data301   prereq course DATA   cs201   stat301       3   300      1</span></span>
 <span><span class="co">#&gt; 11 stat202 stat301   prereq course STAT   cs201   data301       4   300      1</span></span></code></pre></div>
 <p><strong>Mixed directed and undirected edges:</strong></p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">courses</span>,</span>
 <span>         source_cols <span class="op">=</span> <span class="va">course</span>,</span>
 <span>         target_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">prereq</span>, <span class="va">crosslist</span><span class="op">)</span>,</span>
@@ -263,10 +318,10 @@ count:</p>
 <span><span class="co">#&gt; 15 data301 stat301   course crosslist    FALSE DATA   cs201       3   300</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="nodelist-1">nodelist<a class="anchor" aria-label="anchor" href="#nodelist-1"></a>
+<h3 id="nodelist-2">nodelist<a class="anchor" aria-label="anchor" href="#nodelist-2"></a>
 </h3>
 <p>Reorders the data frame so the ID column comes first:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/nodelist.html">nodelist</a></span><span class="op">(</span><span class="va">courses</span>, id_col <span class="op">=</span> <span class="va">course</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     course dept  prereq prereq2 crosslist credits level</span></span>
 <span><span class="co">#&gt; 1  stat101 STAT math101    &lt;NA&gt;      &lt;NA&gt;       3   100</span></span>
@@ -288,13 +343,13 @@ count:</p>
 <div class="section level2">
 <h2 id="decision-trees-tree">Decision trees (tree)<a class="anchor" aria-label="anchor" href="#decision-trees-tree"></a>
 </h2>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">tree</span><span class="op">)</span></span>
 <span><span class="va">tr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/tree/man/tree.html" class="external-link">tree</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, <span class="va">iris</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
-<h3 id="edgelist-2">edgelist<a class="anchor" aria-label="anchor" href="#edgelist-2"></a>
+<h3 id="edgelist-3">edgelist<a class="anchor" aria-label="anchor" href="#edgelist-3"></a>
 </h3>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    from to              label    split_var split_op split_point</span></span>
 <span><span class="co">#&gt; 1     1  2 Petal.Length &lt;2.45 Petal.Length        &lt;        2.45</span></span>
@@ -309,9 +364,9 @@ count:</p>
 <span><span class="co">#&gt; 10    7 15 Petal.Length &gt;4.95 Petal.Length        &gt;        4.95</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="nodelist-2">nodelist<a class="anchor" aria-label="anchor" href="#nodelist-2"></a>
+<h3 id="nodelist-3">nodelist<a class="anchor" aria-label="anchor" href="#nodelist-3"></a>
 </h3>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/nodelist.html">nodelist</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    name          var   n        dev       yval is_leaf               label</span></span>
 <span><span class="co">#&gt; 1     1 Petal.Length 150 329.583687     setosa   FALSE Petal.Length\nn=150</span></span>
@@ -329,7 +384,7 @@ count:</p>
 <div class="section level3">
 <h3 id="as-igraph">as.igraph<a class="anchor" aria-label="anchor" href="#as-igraph"></a>
 </h3>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Attaching package: 'igraph'</span></span>
@@ -344,13 +399,13 @@ count:</p>
 <span><span class="co">#&gt;     union</span></span>
 <span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH 59eea06 DN-- 11 10 -- </span></span>
+<span><span class="co">#&gt; IGRAPH 90a0906 DN-- 11 10 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf</span></span>
 <span><span class="co">#&gt; | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),</span></span>
 <span><span class="co">#&gt; | split_point (e/n)</span></span>
-<span><span class="co">#&gt; + edges from 59eea06 (vertex names):</span></span>
+<span><span class="co">#&gt; + edges from 90a0906 (vertex names):</span></span>
 <span><span class="co">#&gt;  [1] 1 -&gt;2  1 -&gt;3  3 -&gt;6  6 -&gt;12 12-&gt;24 12-&gt;25 6 -&gt;13 3 -&gt;7  7 -&gt;14 7 -&gt;15</span></span></code></pre></div>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://r.igraph.org/reference/gorder.html" class="external-link">vcount</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 11</span></span>
 <span><span class="fu"><a href="https://r.igraph.org/reference/gsize.html" class="external-link">ecount</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span></span>
@@ -359,7 +414,7 @@ count:</p>
 <div class="section level3">
 <h3 id="as_tbl_graph">as_tbl_graph<a class="anchor" aria-label="anchor" href="#as_tbl_graph"></a>
 </h3>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidygraph.data-imaginist.com" class="external-link">tidygraph</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Attaching package: 'tidygraph'</span></span>
@@ -402,17 +457,17 @@ count:</p>
 <div class="section level2">
 <h2 id="random-forests-randomforest">Random forests (randomForest)<a class="anchor" aria-label="anchor" href="#random-forests-randomforest"></a>
 </h2>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.stat.berkeley.edu/~breiman/RandomForests/" class="external-link">randomForest</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; randomForest 4.7-1.2</span></span>
 <span><span class="co">#&gt; Type rfNews() to see new features/changes/bug fixes.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">rf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/randomForest/man/randomForest.html" class="external-link">randomForest</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, <span class="va">iris</span>, ntree <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
-<h3 id="edgelist-3">edgelist<a class="anchor" aria-label="anchor" href="#edgelist-3"></a>
+<h3 id="edgelist-4">edgelist<a class="anchor" aria-label="anchor" href="#edgelist-4"></a>
 </h3>
 <p>All trees:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">rf</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    from to split_var split_point prediction treenum split_var_name</span></span>
 <span><span class="co">#&gt; 1     1  2         3        4.75          0       1   Petal.Length</span></span>
@@ -448,7 +503,7 @@ count:</p>
 <span><span class="co">#&gt; 31    3  5         4        1.75          3       3    Petal.Width</span></span>
 <span><span class="co">#&gt; 32    4  7         3        5.05          3       3   Petal.Length</span></span></code></pre></div>
 <p>A single tree:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">rf</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   from to split_var split_point prediction treenum split_var_name</span></span>
 <span><span class="co">#&gt; 1    1  2         3        4.75          0       1   Petal.Length</span></span>
@@ -460,7 +515,7 @@ count:</p>
 <span><span class="co">#&gt; 7    3  7         3        5.05          3       1   Petal.Length</span></span>
 <span><span class="co">#&gt; 8    6  9         4        1.75          3       1    Petal.Width</span></span></code></pre></div>
 <p>Multiple specific trees:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">rf</span>, treenum <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    from to split_var split_point prediction treenum split_var_name</span></span>
 <span><span class="co">#&gt; 1     1  2         3        4.75          0       1   Petal.Length</span></span>
@@ -479,9 +534,9 @@ count:</p>
 <span><span class="co">#&gt; 14    4  7         3        5.05          3       3   Petal.Length</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="nodelist-3">nodelist<a class="anchor" aria-label="anchor" href="#nodelist-3"></a>
+<h3 id="nodelist-4">nodelist<a class="anchor" aria-label="anchor" href="#nodelist-4"></a>
 </h3>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/nodelist.html">nodelist</a></span><span class="op">(</span><span class="va">rf</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   name is_leaf split_var split_var_name split_point prediction treenum</span></span>
 <span><span class="co">#&gt; 1    1   FALSE         3   Petal.Length        4.75          0       1</span></span>
@@ -489,37 +544,37 @@ count:</p>
 <span><span class="co">#&gt; 3    3   FALSE         3   Petal.Length        5.05          0       1</span></span>
 <span><span class="co">#&gt; 4    4    TRUE        NA           &lt;NA&gt;          NA          1       1</span></span>
 <span><span class="co">#&gt; 5    5    TRUE        NA           &lt;NA&gt;          NA          2       1</span></span>
-<span><span class="co">#&gt; 6    6   FALSE         4   Petal.Length        1.75          0       1</span></span>
+<span><span class="co">#&gt; 6    6   FALSE         4    Petal.Width        1.75          0       1</span></span>
 <span><span class="co">#&gt; 7    7    TRUE        NA           &lt;NA&gt;          NA          3       1</span></span>
 <span><span class="co">#&gt; 8    8    TRUE        NA           &lt;NA&gt;          NA          2       1</span></span>
 <span><span class="co">#&gt; 9    9    TRUE        NA           &lt;NA&gt;          NA          3       1</span></span>
-<span><span class="co">#&gt;          label</span></span>
-<span><span class="co">#&gt; 1 Petal.Length</span></span>
-<span><span class="co">#&gt; 2 Petal.Length</span></span>
-<span><span class="co">#&gt; 3 Petal.Length</span></span>
-<span><span class="co">#&gt; 4       setosa</span></span>
-<span><span class="co">#&gt; 5   versicolor</span></span>
-<span><span class="co">#&gt; 6 Petal.Length</span></span>
-<span><span class="co">#&gt; 7    virginica</span></span>
-<span><span class="co">#&gt; 8   versicolor</span></span>
-<span><span class="co">#&gt; 9    virginica</span></span></code></pre></div>
+<span><span class="co">#&gt;                  label</span></span>
+<span><span class="co">#&gt; 1 Petal.Length\n&lt; 4.75</span></span>
+<span><span class="co">#&gt; 2 Petal.Length\n&lt; 2.45</span></span>
+<span><span class="co">#&gt; 3 Petal.Length\n&lt; 5.05</span></span>
+<span><span class="co">#&gt; 4               setosa</span></span>
+<span><span class="co">#&gt; 5           versicolor</span></span>
+<span><span class="co">#&gt; 6  Petal.Width\n&lt; 1.75</span></span>
+<span><span class="co">#&gt; 7            virginica</span></span>
+<span><span class="co">#&gt; 8           versicolor</span></span>
+<span><span class="co">#&gt; 9            virginica</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="as-igraph-1">as.igraph<a class="anchor" aria-label="anchor" href="#as-igraph-1"></a>
 </h3>
 <p>Single tree:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">rf</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH 6f17027 DN-- 9 8 -- </span></span>
+<span><span class="co">#&gt; IGRAPH feb3b25 DN-- 9 8 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name</span></span>
 <span><span class="co">#&gt; | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label</span></span>
 <span><span class="co">#&gt; | (v/c), split_var (e/n), split_point (e/n), prediction (e/n), treenum</span></span>
 <span><span class="co">#&gt; | (e/n), split_var_name (e/c)</span></span>
-<span><span class="co">#&gt; + edges from 6f17027 (vertex names):</span></span>
+<span><span class="co">#&gt; + edges from feb3b25 (vertex names):</span></span>
 <span><span class="co">#&gt; [1] 1-&gt;2 2-&gt;4 3-&gt;6 6-&gt;8 1-&gt;3 2-&gt;5 3-&gt;7 6-&gt;9</span></span></code></pre></div>
 <p>Multiple trees produce disconnected components:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">rf</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://r.igraph.org/reference/components.html" class="external-link">components</a></span><span class="op">(</span><span class="va">g_all</span><span class="op">)</span><span class="op">$</span><span class="va">no</span></span>
 <span><span class="co">#&gt; [1] 3</span></span></code></pre></div>
@@ -527,7 +582,7 @@ count:</p>
 <div class="section level3">
 <h3 id="as_tbl_graph-1">as_tbl_graph<a class="anchor" aria-label="anchor" href="#as_tbl_graph-1"></a>
 </h3>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph</a></span><span class="op">(</span><span class="va">rf</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tbl_graph: 9 nodes and 8 edges</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
@@ -536,15 +591,15 @@ count:</p>
 <span><span class="co"><span style="color: #949494;">#&gt; # Node Data: 9 × 8 (active)</span></span></span>
 <span><span class="co">#&gt;   name  is_leaf split_var split_var_name split_point prediction treenum label   </span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1     FALSE           3 Petal.Length          4.75          0       1 Petal.L…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2     FALSE           3 Petal.Length          2.45          0       1 Petal.L…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3     FALSE           3 Petal.Length          5.05          0       1 Petal.L…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 4     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>             1       1 setosa  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 5     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>             2       1 versico…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 6     FALSE           4 Petal.Length          1.75          0       1 Petal.L…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> 7     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>             3       1 virgini…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> 8     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>             2       1 versico…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">9</span> 9     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>             3       1 virgini…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1     FALSE           3 Petal.Length          4.75          0       1 <span style="color: #949494;">"</span>Petal.…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2     FALSE           3 Petal.Length          2.45          0       1 <span style="color: #949494;">"</span>Petal.…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3     FALSE           3 Petal.Length          5.05          0       1 <span style="color: #949494;">"</span>Petal.…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 4     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>             1       1 <span style="color: #949494;">"</span>setosa<span style="color: #949494;">"</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 5     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>             2       1 <span style="color: #949494;">"</span>versic…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 6     FALSE           4 Petal.Width           1.75          0       1 <span style="color: #949494;">"</span>Petal.…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> 7     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>             3       1 <span style="color: #949494;">"</span>virgin…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> 8     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>             2       1 <span style="color: #949494;">"</span>versic…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">9</span> 9     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>             3       1 <span style="color: #949494;">"</span>virgin…</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # Edge Data: 8 × 7</span></span></span>
 <span><span class="co">#&gt;    from    to split_var split_point prediction treenum split_var_name</span></span>
@@ -559,13 +614,13 @@ count:</p>
 <div class="section level2">
 <h2 id="recursive-partitioning-rpart">Recursive partitioning (rpart)<a class="anchor" aria-label="anchor" href="#recursive-partitioning-rpart"></a>
 </h2>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/bethatkinson/rpart" class="external-link">rpart</a></span><span class="op">)</span></span>
 <span><span class="va">rp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/rpart/man/rpart.html" class="external-link">rpart</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, <span class="va">iris</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
-<h3 id="edgelist-4">edgelist<a class="anchor" aria-label="anchor" href="#edgelist-4"></a>
+<h3 id="edgelist-5">edgelist<a class="anchor" aria-label="anchor" href="#edgelist-5"></a>
 </h3>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">rp</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   from to              label    split_var split_op split_point</span></span>
 <span><span class="co">#&gt; 1    1  2 Petal.Length&lt; 2.45 Petal.Length        &lt;        2.45</span></span>
@@ -574,9 +629,9 @@ count:</p>
 <span><span class="co">#&gt; 4    3  7  Petal.Width&gt;=1.75  Petal.Width       &gt;=        1.75</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="nodelist-4">nodelist<a class="anchor" aria-label="anchor" href="#nodelist-4"></a>
+<h3 id="nodelist-5">nodelist<a class="anchor" aria-label="anchor" href="#nodelist-5"></a>
 </h3>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/nodelist.html">nodelist</a></span><span class="op">(</span><span class="va">rp</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   name          var   n dev       yval is_leaf               label</span></span>
 <span><span class="co">#&gt; 1    1 Petal.Length 150 100     setosa   FALSE Petal.Length\nn=150</span></span>
@@ -588,20 +643,20 @@ count:</p>
 <div class="section level3">
 <h3 id="as-igraph-2">as.igraph<a class="anchor" aria-label="anchor" href="#as-igraph-2"></a>
 </h3>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">rp</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH b20465c DN-- 5 4 -- </span></span>
+<span><span class="co">#&gt; IGRAPH 21f01db DN-- 5 4 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf</span></span>
 <span><span class="co">#&gt; | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),</span></span>
 <span><span class="co">#&gt; | split_point (e/n)</span></span>
-<span><span class="co">#&gt; + edges from b20465c (vertex names):</span></span>
+<span><span class="co">#&gt; + edges from 21f01db (vertex names):</span></span>
 <span><span class="co">#&gt; [1] 1-&gt;2 1-&gt;3 3-&gt;6 3-&gt;7</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="as_tbl_graph-2">as_tbl_graph<a class="anchor" aria-label="anchor" href="#as_tbl_graph-2"></a>
 </h3>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph</a></span><span class="op">(</span><span class="va">rp</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tbl_graph: 5 nodes and 4 edges</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
@@ -629,7 +684,7 @@ count:</p>
 <div class="section level2">
 <h2 id="gradient-boosted-models-gbm">Gradient boosted models (gbm)<a class="anchor" aria-label="anchor" href="#gradient-boosted-models-gbm"></a>
 </h2>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/gbm-developers/gbm" class="external-link">gbm</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loaded gbm 2.2.3</span></span>
 <span><span class="co">#&gt; This version of gbm is no longer under development. Consider transitioning to gbm3, https://github.com/gbm-developers/gbm3</span></span>
@@ -637,10 +692,10 @@ count:</p>
 <span><span class="va">gb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/gbm/man/gbm.html" class="external-link">gbm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">==</span> <span class="st">"setosa"</span><span class="op">)</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span>,</span>
 <span>           distribution <span class="op">=</span> <span class="st">"bernoulli"</span>, n.trees <span class="op">=</span> <span class="fl">3</span>, interaction.depth <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
-<h3 id="edgelist-5">edgelist<a class="anchor" aria-label="anchor" href="#edgelist-5"></a>
+<h3 id="edgelist-6">edgelist<a class="anchor" aria-label="anchor" href="#edgelist-6"></a>
 </h3>
 <p>All trees:</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">gb</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    from to split_var split_point prediction treenum split_var_name</span></span>
 <span><span class="co">#&gt; 1     0  1         2        2.60  0.3000000       1   Petal.Length</span></span>
@@ -662,7 +717,7 @@ count:</p>
 <span><span class="co">#&gt; 17    2  7         1        3.15 -0.1372998       3    Sepal.Width</span></span>
 <span><span class="co">#&gt; 18    3  5         1        2.95 -0.1372998       3    Sepal.Width</span></span></code></pre></div>
 <p>A single tree:</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">gb</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   from to split_var split_point prediction treenum split_var_name</span></span>
 <span><span class="co">#&gt; 1    0  1         2        2.60       0.30       1   Petal.Length</span></span>
@@ -673,9 +728,9 @@ count:</p>
 <span><span class="co">#&gt; 6    4  6         0        6.75      -0.15       1   Sepal.Length</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="nodelist-5">nodelist<a class="anchor" aria-label="anchor" href="#nodelist-5"></a>
+<h3 id="nodelist-6">nodelist<a class="anchor" aria-label="anchor" href="#nodelist-6"></a>
 </h3>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/nodelist.html">nodelist</a></span><span class="op">(</span><span class="va">gb</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   name is_leaf split_var split_var_name split_point prediction treenum</span></span>
 <span><span class="co">#&gt; 1    0   FALSE         2   Petal.Length        2.60      -0.03       1</span></span>
@@ -685,33 +740,33 @@ count:</p>
 <span><span class="co">#&gt; 5    4   FALSE         0   Petal.Length        6.75      -0.15       1</span></span>
 <span><span class="co">#&gt; 6    5    TRUE        NA           &lt;NA&gt;          NA      -0.15       1</span></span>
 <span><span class="co">#&gt; 7    6    TRUE        NA           &lt;NA&gt;          NA      -0.15       1</span></span>
-<span><span class="co">#&gt;          label</span></span>
-<span><span class="co">#&gt; 1 Petal.Length</span></span>
-<span><span class="co">#&gt; 2          0.3</span></span>
-<span><span class="co">#&gt; 3 Sepal.Length</span></span>
-<span><span class="co">#&gt; 4        -0.15</span></span>
-<span><span class="co">#&gt; 5 Petal.Length</span></span>
-<span><span class="co">#&gt; 6        -0.15</span></span>
-<span><span class="co">#&gt; 7        -0.15</span></span></code></pre></div>
+<span><span class="co">#&gt;                  label</span></span>
+<span><span class="co">#&gt; 1  Petal.Length\n&lt; 2.6</span></span>
+<span><span class="co">#&gt; 2                  0.3</span></span>
+<span><span class="co">#&gt; 3 Sepal.Length\n&lt; 4.65</span></span>
+<span><span class="co">#&gt; 4                -0.15</span></span>
+<span><span class="co">#&gt; 5 Petal.Length\n&lt; 6.75</span></span>
+<span><span class="co">#&gt; 6                -0.15</span></span>
+<span><span class="co">#&gt; 7                -0.15</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="as-igraph-3">as.igraph<a class="anchor" aria-label="anchor" href="#as-igraph-3"></a>
 </h3>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">gb</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH 2c6212d DN-- 7 6 -- </span></span>
+<span><span class="co">#&gt; IGRAPH 20f5952 DN-- 7 6 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name</span></span>
 <span><span class="co">#&gt; | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label</span></span>
 <span><span class="co">#&gt; | (v/c), split_var (e/n), split_point (e/n), prediction (e/n), treenum</span></span>
 <span><span class="co">#&gt; | (e/n), split_var_name (e/c)</span></span>
-<span><span class="co">#&gt; + edges from 2c6212d (vertex names):</span></span>
+<span><span class="co">#&gt; + edges from 20f5952 (vertex names):</span></span>
 <span><span class="co">#&gt; [1] 0-&gt;1 2-&gt;3 4-&gt;5 0-&gt;2 2-&gt;4 4-&gt;6</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="as_tbl_graph-3">as_tbl_graph<a class="anchor" aria-label="anchor" href="#as_tbl_graph-3"></a>
 </h3>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph</a></span><span class="op">(</span><span class="va">gb</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tbl_graph: 7 nodes and 6 edges</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
@@ -720,13 +775,13 @@ count:</p>
 <span><span class="co"><span style="color: #949494;">#&gt; # Node Data: 7 × 8 (active)</span></span></span>
 <span><span class="co">#&gt;   name  is_leaf split_var split_var_name split_point prediction treenum label   </span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0     FALSE           2 Petal.Length          2.6     -<span style="color: #BB0000;">0.030</span><span style="color: #BB0000; text-decoration: underline;">0</span>       1 Petal.L…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 1     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>        0.3          1 0.3     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 2     FALSE           2 Sepal.Length          4.65    -<span style="color: #BB0000;">0.150</span>        1 Sepal.L…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 3     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>       -<span style="color: #BB0000;">0.150</span>        1 -0.15   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 4     FALSE           0 Petal.Length          6.75    -<span style="color: #BB0000;">0.150</span>        1 Petal.L…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 5     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>       -<span style="color: #BB0000;">0.150</span>        1 -0.15   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> 6     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>       -<span style="color: #BB0000;">0.15</span>         1 -0.15   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0     FALSE           2 Petal.Length          2.6     -<span style="color: #BB0000;">0.030</span><span style="color: #BB0000; text-decoration: underline;">0</span>       1 <span style="color: #949494;">"</span>Petal.…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 1     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>        0.3          1 <span style="color: #949494;">"</span>0.3<span style="color: #949494;">"</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 2     FALSE           2 Sepal.Length          4.65    -<span style="color: #BB0000;">0.150</span>        1 <span style="color: #949494;">"</span>Sepal.…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 3     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>       -<span style="color: #BB0000;">0.150</span>        1 <span style="color: #949494;">"</span>-0.15<span style="color: #949494;">"</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 4     FALSE           0 Petal.Length          6.75    -<span style="color: #BB0000;">0.150</span>        1 <span style="color: #949494;">"</span>Petal.…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 5     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>       -<span style="color: #BB0000;">0.150</span>        1 <span style="color: #949494;">"</span>-0.15<span style="color: #949494;">"</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> 6     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>       -<span style="color: #BB0000;">0.15</span>         1 <span style="color: #949494;">"</span>-0.15<span style="color: #949494;">"</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # Edge Data: 6 × 7</span></span></span>
 <span><span class="co">#&gt;    from    to split_var split_point prediction treenum split_var_name</span></span>
@@ -741,7 +796,7 @@ count:</p>
 <div class="section level2">
 <h2 id="xgboost-xgb-booster">XGBoost (xgb.Booster)<a class="anchor" aria-label="anchor" href="#xgboost-xgb-booster"></a>
 </h2>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/dmlc/xgboost" class="external-link">xgboost</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">xg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/xgboost/man/xgboost.html" class="external-link">xgboost</a></span><span class="op">(</span></span>
@@ -750,10 +805,10 @@ count:</p>
 <span>  max_depth <span class="op">=</span> <span class="fl">3</span>, nrounds <span class="op">=</span> <span class="fl">3</span>, nthreads <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
-<h3 id="edgelist-6">edgelist<a class="anchor" aria-label="anchor" href="#edgelist-6"></a>
+<h3 id="edgelist-7">edgelist<a class="anchor" aria-label="anchor" href="#edgelist-7"></a>
 </h3>
 <p>All trees:</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">xg</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    from   to      feature split    quality     cover treenum</span></span>
 <span><span class="co">#&gt; 1   0-0  0-1 Petal.Length   3.0 72.2967682 66.666664       1</span></span>
@@ -811,50 +866,50 @@ count:</p>
 <span><span class="co">#&gt; 53  8-5  8-8 Petal.Length   5.1  0.5133693  3.983250       9</span></span>
 <span><span class="co">#&gt; 54  8-6 8-10 Petal.Length   4.9  0.1985664 22.086142       9</span></span></code></pre></div>
 <p>A single tree:</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/edgelist.html">edgelist</a></span><span class="op">(</span><span class="va">xg</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   from  to      feature split  quality    cover treenum</span></span>
 <span><span class="co">#&gt; 1  0-0 0-1 Petal.Length     3 72.29677 66.66666       1</span></span>
 <span><span class="co">#&gt; 2  0-0 0-2 Petal.Length     3 72.29677 66.66666       1</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="nodelist-6">nodelist<a class="anchor" aria-label="anchor" href="#nodelist-6"></a>
+<h3 id="nodelist-7">nodelist<a class="anchor" aria-label="anchor" href="#nodelist-7"></a>
 </h3>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/nodelist.html">nodelist</a></span><span class="op">(</span><span class="va">xg</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   name is_leaf      feature split    quality    cover treenum        label</span></span>
-<span><span class="co">#&gt; 1  0-0   FALSE Petal.Length     3 72.2967682 66.66666       1 Petal.Length</span></span>
-<span><span class="co">#&gt; 2  0-1    TRUE         &lt;NA&gt;    NA  0.4306220 22.22222       1       0.4306</span></span>
-<span><span class="co">#&gt; 3  0-2    TRUE         &lt;NA&gt;    NA -0.2200489 44.44444       1        -0.22</span></span></code></pre></div>
+<span><span class="co">#&gt;   name is_leaf      feature split    quality    cover treenum             label</span></span>
+<span><span class="co">#&gt; 1  0-0   FALSE Petal.Length     3 72.2967682 66.66666       1 Petal.Length\n&lt; 3</span></span>
+<span><span class="co">#&gt; 2  0-1    TRUE         &lt;NA&gt;    NA  0.4306220 22.22222       1            0.4306</span></span>
+<span><span class="co">#&gt; 3  0-2    TRUE         &lt;NA&gt;    NA -0.2200489 44.44444       1             -0.22</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="as-igraph-4">as.igraph<a class="anchor" aria-label="anchor" href="#as-igraph-4"></a>
 </h3>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">xg</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH 3ba19cb DN-- 3 2 -- </span></span>
+<span><span class="co">#&gt; IGRAPH 1b626b2 DN-- 3 2 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), is_leaf (v/l), feature (v/c), split (v/n), quality</span></span>
 <span><span class="co">#&gt; | (v/n), cover (v/n), treenum (v/n), label (v/c), feature (e/c), split</span></span>
 <span><span class="co">#&gt; | (e/n), quality (e/n), cover (e/n), treenum (e/n)</span></span>
-<span><span class="co">#&gt; + edges from 3ba19cb (vertex names):</span></span>
+<span><span class="co">#&gt; + edges from 1b626b2 (vertex names):</span></span>
 <span><span class="co">#&gt; [1] 0-0-&gt;0-1 0-0-&gt;0-2</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="as_tbl_graph-4">as_tbl_graph<a class="anchor" aria-label="anchor" href="#as_tbl_graph-4"></a>
 </h3>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph</a></span><span class="op">(</span><span class="va">xg</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tbl_graph: 3 nodes and 2 edges</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # A rooted tree</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # Node Data: 3 × 8 (active)</span></span></span>
-<span><span class="co">#&gt;   name  is_leaf feature      split quality cover treenum label       </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0-0   FALSE   Petal.Length     3  72.3    66.7       1 Petal.Length</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0-1   TRUE    <span style="color: #BB0000;">NA</span>              <span style="color: #BB0000;">NA</span>   0.431  22.2       1 0.4306      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 0-2   TRUE    <span style="color: #BB0000;">NA</span>              <span style="color: #BB0000;">NA</span>  -<span style="color: #BB0000;">0.220</span>  44.4       1 -0.22       </span></span>
+<span><span class="co">#&gt;   name  is_leaf feature      split quality cover treenum label              </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0-0   FALSE   Petal.Length     3  72.3    66.7       1 <span style="color: #949494;">"</span>Petal.Length\n&lt; 3<span style="color: #949494;">"</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0-1   TRUE    <span style="color: #BB0000;">NA</span>              <span style="color: #BB0000;">NA</span>   0.431  22.2       1 <span style="color: #949494;">"</span>0.4306<span style="color: #949494;">"</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 0-2   TRUE    <span style="color: #BB0000;">NA</span>              <span style="color: #BB0000;">NA</span>  -<span style="color: #BB0000;">0.220</span>  44.4       1 <span style="color: #949494;">"</span>-0.22<span style="color: #949494;">"</span>            </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # Edge Data: 2 × 7</span></span></span>
 <span><span class="co">#&gt;    from    to feature      split quality cover treenum</span></span>
@@ -886,13 +941,19 @@ count:</p>
 <code>from</code>, <code>to</code>, [<code>weight</code>]</td>
 </tr>
 <tr class="even">
+<td>list</td>
+<td>
+<code>from</code>, <code>to</code>, <code>depth</code>
+</td>
+</tr>
+<tr class="odd">
 <td>data.frame</td>
 <td>
 <code>from</code>, <code>to</code>, <code>from_col</code>,
 <code>to_col</code>, [<code>directed</code>], [<code>weight</code>],
 &lt;attrs&gt;</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>tree</td>
 <td>
 <code>from</code>, <code>to</code>, <code>label</code>,
@@ -900,7 +961,7 @@ count:</p>
 <code>split_point</code>
 </td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>rpart</td>
 <td>
 <code>from</code>, <code>to</code>, <code>label</code>,
@@ -908,7 +969,7 @@ count:</p>
 <code>split_point</code>
 </td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>randomForest</td>
 <td>
 <code>from</code>, <code>to</code>, <code>split_var</code>,
@@ -916,7 +977,7 @@ count:</p>
 <code>split_var_name</code>
 </td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>gbm</td>
 <td>
 <code>from</code>, <code>to</code>, <code>split_var</code>,
@@ -924,7 +985,7 @@ count:</p>
 <code>split_var_name</code>
 </td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>xgb.Booster</td>
 <td>
 <code>from</code>, <code>to</code>, <code>feature</code>,
@@ -955,10 +1016,17 @@ count:</p>
 </td>
 </tr>
 <tr class="even">
+<td>list</td>
+<td>
+<code>name</code>, <code>depth</code>, <code>type</code>,
+<code>n_children</code>, <code>label</code>
+</td>
+</tr>
+<tr class="odd">
 <td>data.frame</td>
 <td>(input columns reordered, <code>id_col</code> first)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>tree</td>
 <td>
 <code>name</code>, <code>var</code>, <code>n</code>,
@@ -966,7 +1034,7 @@ count:</p>
 <code>label</code>
 </td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>rpart</td>
 <td>
 <code>name</code>, <code>var</code>, <code>n</code>,
@@ -974,7 +1042,7 @@ count:</p>
 <code>label</code>
 </td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>randomForest</td>
 <td>
 <code>name</code>, <code>is_leaf</code>, <code>split_var</code>,
@@ -982,7 +1050,7 @@ count:</p>
 <code>prediction</code>, <code>treenum</code>, <code>label</code>
 </td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>gbm</td>
 <td>
 <code>name</code>, <code>is_leaf</code>, <code>split_var</code>,
@@ -990,7 +1058,7 @@ count:</p>
 <code>prediction</code>, <code>treenum</code>, <code>label</code>
 </td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>xgb.Booster</td>
 <td>
 <code>name</code>, <code>is_leaf</code>, <code>feature</code>,

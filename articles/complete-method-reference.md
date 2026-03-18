@@ -56,6 +56,67 @@ nodelist(c("A", "B", "A", "B", "C"))
 
 ------------------------------------------------------------------------
 
+## Lists
+
+Lists produce recursive parent-child edges. Each element becomes a node
+with a path-style ID.
+
+### edgelist
+
+``` r
+edgelist(list(a = list(b = 1, c = 2), d = 3))
+#>     from       to depth
+#> 1   root   root/a     1
+#> 2 root/a root/a/b     2
+#> 3 root/a root/a/c     2
+#> 4   root   root/d     1
+```
+
+Unnamed elements use positional indices:
+
+``` r
+edgelist(list(1, 2, list(3, 4)))
+#>         from               to depth
+#> 1       root       root/[[1]]     1
+#> 2       root       root/[[2]]     1
+#> 3       root       root/[[3]]     1
+#> 4 root/[[3]] root/[[3]]/[[1]]     2
+#> 5 root/[[3]] root/[[3]]/[[2]]     2
+```
+
+Limit depth (root = 0, children = 1, …):
+
+``` r
+edgelist(list(a = list(b = list(c = 1))), max_depth = 2)
+#>     from       to depth
+#> 1   root   root/a     1
+#> 2 root/a root/a/b     2
+```
+
+### nodelist
+
+``` r
+nodelist(list(a = list(b = 1, c = 2), d = 3))
+#>       name depth    type n_children label
+#> 1     root     0    list          2  root
+#> 2   root/a     1    list          2     a
+#> 3 root/a/b     2 numeric          0     b
+#> 4 root/a/c     2 numeric          0     c
+#> 5   root/d     1 numeric          0     d
+```
+
+### S3 object fallthrough
+
+S3 objects without a dedicated method are decomposed as plain lists:
+
+``` r
+fit <- lm(Sepal.Length ~ Sepal.Width, data = iris)
+edgelist(fit)
+#> No edgelist method for class 'lm'; treating as a plain list.
+```
+
+------------------------------------------------------------------------
+
 ## Data frames
 
 Data frame methods use tidyselect to specify which columns form edges.
@@ -305,11 +366,11 @@ library(igraph)
 #>     union
 g <- as.igraph(tr)
 g
-#> IGRAPH 59eea06 DN-- 11 10 -- 
+#> IGRAPH 90a0906 DN-- 11 10 -- 
 #> + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf
 #> | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),
 #> | split_point (e/n)
-#> + edges from 59eea06 (vertex names):
+#> + edges from 90a0906 (vertex names):
 #>  [1] 1 ->2  1 ->3  3 ->6  6 ->12 12->24 12->25 6 ->13 3 ->7  7 ->14 7 ->15
 ```
 
@@ -460,20 +521,20 @@ nodelist(rf, treenum = 1)
 #> 3    3   FALSE         3   Petal.Length        5.05          0       1
 #> 4    4    TRUE        NA           <NA>          NA          1       1
 #> 5    5    TRUE        NA           <NA>          NA          2       1
-#> 6    6   FALSE         4   Petal.Length        1.75          0       1
+#> 6    6   FALSE         4    Petal.Width        1.75          0       1
 #> 7    7    TRUE        NA           <NA>          NA          3       1
 #> 8    8    TRUE        NA           <NA>          NA          2       1
 #> 9    9    TRUE        NA           <NA>          NA          3       1
-#>          label
-#> 1 Petal.Length
-#> 2 Petal.Length
-#> 3 Petal.Length
-#> 4       setosa
-#> 5   versicolor
-#> 6 Petal.Length
-#> 7    virginica
-#> 8   versicolor
-#> 9    virginica
+#>                  label
+#> 1 Petal.Length\n< 4.75
+#> 2 Petal.Length\n< 2.45
+#> 3 Petal.Length\n< 5.05
+#> 4               setosa
+#> 5           versicolor
+#> 6  Petal.Width\n< 1.75
+#> 7            virginica
+#> 8           versicolor
+#> 9            virginica
 ```
 
 ### as.igraph
@@ -483,12 +544,12 @@ Single tree:
 ``` r
 g <- as.igraph(rf, treenum = 1)
 g
-#> IGRAPH 6f17027 DN-- 9 8 -- 
+#> IGRAPH feb3b25 DN-- 9 8 -- 
 #> + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name
 #> | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label
 #> | (v/c), split_var (e/n), split_point (e/n), prediction (e/n), treenum
 #> | (e/n), split_var_name (e/c)
-#> + edges from 6f17027 (vertex names):
+#> + edges from feb3b25 (vertex names):
 #> [1] 1->2 2->4 3->6 6->8 1->3 2->5 3->7 6->9
 ```
 
@@ -511,15 +572,15 @@ as_tbl_graph(rf, treenum = 1)
 #> # Node Data: 9 × 8 (active)
 #>   name  is_leaf split_var split_var_name split_point prediction treenum label   
 #>   <chr> <lgl>       <dbl> <chr>                <dbl>      <dbl>   <int> <chr>   
-#> 1 1     FALSE           3 Petal.Length          4.75          0       1 Petal.L…
-#> 2 2     FALSE           3 Petal.Length          2.45          0       1 Petal.L…
-#> 3 3     FALSE           3 Petal.Length          5.05          0       1 Petal.L…
-#> 4 4     TRUE           NA NA                   NA             1       1 setosa  
-#> 5 5     TRUE           NA NA                   NA             2       1 versico…
-#> 6 6     FALSE           4 Petal.Length          1.75          0       1 Petal.L…
-#> 7 7     TRUE           NA NA                   NA             3       1 virgini…
-#> 8 8     TRUE           NA NA                   NA             2       1 versico…
-#> 9 9     TRUE           NA NA                   NA             3       1 virgini…
+#> 1 1     FALSE           3 Petal.Length          4.75          0       1 "Petal.…
+#> 2 2     FALSE           3 Petal.Length          2.45          0       1 "Petal.…
+#> 3 3     FALSE           3 Petal.Length          5.05          0       1 "Petal.…
+#> 4 4     TRUE           NA NA                   NA             1       1 "setosa"
+#> 5 5     TRUE           NA NA                   NA             2       1 "versic…
+#> 6 6     FALSE           4 Petal.Width           1.75          0       1 "Petal.…
+#> 7 7     TRUE           NA NA                   NA             3       1 "virgin…
+#> 8 8     TRUE           NA NA                   NA             2       1 "versic…
+#> 9 9     TRUE           NA NA                   NA             3       1 "virgin…
 #> #
 #> # Edge Data: 8 × 7
 #>    from    to split_var split_point prediction treenum split_var_name
@@ -567,11 +628,11 @@ nodelist(rp)
 ``` r
 g <- as.igraph(rp)
 g
-#> IGRAPH b20465c DN-- 5 4 -- 
+#> IGRAPH 21f01db DN-- 5 4 -- 
 #> + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf
 #> | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),
 #> | split_point (e/n)
-#> + edges from b20465c (vertex names):
+#> + edges from 21f01db (vertex names):
 #> [1] 1->2 1->3 3->6 3->7
 ```
 
@@ -666,14 +727,14 @@ nodelist(gb, treenum = 1)
 #> 5    4   FALSE         0   Petal.Length        6.75      -0.15       1
 #> 6    5    TRUE        NA           <NA>          NA      -0.15       1
 #> 7    6    TRUE        NA           <NA>          NA      -0.15       1
-#>          label
-#> 1 Petal.Length
-#> 2          0.3
-#> 3 Sepal.Length
-#> 4        -0.15
-#> 5 Petal.Length
-#> 6        -0.15
-#> 7        -0.15
+#>                  label
+#> 1  Petal.Length\n< 2.6
+#> 2                  0.3
+#> 3 Sepal.Length\n< 4.65
+#> 4                -0.15
+#> 5 Petal.Length\n< 6.75
+#> 6                -0.15
+#> 7                -0.15
 ```
 
 ### as.igraph
@@ -681,12 +742,12 @@ nodelist(gb, treenum = 1)
 ``` r
 g <- as.igraph(gb, treenum = 1)
 g
-#> IGRAPH 2c6212d DN-- 7 6 -- 
+#> IGRAPH 20f5952 DN-- 7 6 -- 
 #> + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name
 #> | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label
 #> | (v/c), split_var (e/n), split_point (e/n), prediction (e/n), treenum
 #> | (e/n), split_var_name (e/c)
-#> + edges from 2c6212d (vertex names):
+#> + edges from 20f5952 (vertex names):
 #> [1] 0->1 2->3 4->5 0->2 2->4 4->6
 ```
 
@@ -701,13 +762,13 @@ as_tbl_graph(gb, treenum = 1)
 #> # Node Data: 7 × 8 (active)
 #>   name  is_leaf split_var split_var_name split_point prediction treenum label   
 #>   <chr> <lgl>       <int> <chr>                <dbl>      <dbl>   <int> <chr>   
-#> 1 0     FALSE           2 Petal.Length          2.6     -0.0300       1 Petal.L…
-#> 2 1     TRUE           NA NA                   NA        0.3          1 0.3     
-#> 3 2     FALSE           2 Sepal.Length          4.65    -0.150        1 Sepal.L…
-#> 4 3     TRUE           NA NA                   NA       -0.150        1 -0.15   
-#> 5 4     FALSE           0 Petal.Length          6.75    -0.150        1 Petal.L…
-#> 6 5     TRUE           NA NA                   NA       -0.150        1 -0.15   
-#> 7 6     TRUE           NA NA                   NA       -0.15         1 -0.15   
+#> 1 0     FALSE           2 Petal.Length          2.6     -0.0300       1 "Petal.…
+#> 2 1     TRUE           NA NA                   NA        0.3          1 "0.3"   
+#> 3 2     FALSE           2 Sepal.Length          4.65    -0.150        1 "Sepal.…
+#> 4 3     TRUE           NA NA                   NA       -0.150        1 "-0.15" 
+#> 5 4     FALSE           0 Petal.Length          6.75    -0.150        1 "Petal.…
+#> 6 5     TRUE           NA NA                   NA       -0.150        1 "-0.15" 
+#> 7 6     TRUE           NA NA                   NA       -0.15         1 "-0.15" 
 #> #
 #> # Edge Data: 6 × 7
 #>    from    to split_var split_point prediction treenum split_var_name
@@ -808,10 +869,10 @@ edgelist(xg, treenum = 1)
 
 ``` r
 nodelist(xg, treenum = 1)
-#>   name is_leaf      feature split    quality    cover treenum        label
-#> 1  0-0   FALSE Petal.Length     3 72.2967682 66.66666       1 Petal.Length
-#> 2  0-1    TRUE         <NA>    NA  0.4306220 22.22222       1       0.4306
-#> 3  0-2    TRUE         <NA>    NA -0.2200489 44.44444       1        -0.22
+#>   name is_leaf      feature split    quality    cover treenum             label
+#> 1  0-0   FALSE Petal.Length     3 72.2967682 66.66666       1 Petal.Length\n< 3
+#> 2  0-1    TRUE         <NA>    NA  0.4306220 22.22222       1            0.4306
+#> 3  0-2    TRUE         <NA>    NA -0.2200489 44.44444       1             -0.22
 ```
 
 ### as.igraph
@@ -819,11 +880,11 @@ nodelist(xg, treenum = 1)
 ``` r
 g <- as.igraph(xg, treenum = 1)
 g
-#> IGRAPH 3ba19cb DN-- 3 2 -- 
+#> IGRAPH 1b626b2 DN-- 3 2 -- 
 #> + attr: name (v/c), is_leaf (v/l), feature (v/c), split (v/n), quality
 #> | (v/n), cover (v/n), treenum (v/n), label (v/c), feature (e/c), split
 #> | (e/n), quality (e/n), cover (e/n), treenum (e/n)
-#> + edges from 3ba19cb (vertex names):
+#> + edges from 1b626b2 (vertex names):
 #> [1] 0-0->0-1 0-0->0-2
 ```
 
@@ -836,11 +897,11 @@ as_tbl_graph(xg, treenum = 1)
 #> # A rooted tree
 #> #
 #> # Node Data: 3 × 8 (active)
-#>   name  is_leaf feature      split quality cover treenum label       
-#>   <chr> <lgl>   <chr>        <dbl>   <dbl> <dbl>   <int> <chr>       
-#> 1 0-0   FALSE   Petal.Length     3  72.3    66.7       1 Petal.Length
-#> 2 0-1   TRUE    NA              NA   0.431  22.2       1 0.4306      
-#> 3 0-2   TRUE    NA              NA  -0.220  44.4       1 -0.22       
+#>   name  is_leaf feature      split quality cover treenum label              
+#>   <chr> <lgl>   <chr>        <dbl>   <dbl> <dbl>   <int> <chr>              
+#> 1 0-0   FALSE   Petal.Length     3  72.3    66.7       1 "Petal.Length\n< 3"
+#> 2 0-1   TRUE    NA              NA   0.431  22.2       1 "0.4306"           
+#> 3 0-2   TRUE    NA              NA  -0.220  44.4       1 "-0.22"            
 #> #
 #> # Edge Data: 2 × 7
 #>    from    to feature      split quality cover treenum
@@ -858,6 +919,7 @@ as_tbl_graph(xg, treenum = 1)
 | Input        | Columns                                                                             |
 |--------------|-------------------------------------------------------------------------------------|
 | vector       | `from`, `to`, \[`weight`\]                                                          |
+| list         | `from`, `to`, `depth`                                                               |
 | data.frame   | `from`, `to`, `from_col`, `to_col`, \[`directed`\], \[`weight`\], \<attrs\>         |
 | tree         | `from`, `to`, `label`, `split_var`, `split_op`, `split_point`                       |
 | rpart        | `from`, `to`, `label`, `split_var`, `split_op`, `split_point`                       |
@@ -870,6 +932,7 @@ as_tbl_graph(xg, treenum = 1)
 | Input        | Columns                                                                                           |
 |--------------|---------------------------------------------------------------------------------------------------|
 | vector       | `name`, `n`                                                                                       |
+| list         | `name`, `depth`, `type`, `n_children`, `label`                                                    |
 | data.frame   | (input columns reordered, `id_col` first)                                                         |
 | tree         | `name`, `var`, `n`, `dev`, `yval`, `is_leaf`, `label`                                             |
 | rpart        | `name`, `var`, `n`, `dev`, `yval`, `is_leaf`, `label`                                             |

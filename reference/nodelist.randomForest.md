@@ -65,8 +65,8 @@ columns:
 
 - label:
 
-  Display label: split variable name for internal nodes, predicted class
-  name (classification) or numeric value (regression) for leaves
+  Display label: `"<var>\n< <threshold>"` for internal nodes, predicted
+  class name (classification) or numeric value (regression) for leaves
 
 ## Examples
 

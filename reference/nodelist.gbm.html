@@ -98,8 +98,8 @@ edges from the root.</p>
 <dd><p>1-based tree number</p></dd>
 
     <dt>label</dt>
-<dd><p>Display label: variable name for splits, prediction
-      for leaves</p></dd>
+<dd><p>Display label: <code>"&lt;var&gt;\n&lt; &lt;threshold&gt;"</code> for
+      splits, rounded prediction for leaves</p></dd>
 
 
 </dl></div>
@@ -114,13 +114,20 @@ edges from the root.</p>
 <span class="r-in"><span>  <span class="va">nl</span> <span class="op">&lt;-</span> <span class="fu"><a href="nodelist.html">nodelist</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">nl</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   name is_leaf split_var split_var_name split_point prediction treenum   label</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1    0   FALSE         0            cyl         5.0 -0.0290625       1     cyl</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2    1    TRUE        NA           &lt;NA&gt;          NA  0.8434375       1  0.8434</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3    2   FALSE         2            cyl       177.5 -0.3198958       1     cyl</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4    3   FALSE         0            cyl         7.0 -0.1176339       1     cyl</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5    4    TRUE        NA           &lt;NA&gt;          NA -0.0340625       1 -0.0341</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6    5    TRUE        NA           &lt;NA&gt;          NA -0.2290625       1 -0.2291</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   name is_leaf split_var split_var_name split_point prediction treenum</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    0   FALSE         0            cyl         5.0 -0.0290625       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2    1    TRUE        NA           &lt;NA&gt;          NA  0.8434375       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    2   FALSE         2            cyl       177.5 -0.3198958       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4    3   FALSE         0            cyl         7.0 -0.1176339       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5    4    TRUE        NA           &lt;NA&gt;          NA -0.0340625       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6    5    TRUE        NA           &lt;NA&gt;          NA -0.2290625       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          label</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     cyl\n&lt; 5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       0.8434</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 cyl\n&lt; 177.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4     cyl\n&lt; 7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      -0.0341</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      -0.2291</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

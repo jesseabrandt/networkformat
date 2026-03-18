@@ -48,7 +48,7 @@ nodelist(c(1, 2, 3, 2, 1))
 #> 3    3 1
 
 # Unsupported type
-try(nodelist(list(a = 1, b = 2)))
-#> Error in nodelist.default(list(a = 1, b = 2)) : 
-#>   nodelist() does not support objects of class 'list'. Supported classes: vector, data.frame, randomForest, tree, rpart, xgb.Booster, gbm.
+try(nodelist(as.formula(y ~ x)))
+#> Error in nodelist.default(as.formula(y ~ x)) : 
+#>   nodelist() does not support objects of class 'formula'. Supported classes: vector, data.frame, list, randomForest, tree, rpart, xgb.Booster, gbm.
 ```

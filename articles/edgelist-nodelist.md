@@ -8,8 +8,8 @@ library(networkformat)
 and
 [`nodelist()`](https://jesseabrandt.github.io/networkformat/reference/nodelist.md)
 are the core functions of **networkformat**. They extract network
-structure from vectors, data frames, and tree models as plain data
-frames, giving you full control over filtering, transforming, and
+structure from vectors, data frames, lists, and tree models as plain
+data frames, giving you full control over filtering, transforming, and
 passing the results to igraph or any other tool.
 
 For quick visualization without touching the raw data, see
@@ -212,23 +212,23 @@ rf_nodes
 #>   name is_leaf split_var split_var_name split_point prediction treenum
 #> 1    1   FALSE         3   Petal.Length        2.60          0       1
 #> 2    2    TRUE        NA           <NA>          NA          1       1
-#> 3    3   FALSE         4   Petal.Length        1.65          0       1
-#> 4    4   FALSE         3    Petal.Width        5.00          0       1
-#> 5    5   FALSE         4   Petal.Length        1.75          0       1
+#> 3    3   FALSE         4    Petal.Width        1.65          0       1
+#> 4    4   FALSE         3   Petal.Length        5.00          0       1
+#> 5    5   FALSE         4    Petal.Width        1.75          0       1
 #> 6    6    TRUE        NA           <NA>          NA          2       1
 #> 7    7    TRUE        NA           <NA>          NA          3       1
 #> 8    8    TRUE        NA           <NA>          NA          2       1
 #> 9    9    TRUE        NA           <NA>          NA          3       1
-#>          label
-#> 1 Petal.Length
-#> 2       setosa
-#> 3 Petal.Length
-#> 4  Petal.Width
-#> 5 Petal.Length
-#> 6   versicolor
-#> 7    virginica
-#> 8   versicolor
-#> 9    virginica
+#>                 label
+#> 1 Petal.Length\n< 2.6
+#> 2              setosa
+#> 3 Petal.Width\n< 1.65
+#> 4   Petal.Length\n< 5
+#> 5 Petal.Width\n< 1.75
+#> 6          versicolor
+#> 7           virginica
+#> 8          versicolor
+#> 9           virginica
 ```
 
 Columns:
@@ -512,6 +512,85 @@ print(sort(deg_out[deg_out > 0], decreasing = TRUE))
 #>       4       4       2       2       2       1       1       1       1       1
 ```
 
+## Lists
+
+Lists produce a recursive parent-child edgelist. Each element becomes a
+node, and nested lists create deeper edges. Path-style IDs
+(e.g. `root/a/b`) ensure uniqueness.
+
+### edgelist()
+
+``` r
+edgelist(list(a = list(b = 1, c = 2), d = 3))
+#>     from       to depth
+#> 1   root   root/a     1
+#> 2 root/a root/a/b     2
+#> 3 root/a root/a/c     2
+#> 4   root   root/d     1
+```
+
+Columns:
+
+| Column  | Description                                           |
+|---------|-------------------------------------------------------|
+| `from`  | Parent node path-style ID                             |
+| `to`    | Child node path-style ID                              |
+| `depth` | Integer depth of the child node (root children are 1) |
+
+Unnamed elements use positional indices:
+
+``` r
+edgelist(list(1, 2, list(3, 4)))
+#>         from               to depth
+#> 1       root       root/[[1]]     1
+#> 2       root       root/[[2]]     1
+#> 3       root       root/[[3]]     1
+#> 4 root/[[3]] root/[[3]]/[[1]]     2
+#> 5 root/[[3]] root/[[3]]/[[2]]     2
+```
+
+Use `max_depth` to limit depth (root = 0, children = 1, …):
+
+``` r
+edgelist(list(a = list(b = list(c = 1))), max_depth = 2)
+#>     from       to depth
+#> 1   root   root/a     1
+#> 2 root/a root/a/b     2
+```
+
+### nodelist()
+
+``` r
+nodelist(list(a = list(b = 1, c = 2), d = 3))
+#>       name depth    type n_children label
+#> 1     root     0    list          2  root
+#> 2   root/a     1    list          2     a
+#> 3 root/a/b     2 numeric          0     b
+#> 4 root/a/c     2 numeric          0     c
+#> 5   root/d     1 numeric          0     d
+```
+
+Columns:
+
+| Column       | Description                                                |
+|--------------|------------------------------------------------------------|
+| `name`       | Path-style node ID                                         |
+| `depth`      | Integer depth (root is 0)                                  |
+| `type`       | Element class (`"numeric"`, `"character"`, `"list"`, etc.) |
+| `n_children` | Number of direct children (0 for leaves)                   |
+| `label`      | Element name or positional index                           |
+
+### S3 object fallthrough
+
+S3 objects without a dedicated method (e.g. `lm`) are decomposed as
+plain lists with a diagnostic message:
+
+``` r
+fit <- lm(Sepal.Length ~ Sepal.Width, data = iris)
+edgelist(fit)
+#> No edgelist method for class 'lm'; treating as a plain list.
+```
+
 ## Output reference
 
 ### edgelist()
@@ -519,6 +598,7 @@ print(sort(deg_out[deg_out > 0], decreasing = TRUE))
 | Input class    | Columns returned                                                                    |
 |----------------|-------------------------------------------------------------------------------------|
 | atomic vector  | `from`, `to`, \[`weight`\]                                                          |
+| `list`         | `from`, `to`, `depth`                                                               |
 | `data.frame`   | `from`, `to`, `from_col`, `to_col`, \[`directed`\], \[`weight`\], `<attr_cols>`     |
 | `tree`         | `from`, `to`, `label`, `split_var`, `split_op`, `split_point`                       |
 | `randomForest` | `from`, `to`, `split_var`, `split_point`, `prediction`, `treenum`, `split_var_name` |
@@ -534,6 +614,7 @@ print(sort(deg_out[deg_out > 0], decreasing = TRUE))
 | Input class    | Columns returned                                                                                  |
 |----------------|---------------------------------------------------------------------------------------------------|
 | atomic vector  | `name`, `n`                                                                                       |
+| `list`         | `name`, `depth`, `type`, `n_children`, `label`                                                    |
 | `data.frame`   | Reordered input (ID column first)                                                                 |
 | `tree`         | `name`, `var`, `n`, `dev`, `yval`, `is_leaf`, `label`                                             |
 | `randomForest` | `name`, `is_leaf`, `split_var`, `split_var_name`, `split_point`, `prediction`, `treenum`, `label` |

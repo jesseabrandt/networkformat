@@ -38,6 +38,15 @@ Methods for atomic vectors (sequential edges) and data frames
 - [`nodelist(`*`<data.frame>`*`)`](https://jesseabrandt.github.io/networkformat/reference/nodelist.data.frame.md)
   : Extract Node List from Data Frame
 
+## List methods
+
+Methods for lists and S3 objects (recursive parent-child decomposition).
+
+- [`edgelist(`*`<list>`*`)`](https://jesseabrandt.github.io/networkformat/reference/edgelist.list.md)
+  : Extract Edgelist from a List
+- [`nodelist(`*`<list>`*`)`](https://jesseabrandt.github.io/networkformat/reference/nodelist.list.md)
+  : Extract Node List from a List
+
 ## Tree model methods
 
 Methods for tree-based machine learning models.

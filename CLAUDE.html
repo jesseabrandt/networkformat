@@ -42,7 +42,7 @@
 <p>This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.</p>
 <div class="section level2">
 <h2 id="what-this-package-does">What This Package Does<a class="anchor" aria-label="anchor" href="#what-this-package-does"></a></h2>
-<p><strong>networkformat</strong> is an R package that converts R objects — vectors, data frames, and tree-based ML models — into network edgelist/nodelist format for visualization and analysis with igraph/tidygraph/ggraph. Version 0.0.0.9000 (experimental).</p>
+<p><strong>networkformat</strong> is an R package that converts R objects — vectors, data frames, lists, and tree-based ML models — into network edgelist/nodelist format for visualization and analysis with igraph/tidygraph/ggraph. Version 0.0.0.9000 (experimental).</p>
 </div>
 <div class="section level2">
 <h2 id="development-commands">Development Commands<a class="anchor" aria-label="anchor" href="#development-commands"></a></h2>
@@ -85,34 +85,41 @@
 <td><code>weights</code></td>
 <td>from, to, [weight]</td>
 <td>Complete</td>
-</tr><tr class="even"><td><code>edgelist.data.frame</code></td>
+</tr><tr class="even"><td><code>edgelist.list</code></td>
+<td>list</td>
+<td>
+<code>name_root</code>, <code>max_depth</code>
+</td>
+<td>from, to, depth</td>
+<td>Complete</td>
+</tr><tr class="odd"><td><code>edgelist.data.frame</code></td>
 <td>data.frame</td>
 <td>
 <code>source_cols</code>, <code>target_cols</code>, <code>attr_cols</code>, <code>na.rm</code>, <code>symmetric_cols</code>, <code>dedupe</code>, <code>weights</code>
 </td>
 <td>from, to, from_col, to_col, [directed], [weight], &lt;attrs&gt;</td>
 <td>Complete</td>
-</tr><tr class="odd"><td><code>edgelist.randomForest</code></td>
+</tr><tr class="even"><td><code>edgelist.randomForest</code></td>
 <td>randomForest</td>
 <td><code>treenum</code></td>
 <td>from, to, split_var, split_point, prediction, treenum, split_var_name</td>
 <td>Complete</td>
-</tr><tr class="even"><td><code>edgelist.tree</code></td>
+</tr><tr class="odd"><td><code>edgelist.tree</code></td>
 <td>tree</td>
 <td></td>
 <td>from, to, label, split_var, split_op, split_point</td>
 <td>Complete</td>
-</tr><tr class="odd"><td><code>edgelist.rpart</code></td>
+</tr><tr class="even"><td><code>edgelist.rpart</code></td>
 <td>rpart</td>
 <td></td>
 <td>from, to, label, split_var, split_op, split_point</td>
 <td>Complete</td>
-</tr><tr class="even"><td><code>edgelist.xgb.Booster</code></td>
+</tr><tr class="odd"><td><code>edgelist.xgb.Booster</code></td>
 <td>xgb.Booster</td>
 <td><code>treenum</code></td>
 <td>from, to, feature, split, quality, cover, treenum</td>
 <td>Complete</td>
-</tr><tr class="odd"><td><code>edgelist.gbm</code></td>
+</tr><tr class="even"><td><code>edgelist.gbm</code></td>
 <td>gbm</td>
 <td><code>treenum</code></td>
 <td>from, to, split_var, split_point, prediction, treenum, split_var_name</td>
@@ -131,32 +138,39 @@
 <td></td>
 <td>name, n</td>
 <td>Complete</td>
-</tr><tr class="even"><td><code>nodelist.data.frame</code></td>
+</tr><tr class="even"><td><code>nodelist.list</code></td>
+<td>list</td>
+<td>
+<code>name_root</code>, <code>max_depth</code>
+</td>
+<td>name, depth, type, n_children, label</td>
+<td>Complete</td>
+</tr><tr class="odd"><td><code>nodelist.data.frame</code></td>
 <td>data.frame</td>
 <td><code>id_col</code></td>
 <td>(reordered input, id_col first)</td>
 <td>Complete</td>
-</tr><tr class="odd"><td><code>nodelist.randomForest</code></td>
+</tr><tr class="even"><td><code>nodelist.randomForest</code></td>
 <td>randomForest</td>
 <td><code>treenum</code></td>
 <td>name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label</td>
 <td>Complete</td>
-</tr><tr class="even"><td><code>nodelist.tree</code></td>
+</tr><tr class="odd"><td><code>nodelist.tree</code></td>
 <td>tree</td>
 <td></td>
 <td>name, var, n, dev, yval, is_leaf, label</td>
 <td>Complete</td>
-</tr><tr class="odd"><td><code>nodelist.rpart</code></td>
+</tr><tr class="even"><td><code>nodelist.rpart</code></td>
 <td>rpart</td>
 <td></td>
 <td>name, var, n, dev, yval, is_leaf, label</td>
 <td>Complete</td>
-</tr><tr class="even"><td><code>nodelist.xgb.Booster</code></td>
+</tr><tr class="odd"><td><code>nodelist.xgb.Booster</code></td>
 <td>xgb.Booster</td>
 <td><code>treenum</code></td>
 <td>name, is_leaf, feature, split, quality, cover, treenum, label</td>
 <td>Complete</td>
-</tr><tr class="odd"><td><code>nodelist.gbm</code></td>
+</tr><tr class="even"><td><code>nodelist.gbm</code></td>
 <td>gbm</td>
 <td><code>treenum</code></td>
 <td>name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label</td>
@@ -225,16 +239,20 @@
 <li>
 <strong>data.frame</strong>: <code>weights = TRUE</code> collapses fully identical rows (all columns must match, not just from/to) and adds a <code>weight</code> column. This is separate from <code>symmetric_cols</code> + <code>dedupe</code>, which normalizes edge direction.</li>
 <li>
+<strong>list</strong>: Edges are structurally unique (one edge per parent-child pair); duplicates cannot occur.</li>
+<li>
 <strong>randomForest / tree / rpart / xgboost / gbm</strong>: Edges are structurally unique (tree topology); duplicates cannot occur.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="file-organization">File organization<a class="anchor" aria-label="anchor" href="#file-organization"></a></h3>
-<p>Each S3 method lives in its own file: <code>R/edgelist.R</code> (generic), <code>R/edgelist.data.frame.R</code>, <code>R/edgelist.randomForest.R</code>, etc. Same pattern for <code>nodelist.*</code>. Graph conversion methods live in <code>R/as_igraph.R</code> (methods for <code><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">igraph::as.igraph</a></code>) and <code>R/as_tbl_graph.R</code> (methods for <code><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">tidygraph::as_tbl_graph</a></code>).</p>
+<p>Each S3 method lives in its own file: <code>R/edgelist.R</code> (generic), <code>R/edgelist.data.frame.R</code>, <code>R/edgelist.randomForest.R</code>, etc. Same pattern for <code>nodelist.*</code>. Graph conversion methods live in <code>R/as.igraph.R</code> (methods for <code><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">igraph::as.igraph</a></code>) and <code>R/as_tbl_graph.R</code> (methods for <code><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">tidygraph::as_tbl_graph</a></code>).</p>
 </div>
 <div class="section level3">
 <h3 id="key-algorithms">Key algorithms<a class="anchor" aria-label="anchor" href="#key-algorithms"></a></h3>
 <ul><li>
 <strong>vector (default)</strong>: Sequential edges: element <code>i</code> connects to element <code>i + 1</code>, producing <code>n - 1</code> edges from a length-<code>n</code> vector.</li>
+<li>
+<strong>list</strong>: Recursive traversal of nested list structure. Each element produces a parent-child edge. Path-style IDs (<code>root/a/b</code>) ensure uniqueness. Named elements use their names; unnamed elements use positional indices (<code>[[1]]</code>). <code>max_depth</code> limits recursion. S3 objects without a dedicated method fall through from <code>edgelist.default</code> via <code><a href="https://rdrr.io/r/base/list.html" class="external-link">is.list()</a></code> check and are unclassed before traversal.</li>
 <li>
 <strong>randomForest</strong>: Iterates trees via <code><a href="https://rdrr.io/pkg/randomForest/man/getTree.html" class="external-link">randomForest::getTree()</a></code>, identifies parent nodes (<code>left_daughter != 0</code>), creates edges to both children. <code>treenum</code> filters to specific trees.</li>
 <li>
@@ -277,7 +295,7 @@
 <div class="section level2">
 <h2 id="testing">Testing<a class="anchor" aria-label="anchor" href="#testing"></a></h2>
 <ul><li>Framework: testthat 3rd edition</li>
-<li>Test files: <code>test-edgelist.R</code> (~220 tests), <code>test-nodelist.R</code> (~171 tests), <code>test-as_igraph.R</code> (tests <code>as.igraph()</code> and <code>as_tbl_graph()</code> methods)</li>
+<li>Test files: <code>test-edgelist.R</code> (~220 tests), <code>test-nodelist.R</code> (~171 tests), <code>test-as.igraph.R</code> (tests <code>as.igraph()</code> and <code>as_tbl_graph()</code> methods)</li>
 <li>Tests for randomForest/tree use <code>skip_if_not_installed()</code>
 </li>
 <li>The overlap warning in <code>test-edgelist.R</code> is expected (tests that <code>attr_cols</code> overlap triggers a warning)</li>
