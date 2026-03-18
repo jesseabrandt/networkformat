@@ -25,8 +25,8 @@ A data.frame with one row per node and the following columns:
     \item{quality}{Information gain for splits, leaf score for leaves}
     \item{cover}{Cover (sum of second-order gradient)}
     \item{treenum}{1-based tree number}
-    \item{label}{Display label: feature name for splits, leaf score
-      for leaves}
+    \item{label}{Display label: \code{"<feature>\n< <threshold>"} for
+      splits, rounded leaf score for leaves}
   }
 }
 \description{

@@ -24,7 +24,7 @@ graphs, you normally write bespoke reshaping code every time.
 
 **networkformat** does that reshaping for you. It extracts standard
 **edgelists** (from-to pairs) and **nodelists** (node attributes) from
-vectors, data frames, and tree-based models, putting everything in the
+vectors, data frames, lists, and tree-based models, putting everything in the
 format that the rest of the R network ecosystem expects.
 
 # Quick examples

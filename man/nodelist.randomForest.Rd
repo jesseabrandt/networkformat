@@ -31,9 +31,9 @@ A data.frame with one row per node (across all trees) and the
     \item{prediction}{Predicted value (numeric for regression, integer
       class index for classification)}
     \item{treenum}{Integer identifying which tree the node belongs to}
-    \item{label}{Display label: split variable name for internal nodes,
-      predicted class name (classification) or numeric value (regression)
-      for leaves}
+    \item{label}{Display label: \code{"<var>\n< <threshold>"} for
+      internal nodes, predicted class name (classification) or numeric
+      value (regression) for leaves}
   }
 }
 \description{

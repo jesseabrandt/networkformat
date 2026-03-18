@@ -28,7 +28,7 @@
 #' edgelist(c("A", "B", "A", "B", "C"), weights = TRUE)
 #'
 #' # Unsupported type
-#' try(edgelist(list(a = 1, b = 2)))
+#' try(edgelist(as.formula(y ~ x)))
 edgelist.default <- function(input_object, weights = FALSE, ...) {
   if (is.atomic(input_object) && is.null(dim(input_object))) {
     n <- length(input_object)
@@ -54,7 +54,13 @@ edgelist.default <- function(input_object, weights = FALSE, ...) {
     return(df)
   }
 
+  # S3 objects whose class vector doesn't include "list" but are structurally
+  # lists (e.g. lm, glm) — forward to edgelist.list for structural decomposition
+  if (is.list(input_object)) {
+    return(edgelist.list(input_object, ...))
+  }
+
   stop("edgelist() does not support objects of class '",
        paste(class(input_object), collapse = "', '"),
-       "'. Supported classes: vector, data.frame, randomForest, tree, rpart, xgb.Booster, gbm.")
+       "'. Supported classes: vector, data.frame, list, randomForest, tree, rpart, xgb.Booster, gbm.")
 }

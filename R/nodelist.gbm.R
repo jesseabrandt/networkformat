@@ -19,8 +19,8 @@
 #'     \item{split_point}{Split threshold (\code{NA} for leaves)}
 #'     \item{prediction}{Prediction value at the node}
 #'     \item{treenum}{1-based tree number}
-#'     \item{label}{Display label: variable name for splits, prediction
-#'       for leaves}
+#'     \item{label}{Display label: \code{"<var>\\n< <threshold>"} for
+#'       splits, rounded prediction for leaves}
 #'   }
 #' @export
 #'
@@ -75,7 +75,8 @@ nodelist.gbm <- function(input_object, treenum = NULL, ...) {
       treenum        = tn,
       label          = ifelse(is_leaf,
                               as.character(round(pt_real$Prediction, 4)),
-                              split_var_name),
+                              paste0(split_var_name, "\n< ",
+                                     round(pt_real$SplitCodePred, 2))),
       stringsAsFactors = FALSE
     )
   }

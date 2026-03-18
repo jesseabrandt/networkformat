@@ -185,6 +185,27 @@ test_that("nodelist.randomForest works for regression", {
   expect_true(all(na.omit(nl$split_var_name) %in% c("cyl", "disp", "hp")))
 })
 
+test_that("nodelist.randomForest split_var_name is correct when leaves precede internal nodes", {
+  skip_if_not_installed("randomForest")
+
+  # Regression test: leaf nodes have split_var = 0. R drops 0-indices from vectors,
+  # so naive indexing var_names[split_var] produces a shorter vector; ifelse() then
+  # recycles it, assigning wrong variable names to internal nodes that follow leaves.
+  # This seed produces a tree where a leaf (split_var=0) appears at row 4 and 5,
+  # before the internal node at row 6 (split_var=4, Petal.Width).
+  set.seed(42)
+  rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 1)
+  nl <- nodelist(rf, treenum = 1)
+
+  tree_df <- as.data.frame(randomForest::getTree(rf, 1))
+  var_names <- names(rf$forest$ncat)
+  internal_rows <- tree_df[tree_df$`left daughter` != 0, ]
+  expected_names <- var_names[internal_rows$`split var`]
+
+  actual_names <- nl$split_var_name[!nl$is_leaf]
+  expect_equal(actual_names, expected_names)
+})
+
 # --- nodelist.randomForest label tests ---
 
 test_that("nodelist.randomForest label column exists", {
@@ -197,9 +218,10 @@ test_that("nodelist.randomForest label column exists", {
   expect_true("label" %in% names(nl))
   expect_type(nl$label, "character")
 
-  # Internal nodes should have split_var_name as label
+  # Internal node labels include variable name and threshold
   internal <- nl[!nl$is_leaf, ]
-  expect_equal(internal$label, internal$split_var_name)
+  expect_true(all(grepl("\n< ", internal$label)))
+  expect_true(all(startsWith(internal$label, internal$split_var_name)))
 
   # Leaf nodes should have class name as label (not numeric index)
   leaves <- nl[nl$is_leaf, ]
@@ -248,7 +270,7 @@ test_that("nodelist.randomForest treenum validates range", {
 
 test_that("nodelist.default raises error for unsupported types", {
   expect_error(
-    nodelist(list(a = 1, b = 2)),
+    nodelist(as.formula(y ~ x)),
     "does not support"
   )
 })
@@ -588,9 +610,10 @@ test_that("nodelist.xgb.Booster label column exists", {
   expect_true("label" %in% names(nl))
   expect_type(nl$label, "character")
 
-  # Internal nodes should have feature name as label
+  # Internal node labels include feature name and threshold
   internal <- nl[!nl$is_leaf, ]
-  expect_equal(internal$label, internal$feature)
+  expect_true(all(grepl("\n< ", internal$label)))
+  expect_true(all(startsWith(internal$label, internal$feature)))
 })
 
 test_that("nodelist.xgb.Booster leaf labels show rounded quality scores", {
@@ -725,9 +748,10 @@ test_that("nodelist.gbm label column exists", {
   expect_true("label" %in% names(nl))
   expect_type(nl$label, "character")
 
-  # Internal nodes should have split_var_name as label
+  # Internal node labels include variable name and threshold
   internal <- nl[!nl$is_leaf, ]
-  expect_equal(internal$label, internal$split_var_name)
+  expect_true(all(grepl("\n< ", internal$label)))
+  expect_true(all(startsWith(internal$label, internal$split_var_name)))
 })
 
 test_that("nodelist.gbm leaf labels show rounded prediction values", {
@@ -779,4 +803,118 @@ test_that("nodelist.gbm treenum NULL returns all trees", {
 
   expect_equal(nrow(nl_all), nrow(nl_1) + nrow(nl_2) + nrow(nl_3))
   expect_equal(sort(unique(nl_all$treenum)), c(1L, 2L, 3L))
+})
+
+# --- nodelist.list tests ---
+
+test_that("nodelist.list simple named list returns correct nodes", {
+  nl <- nodelist(list(a = 1, b = 2))
+
+  expect_s3_class(nl, "data.frame")
+  expect_equal(names(nl), c("name", "depth", "type", "n_children", "label"))
+  # root + 2 children = 3
+
+  expect_equal(nrow(nl), 3)
+  expect_equal(nl$name[1], "root")
+  expect_equal(nl$depth[1], 0L)
+  expect_equal(nl$n_children[1], 2L)
+  expect_equal(nl$type[2], "numeric")
+  expect_equal(nl$n_children[2], 0L)
+})
+
+test_that("nodelist.list nested list counts nodes correctly", {
+  nl <- nodelist(list(a = list(b = 1, c = 2), d = 3))
+
+  # root, a, b, c, d = 5
+  expect_equal(nrow(nl), 5)
+  expect_equal(nl$type[nl$name == "root/a"], "list")
+  expect_equal(nl$n_children[nl$name == "root/a"], 2L)
+  expect_equal(nl$n_children[nl$name == "root/d"], 0L)
+})
+
+test_that("nodelist.list deeply nested verifies depth", {
+  nl <- nodelist(list(a = list(b = list(c = 1))))
+
+  expect_equal(nrow(nl), 4)
+  expect_equal(nl$depth, 0:3)
+})
+
+test_that("nodelist.list unnamed elements use positional labels", {
+  nl <- nodelist(list(1, 2))
+
+  expect_equal(nl$label[2], "[[1]]")
+  expect_equal(nl$label[3], "[[2]]")
+})
+
+test_that("nodelist.list empty list returns root-only row", {
+  nl <- nodelist(list())
+
+  expect_equal(nrow(nl), 1)
+  expect_equal(nl$name, "root")
+  expect_equal(nl$n_children, 0L)
+})
+
+test_that("nodelist.list reports correct type for varied elements", {
+  nl <- nodelist(list(a = 1L, b = "text", c = TRUE, d = NULL, e = list()))
+
+  types <- nl$type[nl$depth == 1L]
+  expect_equal(types, c("integer", "character", "logical", "NULL", "list"))
+})
+
+test_that("nodelist.list max_depth limits node depth", {
+  # list: root(0) -> a(1) -> b(2) -> c(3)
+  x <- list(a = list(b = list(c = 1)))
+
+  # max_depth = 0: root only
+  nl0 <- nodelist(x, max_depth = 0)
+  expect_equal(nrow(nl0), 1)
+  expect_equal(nl0$name, "root")
+
+  # max_depth = 1: root + depth-1 children
+  nl1 <- nodelist(x, max_depth = 1)
+  expect_equal(nrow(nl1), 2)
+  expect_equal(max(nl1$depth), 1L)
+
+  # max_depth = 2: root + depth 1 + depth 2
+  nl2 <- nodelist(x, max_depth = 2)
+  expect_equal(nrow(nl2), 3)
+  expect_equal(max(nl2$depth), 2L)
+
+  # max_depth = NULL (unlimited): all 4 nodes
+  nl_all <- nodelist(x)
+  expect_equal(nrow(nl_all), 4)
+})
+
+test_that("nodelist.list custom name_root", {
+  nl <- nodelist(list(a = 1), name_root = "top")
+
+  expect_equal(nl$name[1], "top")
+  expect_equal(nl$name[2], "top/a")
+})
+
+test_that("nodelist.list S3 object emits fallthrough message", {
+  fit <- lm(Sepal.Length ~ Sepal.Width, data = iris)
+
+  expect_message(nodelist(fit), "No nodelist method for class")
+  nl <- suppressMessages(nodelist(fit))
+  expect_s3_class(nl, "data.frame")
+  expect_true(nrow(nl) > 1)
+})
+
+test_that("nodelist.list plain list produces no message", {
+  expect_silent(nodelist(list(a = 1, b = 2)))
+})
+
+test_that("nodelist.list escapes / in element names", {
+  nl <- nodelist(list("a/b" = 1))
+
+  # Path uses %2F, display label keeps original
+  expect_equal(nl$name[2], "root/a%2Fb")
+  expect_equal(nl$label[2], "a/b")
+})
+
+test_that("nodelist.list escapes / in name_root", {
+  nl <- nodelist(list(a = 1), name_root = "my/root")
+  expect_equal(nl$name[1], "my%2Froot")
+  expect_equal(nl$name[2], "my%2Froot/a")
 })

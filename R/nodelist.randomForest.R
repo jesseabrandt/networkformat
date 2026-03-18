@@ -28,9 +28,9 @@
 #'     \item{prediction}{Predicted value (numeric for regression, integer
 #'       class index for classification)}
 #'     \item{treenum}{Integer identifying which tree the node belongs to}
-#'     \item{label}{Display label: split variable name for internal nodes,
-#'       predicted class name (classification) or numeric value (regression)
-#'       for leaves}
+#'     \item{label}{Display label: \code{"<var>\\n< <threshold>"} for
+#'       internal nodes, predicted class name (classification) or numeric
+#'       value (regression) for leaves}
 #'   }
 #' @export
 #'
@@ -56,7 +56,14 @@ nodelist.randomForest <- function(input_object, treenum = NULL, ...) {
     tree_df <- as.data.frame(randomForest::getTree(input_object, tn))
     is_leaf <- tree_df$`left daughter` == 0
     split_var <- tree_df$`split var`
-    split_var_name <- ifelse(is_leaf, NA_character_, var_names[split_var])
+    # Leaf nodes have split_var = 0. R's `[` drops 0-indices rather than returning
+    # NA, so var_names[split_var] would be shorter than nrow(tree_df) whenever any
+    # 0-indexed (leaf) positions appear before the end. ifelse() would then recycle
+    # the shorter "no" argument, assigning wrong variable names to internal nodes.
+    # Guard by replacing 0 with 1 before indexing (the TRUE branch of ifelse selects
+    # NA_character_ for leaves, so the indexed value is never used for those rows).
+    split_var_name <- ifelse(is_leaf, NA_character_,
+                             var_names[pmax(split_var, 1L)])
 
     # For classification models, map integer prediction to class name
     # Non-leaf nodes have prediction = 0; replace with NA to preserve vector
@@ -77,7 +84,9 @@ nodelist.randomForest <- function(input_object, treenum = NULL, ...) {
       split_point    = ifelse(is_leaf, NA_real_, tree_df$`split point`),
       prediction     = tree_df$prediction,
       treenum        = tn,
-      label          = ifelse(is_leaf, leaf_label, split_var_name),
+      label          = ifelse(is_leaf, leaf_label,
+                              paste0(split_var_name, "\n< ",
+                                     round(tree_df$`split point`, 2))),
       stringsAsFactors = FALSE
     )
   }

@@ -2,8 +2,9 @@
 #'
 #' Generic function to extract a node list (with attributes) from various
 #' object types including atomic vectors (unique values with frequencies),
-#' data frames, and tree models (\code{randomForest}, \code{tree},
-#' \code{rpart}, \code{xgb.Booster}, \code{gbm}).  The node list provides
+#' data frames, lists (recursive node decomposition), and tree models
+#' (\code{randomForest}, \code{tree}, \code{rpart}, \code{xgb.Booster},
+#' \code{gbm}).  The node list provides
 #' metadata about each node in the network.
 #'
 #' @param input_object An object containing node information (vector, data.frame,
