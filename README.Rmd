@@ -157,7 +157,7 @@ rf <- randomForest(Species ~ ., data = iris, ntree = 5)
 # Edgelist for all trees
 el <- edgelist(rf)
 head(el)
-#> Columns: from, to, split_var, split_point, prediction, treenum, split_var_name
+#> Columns: from, to, split_var, split_point, prediction, direction, treenum, split_var_name
 
 # Extract specific trees
 el_1 <- edgelist(rf, treenum = 1)

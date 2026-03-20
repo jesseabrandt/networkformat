@@ -393,7 +393,7 @@ as_tbl_graph(xg, treenum = 1)
 | data.frame | `from`, `to`, `from_col`, `to_col`, [`directed`], [`weight`], \<attrs\> |
 | tree | `from`, `to`, `label`, `split_var`, `split_op`, `split_point` |
 | rpart | `from`, `to`, `label`, `split_var`, `split_op`, `split_point` |
-| randomForest | `from`, `to`, `split_var`, `split_point`, `prediction`, `treenum`, `split_var_name` |
+| randomForest | `from`, `to`, `split_var`, `split_point`, `prediction`, `direction`, `treenum`, `split_var_name` |
 | gbm | `from`, `to`, `split_var`, `split_point`, `prediction`, `treenum`, `split_var_name` |
 | xgb.Booster | `from`, `to`, `feature`, `split`, `quality`, `cover`, `treenum` |
 
