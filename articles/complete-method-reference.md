@@ -360,11 +360,11 @@ library(igraph)
 #>     union
 g <- as.igraph(tr)
 g
-#> IGRAPH 7fae569 DN-- 11 10 -- 
+#> IGRAPH c655dbd DN-- 11 10 -- 
 #> + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf
 #> | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),
 #> | split_point (e/n)
-#> + edges from 7fae569 (vertex names):
+#> + edges from c655dbd (vertex names):
 #>  [1] 1 ->2  1 ->3  3 ->6  6 ->12 12->24 12->25 6 ->13 3 ->7  7 ->14 7 ->15
 ```
 
@@ -624,12 +624,12 @@ Single tree:
 ``` r
 g <- as.igraph(rf, treenum = 1)
 g
-#> IGRAPH 2868910 DN-- 21 20 -- 
+#> IGRAPH 4b601c8 DN-- 21 20 -- 
 #> + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name
 #> | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label
 #> | (v/c), split_var (e/n), split_point (e/n), prediction (e/n),
 #> | direction (e/c), treenum (e/n), split_var_name (e/c)
-#> + edges from 2868910 (vertex names):
+#> + edges from 4b601c8 (vertex names):
 #>  [1] 1 ->2  2 ->4  3 ->6  5 ->8  6 ->10 7 ->12 9 ->14 12->16 16->18 18->20
 #> [11] 1 ->3  2 ->5  3 ->7  5 ->9  6 ->11 7 ->13 9 ->15 12->17 16->19 18->21
 ```
@@ -711,11 +711,11 @@ nodelist(rp)
 ``` r
 g <- as.igraph(rp)
 g
-#> IGRAPH b052e73 DN-- 5 4 -- 
+#> IGRAPH 6494b70 DN-- 5 4 -- 
 #> + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf
 #> | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),
 #> | split_point (e/n)
-#> + edges from b052e73 (vertex names):
+#> + edges from 6494b70 (vertex names):
 #> [1] 1->2 1->3 3->6 3->7
 ```
 
@@ -825,12 +825,12 @@ nodelist(gb, treenum = 1)
 ``` r
 g <- as.igraph(gb, treenum = 1)
 g
-#> IGRAPH 5c9e0d0 DN-- 7 6 -- 
+#> IGRAPH 612eb1d DN-- 7 6 -- 
 #> + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name
 #> | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label
 #> | (v/c), split_var (e/n), split_point (e/n), prediction (e/n), treenum
 #> | (e/n), split_var_name (e/c)
-#> + edges from 5c9e0d0 (vertex names):
+#> + edges from 612eb1d (vertex names):
 #> [1] 0->1 1->2 5->6 0->5 1->3 5->7
 ```
 
@@ -963,11 +963,11 @@ nodelist(xg, treenum = 1)
 ``` r
 g <- as.igraph(xg, treenum = 1)
 g
-#> IGRAPH 4408c06 DN-- 3 2 -- 
+#> IGRAPH 0cd8f3d DN-- 3 2 -- 
 #> + attr: name (v/c), is_leaf (v/l), feature (v/c), split (v/n), quality
 #> | (v/n), cover (v/n), treenum (v/n), label (v/c), feature (e/c), split
 #> | (e/n), quality (e/n), cover (e/n), treenum (e/n)
-#> + edges from 4408c06 (vertex names):
+#> + edges from 0cd8f3d (vertex names):
 #> [1] 0-0->0-1 0-0->0-2
 ```
 

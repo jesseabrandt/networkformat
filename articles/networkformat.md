@@ -5,11 +5,10 @@
 Many R objects contain network structure that isn’t in a standard
 format. Data frames encode relationships between columns —
 prerequisites, co-occurrences, categorical groupings — that can form
-directed, undirected, or bipartite graphs. Tree-based models store
-splits as internal matrices of node indices. Nested lists imply
-parent-child hierarchies. Getting any of these into a form that igraph,
-tidygraph, or ggraph can work with typically means writing bespoke
-reshaping code.
+graphs. Tree-based models store splits as internal matrices of node
+indices. Nested lists imply parent-child hierarchies. Getting any of
+these into a form that igraph, tidygraph, or ggraph can work with
+typically means writing bespoke reshaping code.
 
 **networkformat** does that reshaping for you. It extracts standard
 **edgelists** (from-to pairs) and **nodelists** (node attributes) from
@@ -107,16 +106,21 @@ clustering, and much more. Also converts to **adjacency matrices**
 ([`as_adjacency_matrix()`](https://r.igraph.org/reference/as_adjacency_matrix.html))
 and **incidence matrices**
 ([`as_incidence_matrix()`](https://r.igraph.org/reference/as_incidence_matrix.html))
-for linear algebra approaches.
+for linear algebra approaches. networkformat provides
+[`as.igraph()`](https://r.igraph.org/reference/as.igraph.html) methods
+for tree-based models (`tree`, `rpart`, `randomForest`, `xgb.Booster`,
+`gbm`), so you can go from model to igraph in one step.
 
 **tidygraph** — a tidy interface built on top of igraph. Lets you
 manipulate graphs with dplyr verbs (`mutate`, `filter`, `arrange`) while
 keeping the underlying igraph structure. If you’re comfortable with the
-tidyverse, this is the natural way to work with graphs. Note that
-tidygraph provides `as_tbl_graph.data.frame()`, which auto-detects edge
-data frames with `from`/`to` columns — so once you have an edgelist from
-networkformat, you can pass it directly to tidygraph without building an
-igraph first.
+tidyverse, this is the natural way to work with graphs. networkformat
+provides
+[`as_tbl_graph()`](https://tidygraph.data-imaginist.com/reference/tbl_graph.html)
+methods for the same tree-based models, and tidygraph’s own
+`as_tbl_graph.data.frame()` auto-detects edge data frames with
+`from`/`to` columns — so once you have an edgelist from networkformat,
+you can pass it directly to tidygraph as well.
 
 **ggraph** — a ggplot2 extension for graph visualization, designed to
 work with tidygraph/igraph objects. Supports tree layouts,
