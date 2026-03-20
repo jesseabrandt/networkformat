@@ -2,15 +2,18 @@
 
 ## Why networkformat?
 
-Many R objects contain network structure that isn’t in network format. A
-vector of steps implies a sequence. A data frame with prerequisite
-columns encodes a dependency graph. A random forest stores trees as
-matrices of daughter indices. To visualize or analyze any of these as
-graphs, you normally write bespoke reshaping code every time.
+Many R objects contain network structure that isn’t in a standard
+format. Data frames encode relationships between columns —
+prerequisites, co-occurrences, categorical groupings — that can form
+directed, undirected, or bipartite graphs. Tree-based models store
+splits as internal matrices of node indices. Nested lists imply
+parent-child hierarchies. Getting any of these into a form that igraph,
+tidygraph, or ggraph can work with typically means writing bespoke
+reshaping code.
 
 **networkformat** does that reshaping for you. It extracts standard
 **edgelists** (from-to pairs) and **nodelists** (node attributes) from
-vectors, data frames, lists, and tree-based models, putting everything
+data frames, tree-based models, lists, and vectors, putting everything
 in the format that the rest of the R network ecosystem expects.
 
 ## Quick examples
@@ -135,6 +138,7 @@ whatever your analysis requires.
 | Input                   | [`edgelist()`](https://jesseabrandt.github.io/networkformat/reference/edgelist.md) | [`nodelist()`](https://jesseabrandt.github.io/networkformat/reference/nodelist.md) | [`as.igraph()`](https://r.igraph.org/reference/as.igraph.html) |
 |-------------------------|:----------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------:|:--------------------------------------------------------------:|
 | atomic vector           |                                        yes                                         |                                        yes                                         |                               —                                |
+| `list`                  |                                        yes                                         |                                        yes                                         |                               —                                |
 | `data.frame`            |                                        yes                                         |                                        yes                                         |                               —                                |
 | `tree`                  |                                        yes                                         |                                        yes                                         |                              yes                               |
 | `randomForest`          |                                        yes                                         |                                        yes                                         |                              yes                               |

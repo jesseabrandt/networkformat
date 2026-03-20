@@ -69,17 +69,19 @@
 <div class="section level2">
 <h2 id="why-networkformat">Why networkformat?<a class="anchor" aria-label="anchor" href="#why-networkformat"></a>
 </h2>
-<p>Many R objects contain network structure that isn’t in network
-format. A vector of steps implies a sequence. A data frame with
-prerequisite columns encodes a dependency graph. A random forest stores
-trees as matrices of daughter indices. To visualize or analyze any of
-these as graphs, you normally write bespoke reshaping code every
-time.</p>
+<p>Many R objects contain network structure that isn’t in a standard
+format. Data frames encode relationships between columns —
+prerequisites, co-occurrences, categorical groupings — that can form
+directed, undirected, or bipartite graphs. Tree-based models store
+splits as internal matrices of node indices. Nested lists imply
+parent-child hierarchies. Getting any of these into a form that igraph,
+tidygraph, or ggraph can work with typically means writing bespoke
+reshaping code.</p>
 <p><strong>networkformat</strong> does that reshaping for you. It
 extracts standard <strong>edgelists</strong> (from-to pairs) and
-<strong>nodelists</strong> (node attributes) from vectors, data frames,
-lists, and tree-based models, putting everything in the format that the
-rest of the R network ecosystem expects.</p>
+<strong>nodelists</strong> (node attributes) from data frames,
+tree-based models, lists, and vectors, putting everything in the format
+that the rest of the R network ecosystem expects.</p>
 </div>
 <div class="section level2">
 <h2 id="quick-examples">Quick examples<a class="anchor" aria-label="anchor" href="#quick-examples"></a>
@@ -208,37 +210,43 @@ whatever your analysis requires.</p>
 <td align="center">—</td>
 </tr>
 <tr class="even">
-<td><code>data.frame</code></td>
+<td><code>list</code></td>
 <td align="center">yes</td>
 <td align="center">yes</td>
 <td align="center">—</td>
 </tr>
 <tr class="odd">
+<td><code>data.frame</code></td>
+<td align="center">yes</td>
+<td align="center">yes</td>
+<td align="center">—</td>
+</tr>
+<tr class="even">
 <td><code>tree</code></td>
 <td align="center">yes</td>
 <td align="center">yes</td>
 <td align="center">yes</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>randomForest</code></td>
 <td align="center">yes</td>
 <td align="center">yes</td>
 <td align="center">yes</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>rpart</code></td>
 <td align="center">yes</td>
 <td align="center">yes</td>
 <td align="center">yes</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>
 <code>xgb.Booster</code> (xgboost)</td>
 <td align="center">yes</td>
 <td align="center">yes</td>
 <td align="center">yes</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>gbm</code></td>
 <td align="center">yes</td>
 <td align="center">yes</td>

@@ -99,7 +99,7 @@ cat("Nodes:", igraph::vcount(tg_rf), " Edges:", igraph::ecount(tg_rf),
 # Map integer prediction indices to class names
 tg_rf <- tg_rf %>%
   mutate(
-    pred_class = rf$classes[replace(prediction, prediction == 0, NA)],
+    pred_class = rf$classes[prediction],
     display_label = ifelse(
       is_leaf, pred_class,
       paste0(split_var_name, "\n< ", round(split_point, 1))
@@ -147,7 +147,7 @@ For a closer look at one tree:
 ``` r
 tg1 <- as_tbl_graph(rf, treenum = 1) %>%
   mutate(
-    pred_class = rf$classes[replace(prediction, prediction == 0, NA)],
+    pred_class = rf$classes[prediction],
     display_label = ifelse(
       is_leaf, pred_class,
       paste0(split_var_name, "\n< ", round(split_point, 1))

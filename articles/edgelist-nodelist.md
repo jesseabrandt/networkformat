@@ -176,15 +176,16 @@ head(rf_edges)
 
 Columns:
 
-| Column           | Description                   |
-|------------------|-------------------------------|
-| `from`           | Parent node index             |
-| `to`             | Child node index              |
-| `split_var`      | Numeric variable index        |
-| `split_point`    | Split threshold               |
-| `prediction`     | Predicted value at child node |
-| `treenum`        | Tree number                   |
-| `split_var_name` | Human-readable variable name  |
+| Column           | Description                             |
+|------------------|-----------------------------------------|
+| `from`           | Parent node index                       |
+| `to`             | Child node index                        |
+| `split_var`      | Numeric variable index                  |
+| `split_point`    | Split threshold                         |
+| `prediction`     | Predicted value at child node           |
+| `direction`      | Branch direction: `"left"` or `"right"` |
+| `treenum`        | Tree number                             |
+| `split_var_name` | Human-readable variable name            |
 
 #### The `treenum` argument
 
@@ -240,9 +241,9 @@ Columns:
 | `split_var`      | Numeric variable index (NA for leaves)                       |
 | `split_var_name` | Variable name (NA for leaves)                                |
 | `split_point`    | Split threshold (NA for leaves)                              |
-| `prediction`     | Predicted value                                              |
+| `prediction`     | Predicted value (NA for internal nodes)                      |
 | `treenum`        | Tree number                                                  |
-| `label`          | `split_var_name` for internal nodes, `prediction` for leaves |
+| `label`          | Variable name for internal nodes, predicted value for leaves |
 
 ## Data frame
 
@@ -595,16 +596,16 @@ edgelist(fit)
 
 ### edgelist()
 
-| Input class    | Columns returned                                                                    |
-|----------------|-------------------------------------------------------------------------------------|
-| atomic vector  | `from`, `to`, \[`weight`\]                                                          |
-| `list`         | `from`, `to`, `depth`                                                               |
-| `data.frame`   | `from`, `to`, `from_col`, `to_col`, \[`directed`\], \[`weight`\], `<attr_cols>`     |
-| `tree`         | `from`, `to`, `label`, `split_var`, `split_op`, `split_point`                       |
-| `randomForest` | `from`, `to`, `split_var`, `split_point`, `prediction`, `treenum`, `split_var_name` |
-| `rpart`        | `from`, `to`, `label`, `split_var`, `split_op`, `split_point`                       |
-| `xgb.Booster`  | `from`, `to`, `feature`, `split`, `quality`, `cover`, `treenum`                     |
-| `gbm`          | `from`, `to`, `split_var`, `split_point`, `prediction`, `treenum`, `split_var_name` |
+| Input class    | Columns returned                                                                                 |
+|----------------|--------------------------------------------------------------------------------------------------|
+| atomic vector  | `from`, `to`, \[`weight`\]                                                                       |
+| `list`         | `from`, `to`, `depth`                                                                            |
+| `data.frame`   | `from`, `to`, `from_col`, `to_col`, \[`directed`\], \[`weight`\], `<attr_cols>`                  |
+| `tree`         | `from`, `to`, `label`, `split_var`, `split_op`, `split_point`                                    |
+| `randomForest` | `from`, `to`, `split_var`, `split_point`, `prediction`, `direction`, `treenum`, `split_var_name` |
+| `rpart`        | `from`, `to`, `label`, `split_var`, `split_op`, `split_point`                                    |
+| `xgb.Booster`  | `from`, `to`, `feature`, `split`, `quality`, `cover`, `treenum`                                  |
+| `gbm`          | `from`, `to`, `split_var`, `split_point`, `prediction`, `treenum`, `split_var_name`              |
 
 > **Note:** rpart uses `<` and `>=` for split operators, while tree uses
 > `<` and `>`.

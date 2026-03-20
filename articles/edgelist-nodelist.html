@@ -308,10 +308,15 @@ example, see <code><a href="../articles/visualization.html">vignette("visualizat
 <td>Predicted value at child node</td>
 </tr>
 <tr class="even">
+<td><code>direction</code></td>
+<td>Branch direction: <code>"left"</code> or <code>"right"</code>
+</td>
+</tr>
+<tr class="odd">
 <td><code>treenum</code></td>
 <td>Tree number</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>split_var_name</code></td>
 <td>Human-readable variable name</td>
 </tr>
@@ -394,7 +399,7 @@ example, see <code><a href="../articles/visualization.html">vignette("visualizat
 </tr>
 <tr class="even">
 <td><code>prediction</code></td>
-<td>Predicted value</td>
+<td>Predicted value (NA for internal nodes)</td>
 </tr>
 <tr class="odd">
 <td><code>treenum</code></td>
@@ -402,9 +407,7 @@ example, see <code><a href="../articles/visualization.html">vignette("visualizat
 </tr>
 <tr class="even">
 <td><code>label</code></td>
-<td>
-<code>split_var_name</code> for internal nodes,
-<code>prediction</code> for leaves</td>
+<td>Variable name for internal nodes, predicted value for leaves</td>
 </tr>
 </tbody>
 </table>
@@ -828,7 +831,8 @@ decomposed as plain lists with a diagnostic message:</p>
 <td><code>randomForest</code></td>
 <td>
 <code>from</code>, <code>to</code>, <code>split_var</code>,
-<code>split_point</code>, <code>prediction</code>, <code>treenum</code>,
+<code>split_point</code>, <code>prediction</code>,
+<code>direction</code>, <code>treenum</code>,
 <code>split_var_name</code>
 </td>
 </tr>
