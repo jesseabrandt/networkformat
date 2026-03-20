@@ -165,13 +165,13 @@ rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3, maxnodes =
 # All trees
 rf_edges <- edgelist(rf)
 head(rf_edges)
-#>   from to split_var split_point prediction treenum split_var_name
-#> 1    1  2         3        2.60          1       1   Petal.Length
-#> 2    3  4         4        1.65          0       1    Petal.Width
-#> 3    4  6         3        5.00          2       1   Petal.Length
-#> 4    5  8         4        1.75          2       1    Petal.Width
-#> 5    1  3         3        2.60          0       1   Petal.Length
-#> 6    3  5         4        1.65          0       1    Petal.Width
+#>   from to split_var split_point prediction direction treenum split_var_name
+#> 1    1  2         3        2.60          1      left       1   Petal.Length
+#> 2    3  4         4        1.65          0      left       1    Petal.Width
+#> 3    4  6         3        5.00          2      left       1   Petal.Length
+#> 4    5  8         4        1.75          2      left       1    Petal.Width
+#> 5    1  3         3        2.60          0     right       1   Petal.Length
+#> 6    3  5         4        1.65          0     right       1    Petal.Width
 ```
 
 Columns:
@@ -210,11 +210,11 @@ table(t13$treenum)
 rf_nodes <- nodelist(rf, treenum = 1)
 rf_nodes
 #>   name is_leaf split_var split_var_name split_point prediction treenum
-#> 1    1   FALSE         3   Petal.Length        2.60          0       1
+#> 1    1   FALSE         3   Petal.Length        2.60         NA       1
 #> 2    2    TRUE        NA           <NA>          NA          1       1
-#> 3    3   FALSE         4    Petal.Width        1.65          0       1
-#> 4    4   FALSE         3   Petal.Length        5.00          0       1
-#> 5    5   FALSE         4    Petal.Width        1.75          0       1
+#> 3    3   FALSE         4    Petal.Width        1.65         NA       1
+#> 4    4   FALSE         3   Petal.Length        5.00         NA       1
+#> 5    5   FALSE         4    Petal.Width        1.75         NA       1
 #> 6    6    TRUE        NA           <NA>          NA          2       1
 #> 7    7    TRUE        NA           <NA>          NA          3       1
 #> 8    8    TRUE        NA           <NA>          NA          2       1

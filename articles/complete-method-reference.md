@@ -244,18 +244,12 @@ edgelist(courses, source_cols = course, target_cols = crosslist,
 
 ``` r
 edgelist(courses, source_cols = prereq, target_cols = course, weights = TRUE)
-#>       from      to from_col to_col dept prereq2 crosslist credits level weight
-#> 1  math101 stat101   prereq course STAT    <NA>      <NA>       3   100      1
-#> 2  stat101 stat102   prereq course STAT    <NA>   math102       4   100      1
-#> 3  stat101 stat202   prereq course STAT    <NA>   data202       3   200      1
-#> 4  stat101 math102   prereq course MATH    <NA>   stat102       4   100      1
-#> 5  stat101 data202   prereq course DATA    <NA>   stat202       3   200      1
-#> 6    cs101   cs201   prereq course   CS    <NA>      <NA>       4   200      1
-#> 7    cs201   cs301   prereq course   CS math201   math301       3   300      1
-#> 8  math101 math201   prereq course MATH    <NA>      <NA>       3   200      1
-#> 9    cs201 math301   prereq course MATH math201     cs301       4   300      1
-#> 10 stat202 data301   prereq course DATA   cs201   stat301       3   300      1
-#> 11 stat202 stat301   prereq course STAT   cs201   data301       4   300      1
+#>      from      to from_col to_col dept prereq2 crosslist credits level weight
+#> 1 math101 stat101   prereq course STAT    <NA>      <NA>       3   100     NA
+#> 2   cs201   cs301   prereq course   CS math201   math301       3   300      1
+#> 3   cs201 math301   prereq course MATH math201     cs301       4   300      1
+#> 4 stat202 data301   prereq course DATA   cs201   stat301       3   300      1
+#> 5 stat202 stat301   prereq course STAT   cs201   data301       4   300      1
 ```
 
 **Mixed directed and undirected edges:**
@@ -366,11 +360,11 @@ library(igraph)
 #>     union
 g <- as.igraph(tr)
 g
-#> IGRAPH 90a0906 DN-- 11 10 -- 
+#> IGRAPH d2f609f DN-- 11 10 -- 
 #> + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf
 #> | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),
 #> | split_point (e/n)
-#> + edges from 90a0906 (vertex names):
+#> + edges from d2f609f (vertex names):
 #>  [1] 1 ->2  1 ->3  3 ->6  6 ->12 12->24 12->25 6 ->13 3 ->7  7 ->14 7 ->15
 ```
 
@@ -430,7 +424,7 @@ as_tbl_graph(tr)
 library(randomForest)
 #> randomForest 4.7-1.2
 #> Type rfNews() to see new features/changes/bug fixes.
-set.seed(42)
+set.seed(12)
 rf <- randomForest(Species ~ ., iris, ntree = 3)
 ```
 
@@ -440,101 +434,187 @@ All trees:
 
 ``` r
 edgelist(rf)
-#>    from to split_var split_point prediction treenum split_var_name
-#> 1     1  2         3        4.75          0       1   Petal.Length
-#> 2     2  4         3        2.45          1       1   Petal.Length
-#> 3     3  6         3        5.05          0       1   Petal.Length
-#> 4     6  8         4        1.75          2       1    Petal.Width
-#> 5     1  3         3        4.75          0       1   Petal.Length
-#> 6     2  5         3        2.45          2       1   Petal.Length
-#> 7     3  7         3        5.05          3       1   Petal.Length
-#> 8     6  9         4        1.75          3       1    Petal.Width
-#> 9     1  2         4        0.80          1       2    Petal.Width
-#> 10    3  4         4        1.75          0       2    Petal.Width
-#> 11    4  6         3        5.30          0       2   Petal.Length
-#> 12    5  8         3        4.85          0       2   Petal.Length
-#> 13    6 10         3        4.95          0       2   Petal.Length
-#> 14    8 12         1        5.95          2       2   Sepal.Length
-#> 15   10 14         1        5.00          0       2   Sepal.Length
-#> 16   11 16         2        2.60          3       2    Sepal.Width
-#> 17   14 18         4        1.35          2       2    Petal.Width
-#> 18    1  3         4        0.80          0       2    Petal.Width
-#> 19    3  5         4        1.75          0       2    Petal.Width
-#> 20    4  7         3        5.30          3       2   Petal.Length
-#> 21    5  9         3        4.85          3       2   Petal.Length
-#> 22    6 11         3        4.95          0       2   Petal.Length
-#> 23    8 13         1        5.95          3       2   Sepal.Length
-#> 24   10 15         1        5.00          2       2   Sepal.Length
-#> 25   11 17         2        2.60          2       2    Sepal.Width
-#> 26   14 19         4        1.35          3       2    Petal.Width
-#> 27    1  2         4        0.80          1       3    Petal.Width
-#> 28    3  4         4        1.75          0       3    Petal.Width
-#> 29    4  6         3        5.05          2       3   Petal.Length
-#> 30    1  3         4        0.80          0       3    Petal.Width
-#> 31    3  5         4        1.75          3       3    Petal.Width
-#> 32    4  7         3        5.05          3       3   Petal.Length
+#>    from to split_var split_point prediction direction treenum split_var_name
+#> 1     1  2         1        5.75          0      left       1   Sepal.Length
+#> 2     2  4         3        2.45          1      left       1   Petal.Length
+#> 3     3  6         3        4.75          0      left       1   Petal.Length
+#> 4     5  8         3        4.35          2      left       1   Petal.Length
+#> 5     6 10         2        3.70          2      left       1    Sepal.Width
+#> 6     7 12         2        2.75          0      left       1    Sepal.Width
+#> 7     9 14         4        1.50          2      left       1    Petal.Width
+#> 8    12 16         4        1.70          0      left       1    Petal.Width
+#> 9    16 18         3        5.05          0      left       1   Petal.Length
+#> 10   18 20         1        6.15          3      left       1   Sepal.Length
+#> 11    1  3         1        5.75          0     right       1   Sepal.Length
+#> 12    2  5         3        2.45          0     right       1   Petal.Length
+#> 13    3  7         3        4.75          0     right       1   Petal.Length
+#> 14    5  9         3        4.35          0     right       1   Petal.Length
+#> 15    6 11         2        3.70          1     right       1    Sepal.Width
+#> 16    7 13         2        2.75          3     right       1    Sepal.Width
+#> 17    9 15         4        1.50          3     right       1    Petal.Width
+#> 18   12 17         4        1.70          3     right       1    Petal.Width
+#> 19   16 19         3        5.05          2     right       1   Petal.Length
+#> 20   18 21         1        6.15          2     right       1   Sepal.Length
+#> 21    1  2         3        2.60          1      left       2   Petal.Length
+#> 22    3  4         4        1.65          0      left       2    Petal.Width
+#> 23    4  6         4        1.45          2      left       2    Petal.Width
+#> 24    5  8         4        1.85          0      left       2    Petal.Width
+#> 25    7 10         1        6.35          0      left       2   Sepal.Length
+#> 26    8 12         2        2.95          3      left       2    Sepal.Width
+#> 27   10 14         3        4.85          2      left       2   Petal.Length
+#> 28   13 16         4        1.75          2      left       2    Petal.Width
+#> 29    1  3         3        2.60          0     right       2   Petal.Length
+#> 30    3  5         4        1.65          0     right       2    Petal.Width
+#> 31    4  7         4        1.45          0     right       2    Petal.Width
+#> 32    5  9         4        1.85          3     right       2    Petal.Width
+#> 33    7 11         1        6.35          2     right       2   Sepal.Length
+#> 34    8 13         2        2.95          0     right       2    Sepal.Width
+#> 35   10 15         3        4.85          3     right       2   Petal.Length
+#> 36   13 17         4        1.75          3     right       2    Petal.Width
+#> 37    1  2         4        0.75          1      left       3    Petal.Width
+#> 38    3  4         4        1.75          0      left       3    Petal.Width
+#> 39    4  6         1        7.10          0      left       3   Sepal.Length
+#> 40    5  8         3        4.85          0      left       3   Petal.Length
+#> 41    6 10         2        2.25          0      left       3    Sepal.Width
+#> 42    8 12         2        3.00          3      left       3    Sepal.Width
+#> 43   10 14         4        1.25          2      left       3    Petal.Width
+#> 44   11 16         3        5.05          2      left       3   Petal.Length
+#> 45   15 18         3        4.75          2      left       3   Petal.Length
+#> 46   17 20         1        6.05          2      left       3   Sepal.Length
+#> 47    1  3         4        0.75          0     right       3    Petal.Width
+#> 48    3  5         4        1.75          0     right       3    Petal.Width
+#> 49    4  7         1        7.10          3     right       3   Sepal.Length
+#> 50    5  9         3        4.85          3     right       3   Petal.Length
+#> 51    6 11         2        2.25          0     right       3    Sepal.Width
+#> 52    8 13         2        3.00          2     right       3    Sepal.Width
+#> 53   10 15         4        1.25          0     right       3    Petal.Width
+#> 54   11 17         3        5.05          0     right       3   Petal.Length
+#> 55   15 19         3        4.75          3     right       3   Petal.Length
+#> 56   17 21         1        6.05          3     right       3   Sepal.Length
 ```
 
 A single tree:
 
 ``` r
 edgelist(rf, treenum = 1)
-#>   from to split_var split_point prediction treenum split_var_name
-#> 1    1  2         3        4.75          0       1   Petal.Length
-#> 2    2  4         3        2.45          1       1   Petal.Length
-#> 3    3  6         3        5.05          0       1   Petal.Length
-#> 4    6  8         4        1.75          2       1    Petal.Width
-#> 5    1  3         3        4.75          0       1   Petal.Length
-#> 6    2  5         3        2.45          2       1   Petal.Length
-#> 7    3  7         3        5.05          3       1   Petal.Length
-#> 8    6  9         4        1.75          3       1    Petal.Width
+#>    from to split_var split_point prediction direction treenum split_var_name
+#> 1     1  2         1        5.75          0      left       1   Sepal.Length
+#> 2     2  4         3        2.45          1      left       1   Petal.Length
+#> 3     3  6         3        4.75          0      left       1   Petal.Length
+#> 4     5  8         3        4.35          2      left       1   Petal.Length
+#> 5     6 10         2        3.70          2      left       1    Sepal.Width
+#> 6     7 12         2        2.75          0      left       1    Sepal.Width
+#> 7     9 14         4        1.50          2      left       1    Petal.Width
+#> 8    12 16         4        1.70          0      left       1    Petal.Width
+#> 9    16 18         3        5.05          0      left       1   Petal.Length
+#> 10   18 20         1        6.15          3      left       1   Sepal.Length
+#> 11    1  3         1        5.75          0     right       1   Sepal.Length
+#> 12    2  5         3        2.45          0     right       1   Petal.Length
+#> 13    3  7         3        4.75          0     right       1   Petal.Length
+#> 14    5  9         3        4.35          0     right       1   Petal.Length
+#> 15    6 11         2        3.70          1     right       1    Sepal.Width
+#> 16    7 13         2        2.75          3     right       1    Sepal.Width
+#> 17    9 15         4        1.50          3     right       1    Petal.Width
+#> 18   12 17         4        1.70          3     right       1    Petal.Width
+#> 19   16 19         3        5.05          2     right       1   Petal.Length
+#> 20   18 21         1        6.15          2     right       1   Sepal.Length
 ```
 
 Multiple specific trees:
 
 ``` r
 edgelist(rf, treenum = c(1, 3))
-#>    from to split_var split_point prediction treenum split_var_name
-#> 1     1  2         3        4.75          0       1   Petal.Length
-#> 2     2  4         3        2.45          1       1   Petal.Length
-#> 3     3  6         3        5.05          0       1   Petal.Length
-#> 4     6  8         4        1.75          2       1    Petal.Width
-#> 5     1  3         3        4.75          0       1   Petal.Length
-#> 6     2  5         3        2.45          2       1   Petal.Length
-#> 7     3  7         3        5.05          3       1   Petal.Length
-#> 8     6  9         4        1.75          3       1    Petal.Width
-#> 9     1  2         4        0.80          1       3    Petal.Width
-#> 10    3  4         4        1.75          0       3    Petal.Width
-#> 11    4  6         3        5.05          2       3   Petal.Length
-#> 12    1  3         4        0.80          0       3    Petal.Width
-#> 13    3  5         4        1.75          3       3    Petal.Width
-#> 14    4  7         3        5.05          3       3   Petal.Length
+#>    from to split_var split_point prediction direction treenum split_var_name
+#> 1     1  2         1        5.75          0      left       1   Sepal.Length
+#> 2     2  4         3        2.45          1      left       1   Petal.Length
+#> 3     3  6         3        4.75          0      left       1   Petal.Length
+#> 4     5  8         3        4.35          2      left       1   Petal.Length
+#> 5     6 10         2        3.70          2      left       1    Sepal.Width
+#> 6     7 12         2        2.75          0      left       1    Sepal.Width
+#> 7     9 14         4        1.50          2      left       1    Petal.Width
+#> 8    12 16         4        1.70          0      left       1    Petal.Width
+#> 9    16 18         3        5.05          0      left       1   Petal.Length
+#> 10   18 20         1        6.15          3      left       1   Sepal.Length
+#> 11    1  3         1        5.75          0     right       1   Sepal.Length
+#> 12    2  5         3        2.45          0     right       1   Petal.Length
+#> 13    3  7         3        4.75          0     right       1   Petal.Length
+#> 14    5  9         3        4.35          0     right       1   Petal.Length
+#> 15    6 11         2        3.70          1     right       1    Sepal.Width
+#> 16    7 13         2        2.75          3     right       1    Sepal.Width
+#> 17    9 15         4        1.50          3     right       1    Petal.Width
+#> 18   12 17         4        1.70          3     right       1    Petal.Width
+#> 19   16 19         3        5.05          2     right       1   Petal.Length
+#> 20   18 21         1        6.15          2     right       1   Sepal.Length
+#> 21    1  2         4        0.75          1      left       3    Petal.Width
+#> 22    3  4         4        1.75          0      left       3    Petal.Width
+#> 23    4  6         1        7.10          0      left       3   Sepal.Length
+#> 24    5  8         3        4.85          0      left       3   Petal.Length
+#> 25    6 10         2        2.25          0      left       3    Sepal.Width
+#> 26    8 12         2        3.00          3      left       3    Sepal.Width
+#> 27   10 14         4        1.25          2      left       3    Petal.Width
+#> 28   11 16         3        5.05          2      left       3   Petal.Length
+#> 29   15 18         3        4.75          2      left       3   Petal.Length
+#> 30   17 20         1        6.05          2      left       3   Sepal.Length
+#> 31    1  3         4        0.75          0     right       3    Petal.Width
+#> 32    3  5         4        1.75          0     right       3    Petal.Width
+#> 33    4  7         1        7.10          3     right       3   Sepal.Length
+#> 34    5  9         3        4.85          3     right       3   Petal.Length
+#> 35    6 11         2        2.25          0     right       3    Sepal.Width
+#> 36    8 13         2        3.00          2     right       3    Sepal.Width
+#> 37   10 15         4        1.25          0     right       3    Petal.Width
+#> 38   11 17         3        5.05          0     right       3   Petal.Length
+#> 39   15 19         3        4.75          3     right       3   Petal.Length
+#> 40   17 21         1        6.05          3     right       3   Sepal.Length
 ```
 
 ### nodelist
 
 ``` r
 nodelist(rf, treenum = 1)
-#>   name is_leaf split_var split_var_name split_point prediction treenum
-#> 1    1   FALSE         3   Petal.Length        4.75          0       1
-#> 2    2   FALSE         3   Petal.Length        2.45          0       1
-#> 3    3   FALSE         3   Petal.Length        5.05          0       1
-#> 4    4    TRUE        NA           <NA>          NA          1       1
-#> 5    5    TRUE        NA           <NA>          NA          2       1
-#> 6    6   FALSE         4    Petal.Width        1.75          0       1
-#> 7    7    TRUE        NA           <NA>          NA          3       1
-#> 8    8    TRUE        NA           <NA>          NA          2       1
-#> 9    9    TRUE        NA           <NA>          NA          3       1
-#>                  label
-#> 1 Petal.Length\n< 4.75
-#> 2 Petal.Length\n< 2.45
-#> 3 Petal.Length\n< 5.05
-#> 4               setosa
-#> 5           versicolor
-#> 6  Petal.Width\n< 1.75
-#> 7            virginica
-#> 8           versicolor
-#> 9            virginica
+#>    name is_leaf split_var split_var_name split_point prediction treenum
+#> 1     1   FALSE         1   Sepal.Length        5.75         NA       1
+#> 2     2   FALSE         3   Petal.Length        2.45         NA       1
+#> 3     3   FALSE         3   Petal.Length        4.75         NA       1
+#> 4     4    TRUE        NA           <NA>          NA          1       1
+#> 5     5   FALSE         3   Petal.Length        4.35         NA       1
+#> 6     6   FALSE         2    Sepal.Width        3.70         NA       1
+#> 7     7   FALSE         2    Sepal.Width        2.75         NA       1
+#> 8     8    TRUE        NA           <NA>          NA          2       1
+#> 9     9   FALSE         4    Petal.Width        1.50         NA       1
+#> 10   10    TRUE        NA           <NA>          NA          2       1
+#> 11   11    TRUE        NA           <NA>          NA          1       1
+#> 12   12   FALSE         4    Petal.Width        1.70         NA       1
+#> 13   13    TRUE        NA           <NA>          NA          3       1
+#> 14   14    TRUE        NA           <NA>          NA          2       1
+#> 15   15    TRUE        NA           <NA>          NA          3       1
+#> 16   16   FALSE         3   Petal.Length        5.05         NA       1
+#> 17   17    TRUE        NA           <NA>          NA          3       1
+#> 18   18   FALSE         1   Sepal.Length        6.15         NA       1
+#> 19   19    TRUE        NA           <NA>          NA          2       1
+#> 20   20    TRUE        NA           <NA>          NA          3       1
+#> 21   21    TRUE        NA           <NA>          NA          2       1
+#>                   label
+#> 1  Sepal.Length\n< 5.75
+#> 2  Petal.Length\n< 2.45
+#> 3  Petal.Length\n< 4.75
+#> 4                setosa
+#> 5  Petal.Length\n< 4.35
+#> 6    Sepal.Width\n< 3.7
+#> 7   Sepal.Width\n< 2.75
+#> 8            versicolor
+#> 9    Petal.Width\n< 1.5
+#> 10           versicolor
+#> 11               setosa
+#> 12   Petal.Width\n< 1.7
+#> 13            virginica
+#> 14           versicolor
+#> 15            virginica
+#> 16 Petal.Length\n< 5.05
+#> 17            virginica
+#> 18 Sepal.Length\n< 6.15
+#> 19           versicolor
+#> 20            virginica
+#> 21           versicolor
 ```
 
 ### as.igraph
@@ -544,13 +624,14 @@ Single tree:
 ``` r
 g <- as.igraph(rf, treenum = 1)
 g
-#> IGRAPH feb3b25 DN-- 9 8 -- 
+#> IGRAPH 168c0ff DN-- 21 20 -- 
 #> + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name
 #> | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label
-#> | (v/c), split_var (e/n), split_point (e/n), prediction (e/n), treenum
-#> | (e/n), split_var_name (e/c)
-#> + edges from feb3b25 (vertex names):
-#> [1] 1->2 2->4 3->6 6->8 1->3 2->5 3->7 6->9
+#> | (v/c), split_var (e/n), split_point (e/n), prediction (e/n),
+#> | direction (e/c), treenum (e/n), split_var_name (e/c)
+#> + edges from 168c0ff (vertex names):
+#>  [1] 1 ->2  2 ->4  3 ->6  5 ->8  6 ->10 7 ->12 9 ->14 12->16 16->18 18->20
+#> [11] 1 ->3  2 ->5  3 ->7  5 ->9  6 ->11 7 ->13 9 ->15 12->17 16->19 18->21
 ```
 
 Multiple trees produce disconnected components:
@@ -565,30 +646,32 @@ components(g_all)$no
 
 ``` r
 as_tbl_graph(rf, treenum = 1)
-#> # A tbl_graph: 9 nodes and 8 edges
+#> # A tbl_graph: 21 nodes and 20 edges
 #> #
 #> # A rooted tree
 #> #
-#> # Node Data: 9 × 8 (active)
-#>   name  is_leaf split_var split_var_name split_point prediction treenum label   
-#>   <chr> <lgl>       <dbl> <chr>                <dbl>      <dbl>   <int> <chr>   
-#> 1 1     FALSE           3 Petal.Length          4.75          0       1 "Petal.…
-#> 2 2     FALSE           3 Petal.Length          2.45          0       1 "Petal.…
-#> 3 3     FALSE           3 Petal.Length          5.05          0       1 "Petal.…
-#> 4 4     TRUE           NA NA                   NA             1       1 "setosa"
-#> 5 5     TRUE           NA NA                   NA             2       1 "versic…
-#> 6 6     FALSE           4 Petal.Width           1.75          0       1 "Petal.…
-#> 7 7     TRUE           NA NA                   NA             3       1 "virgin…
-#> 8 8     TRUE           NA NA                   NA             2       1 "versic…
-#> 9 9     TRUE           NA NA                   NA             3       1 "virgin…
+#> # Node Data: 21 × 8 (active)
+#>    name  is_leaf split_var split_var_name split_point prediction treenum label  
+#>    <chr> <lgl>       <dbl> <chr>                <dbl>      <dbl>   <int> <chr>  
+#>  1 1     FALSE           1 Sepal.Length          5.75         NA       1 "Sepal…
+#>  2 2     FALSE           3 Petal.Length          2.45         NA       1 "Petal…
+#>  3 3     FALSE           3 Petal.Length          4.75         NA       1 "Petal…
+#>  4 4     TRUE           NA NA                   NA             1       1 "setos…
+#>  5 5     FALSE           3 Petal.Length          4.35         NA       1 "Petal…
+#>  6 6     FALSE           2 Sepal.Width           3.7          NA       1 "Sepal…
+#>  7 7     FALSE           2 Sepal.Width           2.75         NA       1 "Sepal…
+#>  8 8     TRUE           NA NA                   NA             2       1 "versi…
+#>  9 9     FALSE           4 Petal.Width           1.5          NA       1 "Petal…
+#> 10 10    TRUE           NA NA                   NA             2       1 "versi…
+#> # ℹ 11 more rows
 #> #
-#> # Edge Data: 8 × 7
-#>    from    to split_var split_point prediction treenum split_var_name
-#>   <int> <int>     <dbl>       <dbl>      <dbl>   <int> <chr>         
-#> 1     1     2         3        4.75          0       1 Petal.Length  
-#> 2     2     4         3        2.45          1       1 Petal.Length  
-#> 3     3     6         3        5.05          0       1 Petal.Length  
-#> # ℹ 5 more rows
+#> # Edge Data: 20 × 8
+#>    from    to split_var split_point prediction direction treenum split_var_name
+#>   <int> <int>     <dbl>       <dbl>      <dbl> <chr>       <int> <chr>         
+#> 1     1     2         1        5.75          0 left            1 Sepal.Length  
+#> 2     2     4         3        2.45          1 left            1 Petal.Length  
+#> 3     3     6         3        4.75          0 left            1 Petal.Length  
+#> # ℹ 17 more rows
 ```
 
 ------------------------------------------------------------------------
@@ -628,11 +711,11 @@ nodelist(rp)
 ``` r
 g <- as.igraph(rp)
 g
-#> IGRAPH 21f01db DN-- 5 4 -- 
+#> IGRAPH 470d535 DN-- 5 4 -- 
 #> + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf
 #> | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),
 #> | split_point (e/n)
-#> + edges from 21f01db (vertex names):
+#> + edges from 470d535 (vertex names):
 #> [1] 1->2 1->3 3->6 3->7
 ```
 
@@ -670,7 +753,7 @@ as_tbl_graph(rp)
 library(gbm)
 #> Loaded gbm 2.2.3
 #> This version of gbm is no longer under development. Consider transitioning to gbm3, https://github.com/gbm-developers/gbm3
-set.seed(42)
+set.seed(12)
 gb <- gbm(as.numeric(Species == "setosa") ~ ., data = iris,
            distribution = "bernoulli", n.trees = 3, interaction.depth = 3)
 ```
@@ -682,24 +765,24 @@ All trees:
 ``` r
 edgelist(gb)
 #>    from to split_var split_point prediction treenum split_var_name
-#> 1     0  1         2        2.60  0.3000000       1   Petal.Length
-#> 2     2  3         2        4.65 -0.1500000       1   Petal.Length
-#> 3     4  5         0        6.75 -0.1500000       1   Sepal.Length
-#> 4     0  2         2        2.60 -0.1500000       1   Petal.Length
-#> 5     2  4         2        4.65 -0.1500000       1   Petal.Length
-#> 6     4  6         0        6.75 -0.1500000       1   Sepal.Length
-#> 7     0  1         2        2.60  0.2481636       2   Petal.Length
-#> 8     2  3         1        2.65 -0.1430354       2    Sepal.Width
-#> 9     4  5         0        6.75 -0.1430354       2   Sepal.Length
-#> 10    0  2         2        2.60 -0.1430354       2   Petal.Length
-#> 11    2  4         1        2.65 -0.1430354       2    Sepal.Width
-#> 12    4  6         0        6.75 -0.1430354       2   Sepal.Length
-#> 13    0  1         2        2.60  0.2156021       3   Petal.Length
-#> 14    2  3         1        3.15 -0.1372998       3    Sepal.Width
-#> 15    3  4         1        2.95 -0.1372998       3    Sepal.Width
-#> 16    0  2         2        2.60 -0.1372998       3   Petal.Length
-#> 17    2  7         1        3.15 -0.1372998       3    Sepal.Width
-#> 18    3  5         1        2.95 -0.1372998       3    Sepal.Width
+#> 1     0  1         2        2.45  0.3000000       1   Petal.Length
+#> 2     1  2         1        3.30  0.3000000       1    Sepal.Width
+#> 3     5  6         3        1.95 -0.1500000       1    Petal.Width
+#> 4     0  5         2        2.45 -0.1500000       1   Petal.Length
+#> 5     1  3         1        3.30  0.3000000       1    Sepal.Width
+#> 6     5  7         3        1.95 -0.1500000       1    Petal.Width
+#> 7     0  1         2        2.45  0.2481636       2   Petal.Length
+#> 8     2  3         0        5.65 -0.1430354       2   Sepal.Length
+#> 9     4  5         2        5.40 -0.1430354       2   Petal.Length
+#> 10    0  2         2        2.45 -0.1430354       2   Petal.Length
+#> 11    2  4         0        5.65 -0.1430354       2   Sepal.Length
+#> 12    4  6         2        5.40 -0.1430354       2   Petal.Length
+#> 13    0  1         2        2.45  0.2156021       3   Petal.Length
+#> 14    1  2         1        3.45  0.2156021       3    Sepal.Width
+#> 15    5  6         0        6.75 -0.1372998       3   Sepal.Length
+#> 16    0  5         2        2.45 -0.1372998       3   Petal.Length
+#> 17    1  3         1        3.45  0.2156021       3    Sepal.Width
+#> 18    5  7         0        6.75 -0.1372998       3   Sepal.Length
 ```
 
 A single tree:
@@ -707,12 +790,12 @@ A single tree:
 ``` r
 edgelist(gb, treenum = 1)
 #>   from to split_var split_point prediction treenum split_var_name
-#> 1    0  1         2        2.60       0.30       1   Petal.Length
-#> 2    2  3         2        4.65      -0.15       1   Petal.Length
-#> 3    4  5         0        6.75      -0.15       1   Sepal.Length
-#> 4    0  2         2        2.60      -0.15       1   Petal.Length
-#> 5    2  4         2        4.65      -0.15       1   Petal.Length
-#> 6    4  6         0        6.75      -0.15       1   Sepal.Length
+#> 1    0  1         2        2.45       0.30       1   Petal.Length
+#> 2    1  2         1        3.30       0.30       1    Sepal.Width
+#> 3    5  6         3        1.95      -0.15       1    Petal.Width
+#> 4    0  5         2        2.45      -0.15       1   Petal.Length
+#> 5    1  3         1        3.30       0.30       1    Sepal.Width
+#> 6    5  7         3        1.95      -0.15       1    Petal.Width
 ```
 
 ### nodelist
@@ -720,19 +803,19 @@ edgelist(gb, treenum = 1)
 ``` r
 nodelist(gb, treenum = 1)
 #>   name is_leaf split_var split_var_name split_point prediction treenum
-#> 1    0   FALSE         2   Petal.Length        2.60      -0.03       1
-#> 2    1    TRUE        NA           <NA>          NA       0.30       1
-#> 3    2   FALSE         2   Sepal.Length        4.65      -0.15       1
-#> 4    3    TRUE        NA           <NA>          NA      -0.15       1
-#> 5    4   FALSE         0   Petal.Length        6.75      -0.15       1
-#> 6    5    TRUE        NA           <NA>          NA      -0.15       1
-#> 7    6    TRUE        NA           <NA>          NA      -0.15       1
+#> 1    0   FALSE         2   Petal.Length        2.45      0.018       1
+#> 2    1   FALSE         1    Sepal.Width        3.30      0.300       1
+#> 3    2    TRUE        NA           <NA>          NA      0.300       1
+#> 4    3    TRUE        NA           <NA>          NA      0.300       1
+#> 5    5   FALSE         3    Petal.Width        1.95     -0.150       1
+#> 6    6    TRUE        NA           <NA>          NA     -0.150       1
+#> 7    7    TRUE        NA           <NA>          NA     -0.150       1
 #>                  label
-#> 1  Petal.Length\n< 2.6
-#> 2                  0.3
-#> 3 Sepal.Length\n< 4.65
-#> 4                -0.15
-#> 5 Petal.Length\n< 6.75
+#> 1 Petal.Length\n< 2.45
+#> 2   Sepal.Width\n< 3.3
+#> 3                  0.3
+#> 4                  0.3
+#> 5  Petal.Width\n< 1.95
 #> 6                -0.15
 #> 7                -0.15
 ```
@@ -742,13 +825,13 @@ nodelist(gb, treenum = 1)
 ``` r
 g <- as.igraph(gb, treenum = 1)
 g
-#> IGRAPH 20f5952 DN-- 7 6 -- 
+#> IGRAPH 1cfd71b DN-- 7 6 -- 
 #> + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name
 #> | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label
 #> | (v/c), split_var (e/n), split_point (e/n), prediction (e/n), treenum
 #> | (e/n), split_var_name (e/c)
-#> + edges from 20f5952 (vertex names):
-#> [1] 0->1 2->3 4->5 0->2 2->4 4->6
+#> + edges from 1cfd71b (vertex names):
+#> [1] 0->1 1->2 5->6 0->5 1->3 5->7
 ```
 
 ### as_tbl_graph
@@ -762,20 +845,20 @@ as_tbl_graph(gb, treenum = 1)
 #> # Node Data: 7 × 8 (active)
 #>   name  is_leaf split_var split_var_name split_point prediction treenum label   
 #>   <chr> <lgl>       <int> <chr>                <dbl>      <dbl>   <int> <chr>   
-#> 1 0     FALSE           2 Petal.Length          2.6     -0.0300       1 "Petal.…
-#> 2 1     TRUE           NA NA                   NA        0.3          1 "0.3"   
-#> 3 2     FALSE           2 Sepal.Length          4.65    -0.150        1 "Sepal.…
-#> 4 3     TRUE           NA NA                   NA       -0.150        1 "-0.15" 
-#> 5 4     FALSE           0 Petal.Length          6.75    -0.150        1 "Petal.…
-#> 6 5     TRUE           NA NA                   NA       -0.150        1 "-0.15" 
-#> 7 6     TRUE           NA NA                   NA       -0.15         1 "-0.15" 
+#> 1 0     FALSE           2 Petal.Length          2.45     0.0180       1 "Petal.…
+#> 2 1     FALSE           1 Sepal.Width           3.3      0.3          1 "Sepal.…
+#> 3 2     TRUE           NA NA                   NA        0.3          1 "0.3"   
+#> 4 3     TRUE           NA NA                   NA        0.3          1 "0.3"   
+#> 5 5     FALSE           3 Petal.Width           1.95    -0.15         1 "Petal.…
+#> 6 6     TRUE           NA NA                   NA       -0.15         1 "-0.15" 
+#> 7 7     TRUE           NA NA                   NA       -0.15         1 "-0.15" 
 #> #
 #> # Edge Data: 6 × 7
 #>    from    to split_var split_point prediction treenum split_var_name
 #>   <int> <int>     <int>       <dbl>      <dbl>   <int> <chr>         
-#> 1     1     2         2        2.6       0.3         1 Petal.Length  
-#> 2     3     4         2        4.65     -0.150       1 Petal.Length  
-#> 3     5     6         0        6.75     -0.150       1 Sepal.Length  
+#> 1     1     2         2        2.45       0.3        1 Petal.Length  
+#> 2     2     3         1        3.3        0.3        1 Sepal.Width   
+#> 3     5     6         3        1.95      -0.15       1 Petal.Width   
 #> # ℹ 3 more rows
 ```
 
@@ -785,7 +868,7 @@ as_tbl_graph(gb, treenum = 1)
 
 ``` r
 library(xgboost)
-set.seed(42)
+set.seed(12)
 xg <- xgboost(
   x = as.matrix(iris[, 1:4]),
   y = iris$Species,
@@ -880,11 +963,11 @@ nodelist(xg, treenum = 1)
 ``` r
 g <- as.igraph(xg, treenum = 1)
 g
-#> IGRAPH 1b626b2 DN-- 3 2 -- 
+#> IGRAPH 6376877 DN-- 3 2 -- 
 #> + attr: name (v/c), is_leaf (v/l), feature (v/c), split (v/n), quality
 #> | (v/n), cover (v/n), treenum (v/n), label (v/c), feature (e/c), split
 #> | (e/n), quality (e/n), cover (e/n), treenum (e/n)
-#> + edges from 1b626b2 (vertex names):
+#> + edges from 6376877 (vertex names):
 #> [1] 0-0->0-1 0-0->0-2
 ```
 

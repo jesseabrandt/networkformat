@@ -43,16 +43,16 @@ The package uses **S3 method dispatch** with four groups of functions:
 
 ### `edgelist()` — extract edges
 
-| Method                  | Input         | Key Parameters                                                                            | Output Columns                                                        | Status   |
-|-------------------------|---------------|-------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|----------|
-| `edgelist.default`      | atomic vector | `weights`                                                                                 | from, to, \[weight\]                                                  | Complete |
-| `edgelist.list`         | list          | `name_root`, `max_depth`                                                                  | from, to, depth                                                       | Complete |
-| `edgelist.data.frame`   | data.frame    | `source_cols`, `target_cols`, `attr_cols`, `na.rm`, `symmetric_cols`, `dedupe`, `weights` | from, to, from_col, to_col, \[directed\], \[weight\], \<attrs\>       | Complete |
-| `edgelist.randomForest` | randomForest  | `treenum`                                                                                 | from, to, split_var, split_point, prediction, treenum, split_var_name | Complete |
-| `edgelist.tree`         | tree          |                                                                                           | from, to, label, split_var, split_op, split_point                     | Complete |
-| `edgelist.rpart`        | rpart         |                                                                                           | from, to, label, split_var, split_op, split_point                     | Complete |
-| `edgelist.xgb.Booster`  | xgb.Booster   | `treenum`                                                                                 | from, to, feature, split, quality, cover, treenum                     | Complete |
-| `edgelist.gbm`          | gbm           | `treenum`                                                                                 | from, to, split_var, split_point, prediction, treenum, split_var_name | Complete |
+| Method                  | Input         | Key Parameters                                                                            | Output Columns                                                                   | Status   |
+|-------------------------|---------------|-------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|----------|
+| `edgelist.default`      | atomic vector | `weights`                                                                                 | from, to, \[weight\]                                                             | Complete |
+| `edgelist.list`         | list          | `name_root`, `max_depth`                                                                  | from, to, depth                                                                  | Complete |
+| `edgelist.data.frame`   | data.frame    | `source_cols`, `target_cols`, `attr_cols`, `na.rm`, `symmetric_cols`, `dedupe`, `weights` | from, to, from_col, to_col, \[directed\], \[weight\], \<attrs\>                  | Complete |
+| `edgelist.randomForest` | randomForest  | `treenum`                                                                                 | from, to, split_var, split_point, prediction, direction, treenum, split_var_name | Complete |
+| `edgelist.tree`         | tree          |                                                                                           | from, to, label, split_var, split_op, split_point                                | Complete |
+| `edgelist.rpart`        | rpart         |                                                                                           | from, to, label, split_var, split_op, split_point                                | Complete |
+| `edgelist.xgb.Booster`  | xgb.Booster   | `treenum`                                                                                 | from, to, feature, split, quality, cover, treenum                                | Complete |
+| `edgelist.gbm`          | gbm           | `treenum`                                                                                 | from, to, split_var, split_point, prediction, treenum, split_var_name            | Complete |
 
 ### `nodelist()` — extract node attributes
 

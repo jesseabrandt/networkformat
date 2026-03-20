@@ -77,15 +77,15 @@ if (requireNamespace("gbm", quietly = TRUE)) {
 #>   name is_leaf split_var split_var_name split_point prediction treenum
 #> 1    0   FALSE         0            cyl         5.0 -0.0290625       1
 #> 2    1    TRUE        NA           <NA>          NA  0.8434375       1
-#> 3    2   FALSE         2            cyl       177.5 -0.3198958       1
+#> 3    2   FALSE         2             hp       177.5 -0.3198958       1
 #> 4    3   FALSE         0            cyl         7.0 -0.1176339       1
 #> 5    4    TRUE        NA           <NA>          NA -0.0340625       1
 #> 6    5    TRUE        NA           <NA>          NA -0.2290625       1
-#>          label
-#> 1     cyl\n< 5
-#> 2       0.8434
-#> 3 cyl\n< 177.5
-#> 4     cyl\n< 7
-#> 5      -0.0341
-#> 6      -0.2291
+#>         label
+#> 1    cyl\n< 5
+#> 2      0.8434
+#> 3 hp\n< 177.5
+#> 4    cyl\n< 7
+#> 5     -0.0341
+#> 6     -0.2291
 ```
