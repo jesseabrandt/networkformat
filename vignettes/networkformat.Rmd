@@ -113,9 +113,9 @@ whatever your analysis requires.
 
 | Input | `edgelist()` | `nodelist()` | `as.igraph()` |
 |-------|:---:|:---:|:---:|
-| atomic vector | yes | yes | --- |
-| `list` | yes | yes | --- |
-| `data.frame` | yes | yes | --- |
+| atomic vector | yes | yes | no |
+| `list` | yes | yes | no |
+| `data.frame` | yes | yes | no |
 | `tree` | yes | yes | yes |
 | `randomForest` | yes | yes | yes |
 | `rpart` | yes | yes | yes |
