@@ -59,7 +59,7 @@ test_that("as.igraph.randomForest treenum=1 returns single igraph", {
   skip_if_not_installed("randomForest")
   skip_if_not_installed("igraph")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
   g <- igraph::as.igraph(rf, treenum = 1)
 
@@ -73,7 +73,7 @@ test_that("as.igraph.randomForest treenum=NULL returns combined graph", {
   skip_if_not_installed("randomForest")
   skip_if_not_installed("igraph")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
   g <- igraph::as.igraph(rf, treenum = NULL)
 
@@ -89,7 +89,7 @@ test_that("as.igraph.randomForest multiple treenum returns combined graph", {
   skip_if_not_installed("randomForest")
   skip_if_not_installed("igraph")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 5)
   g <- igraph::as.igraph(rf, treenum = c(2, 4))
 
@@ -102,7 +102,7 @@ test_that("as.igraph.randomForest has vertex attributes", {
   skip_if_not_installed("randomForest")
   skip_if_not_installed("igraph")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
   g <- igraph::as.igraph(rf, treenum = 1)
 
@@ -116,7 +116,7 @@ test_that("as.igraph.randomForest combined graph has correct total nodes", {
   skip_if_not_installed("randomForest")
   skip_if_not_installed("igraph")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
 
   # Count nodes per tree
@@ -144,7 +144,7 @@ test_that("as_tbl_graph.randomForest returns tbl_graph", {
   skip_if_not_installed("randomForest")
   skip_if_not_installed("tidygraph")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
   tg <- tidygraph::as_tbl_graph(rf, treenum = 1)
 
@@ -155,7 +155,7 @@ test_that("as_tbl_graph.randomForest treenum=NULL returns combined tbl_graph", {
   skip_if_not_installed("randomForest")
   skip_if_not_installed("tidygraph")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
   tg <- tidygraph::as_tbl_graph(rf, treenum = NULL)
 
@@ -206,7 +206,7 @@ test_that("as.igraph.xgb.Booster treenum=1 returns igraph", {
   skip_if_not_installed("xgboost")
   skip_if_not_installed("igraph")
 
-  set.seed(42)
+  set.seed(12)
   dm <- xgboost::xgb.DMatrix(as.matrix(iris[, 1:4]),
                                label = as.integer(iris$Species) - 1)
   bst <- xgboost::xgb.train(list(max_depth = 2, num_class = 3,
@@ -224,7 +224,7 @@ test_that("as.igraph.xgb.Booster treenum=NULL returns combined graph", {
   skip_if_not_installed("xgboost")
   skip_if_not_installed("igraph")
 
-  set.seed(42)
+  set.seed(12)
   dm <- xgboost::xgb.DMatrix(as.matrix(iris[, 1:4]),
                                label = as.integer(iris$Species) - 1)
   bst <- xgboost::xgb.train(list(max_depth = 2, num_class = 3,
@@ -240,7 +240,7 @@ test_that("as_tbl_graph.xgb.Booster returns tbl_graph", {
   skip_if_not_installed("xgboost")
   skip_if_not_installed("tidygraph")
 
-  set.seed(42)
+  set.seed(12)
   dm <- xgboost::xgb.DMatrix(as.matrix(iris[, 1:4]),
                                label = as.integer(iris$Species) - 1)
   bst <- xgboost::xgb.train(list(max_depth = 2, num_class = 3,
@@ -257,7 +257,7 @@ test_that("as.igraph.gbm treenum=1 returns igraph", {
   skip_if_not_installed("gbm")
   skip_if_not_installed("igraph")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars,
                      distribution = "gaussian", n.trees = 3,
@@ -275,7 +275,7 @@ test_that("as.igraph.gbm treenum=NULL returns combined graph", {
   skip_if_not_installed("gbm")
   skip_if_not_installed("igraph")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars,
                      distribution = "gaussian", n.trees = 3,
@@ -291,7 +291,7 @@ test_that("as_tbl_graph.gbm returns tbl_graph", {
   skip_if_not_installed("gbm")
   skip_if_not_installed("tidygraph")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars,
                      distribution = "gaussian", n.trees = 2,
@@ -308,7 +308,7 @@ test_that("as.igraph.randomForest validates treenum range", {
   skip_if_not_installed("randomForest")
   skip_if_not_installed("igraph")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
 
   expect_error(igraph::as.igraph(rf, treenum = 0), "treenum must be between")
@@ -319,7 +319,7 @@ test_that("as.igraph.xgb.Booster validates treenum range", {
   skip_if_not_installed("xgboost")
   skip_if_not_installed("igraph")
 
-  set.seed(42)
+  set.seed(12)
   dm <- xgboost::xgb.DMatrix(as.matrix(iris[, 1:4]),
                                label = as.integer(iris$Species) - 1)
   bst <- xgboost::xgb.train(list(max_depth = 2, num_class = 3,
@@ -334,7 +334,7 @@ test_that("as.igraph.gbm validates treenum range", {
   skip_if_not_installed("gbm")
   skip_if_not_installed("igraph")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars,
                      distribution = "gaussian", n.trees = 3,
@@ -351,7 +351,7 @@ test_that("as.igraph.randomForest has edge attributes", {
   skip_if_not_installed("randomForest")
   skip_if_not_installed("igraph")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
   g <- igraph::as.igraph(rf, treenum = 1)
 
@@ -378,7 +378,7 @@ test_that("as.igraph.xgb.Booster has edge attributes", {
   skip_if_not_installed("xgboost")
   skip_if_not_installed("igraph")
 
-  set.seed(42)
+  set.seed(12)
   dm <- xgboost::xgb.DMatrix(as.matrix(iris[, 1:4]),
                                label = as.integer(iris$Species) - 1)
   bst <- xgboost::xgb.train(list(max_depth = 2, num_class = 3,
@@ -396,7 +396,7 @@ test_that("as.igraph.gbm has edge attributes", {
   skip_if_not_installed("gbm")
   skip_if_not_installed("igraph")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars,
                      distribution = "gaussian", n.trees = 2,
@@ -416,7 +416,7 @@ test_that("as.igraph.randomForest combined ecount matches sum of per-tree edgeli
   skip_if_not_installed("randomForest")
   skip_if_not_installed("igraph")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
   g <- igraph::as.igraph(rf, treenum = NULL)
 
@@ -429,7 +429,7 @@ test_that("as.igraph.gbm combined ecount matches sum of per-tree edgelists", {
   skip_if_not_installed("gbm")
   skip_if_not_installed("igraph")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars,
                      distribution = "gaussian", n.trees = 3,

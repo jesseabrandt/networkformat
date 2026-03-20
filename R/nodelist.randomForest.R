@@ -36,6 +36,7 @@
 #'
 #' @examples
 #' if (requireNamespace("randomForest", quietly = TRUE)) {
+#'   set.seed(12)
 #'   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
 #'   nodes <- nodelist(rf)
 #'   head(nodes)
@@ -76,17 +77,27 @@ nodelist.randomForest <- function(input_object, treenum = NULL, ...) {
       leaf_label <- as.character(pred)
     }
 
+    # Detect categorical splits: ncat > 1 means the variable is a factor.
+    # For categorical splits the "split point" is a category-encoding value,
+    # not a numeric threshold, so the label omits the "< threshold" form.
+    ncat <- input_object$forest$ncat
+    is_categorical <- !is_leaf & ncat[pmax(split_var, 1L)] > 1L
+
+    internal_label <- ifelse(
+      is_categorical,
+      split_var_name,
+      paste0(split_var_name, "\n< ", round(tree_df$`split point`, 2))
+    )
+
     data.frame(
       name           = seq_len(nrow(tree_df)),
       is_leaf        = is_leaf,
       split_var      = ifelse(is_leaf, NA_real_, split_var),
       split_var_name = split_var_name,
       split_point    = ifelse(is_leaf, NA_real_, tree_df$`split point`),
-      prediction     = tree_df$prediction,
+      prediction     = ifelse(is_leaf, tree_df$prediction, NA_real_),
       treenum        = tn,
-      label          = ifelse(is_leaf, leaf_label,
-                              paste0(split_var_name, "\n< ",
-                                     round(tree_df$`split point`, 2))),
+      label          = ifelse(is_leaf, leaf_label, internal_label),
       stringsAsFactors = FALSE
     )
   }

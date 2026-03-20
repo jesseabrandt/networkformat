@@ -3,7 +3,7 @@
 test_that("edgelist.randomForest produces data frame with expected structure", {
   skip_if_not_installed("randomForest")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
   el <- edgelist(rf)
 
@@ -13,10 +13,23 @@ test_that("edgelist.randomForest produces data frame with expected structure", {
   expect_equal(length(unique(el$treenum)), 3)
 })
 
+test_that("edgelist.randomForest includes direction column", {
+  skip_if_not_installed("randomForest")
+
+  set.seed(12)
+  rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 1)
+  el <- edgelist(rf)
+
+  expect_true("direction" %in% names(el))
+  expect_equal(sort(unique(el$direction)), c("left", "right"))
+  # Each internal node produces one left and one right edge
+  expect_equal(sum(el$direction == "left"), sum(el$direction == "right"))
+})
+
 test_that("edgelist.randomForest includes split variable names", {
   skip_if_not_installed("randomForest")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(mpg ~ cyl + disp + hp, data = mtcars, ntree = 2)
   el <- edgelist(rf)
 
@@ -66,7 +79,7 @@ test_that("edgelist.default raises error for unsupported types", {
 test_that("edgelist generic dispatches to correct method", {
   skip_if_not_installed("randomForest")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 1)
   df <- data.frame(from = 1:3, to = 2:4)
 
@@ -82,7 +95,7 @@ test_that("edgelist generic dispatches to correct method", {
 test_that("edgelist.randomForest handles single tree forest", {
   skip_if_not_installed("randomForest")
 
-  set.seed(42)
+  set.seed(12)
   rf_single <- randomForest::randomForest(Species ~ ., data = iris, ntree = 1)
   el <- edgelist(rf_single)
 
@@ -95,7 +108,7 @@ test_that("edgelist.randomForest handles single tree forest", {
 test_that("edgelist.randomForest validates model structure", {
   skip_if_not_installed("randomForest")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(mpg ~ ., data = mtcars, ntree = 2)
   el <- edgelist(rf)
 
@@ -347,7 +360,7 @@ test_that("edgelist.data.frame symmetric_cols works with na.rm", {
 test_that("edgelist.randomForest treenum extracts specific trees", {
   skip_if_not_installed("randomForest")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 5)
 
   el1 <- edgelist(rf, treenum = 1)
@@ -360,7 +373,7 @@ test_that("edgelist.randomForest treenum extracts specific trees", {
 test_that("edgelist.randomForest treenum NULL returns all trees", {
   skip_if_not_installed("randomForest")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
 
   el_all <- edgelist(rf, treenum = NULL)
@@ -371,7 +384,7 @@ test_that("edgelist.randomForest treenum NULL returns all trees", {
 test_that("edgelist.randomForest treenum validates range", {
   skip_if_not_installed("randomForest")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
 
   expect_error(edgelist(rf, treenum = 0), "treenum must be between")
@@ -742,7 +755,7 @@ test_that("edgelist.rpart handles categorical splits", {
   skip_if_not_installed("rpart")
 
   # Build dataset with a strong categorical predictor
-  set.seed(42)
+  set.seed(12)
   n <- 200
   df <- data.frame(
     y = factor(c(rep("A", 100), rep("B", 100))),
@@ -863,7 +876,7 @@ test_that("edgelist.xgb.Booster multi-class model works", {
 test_that("edgelist.gbm produces data frame with expected columns", {
   skip_if_not_installed("gbm")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
                      n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
@@ -879,7 +892,7 @@ test_that("edgelist.gbm produces data frame with expected columns", {
 test_that("edgelist.gbm excludes missing-sentinel nodes", {
   skip_if_not_installed("gbm")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
                      n.trees = 5, interaction.depth = 3, n.minobsinnode = 3)
@@ -897,7 +910,7 @@ test_that("edgelist.gbm excludes missing-sentinel nodes", {
 test_that("edgelist.gbm treenum filters correctly", {
   skip_if_not_installed("gbm")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
                      n.trees = 5, interaction.depth = 2, n.minobsinnode = 3)
@@ -913,7 +926,7 @@ test_that("edgelist.gbm treenum filters correctly", {
 test_that("edgelist.gbm treenum NULL returns all trees", {
   skip_if_not_installed("gbm")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
                      n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
@@ -927,7 +940,7 @@ test_that("edgelist.gbm treenum NULL returns all trees", {
 test_that("edgelist.gbm treenum validates range", {
   skip_if_not_installed("gbm")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
                      n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
@@ -942,7 +955,7 @@ test_that("edgelist.gbm treenum validates range", {
 test_that("edgelist.gbm node IDs match nodelist", {
   skip_if_not_installed("gbm")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
                      n.trees = 3, interaction.depth = 3, n.minobsinnode = 3)
@@ -959,7 +972,7 @@ test_that("edgelist.gbm node IDs match nodelist", {
 test_that("edgelist.gbm classification works", {
   skip_if_not_installed("gbm")
 
-  set.seed(42)
+  set.seed(12)
   df <- data.frame(y = as.numeric(iris$Species == "setosa"),
                    x1 = iris$Sepal.Length, x2 = iris$Petal.Length)
   suppressWarnings(
@@ -975,7 +988,7 @@ test_that("edgelist.gbm classification works", {
 test_that("edgelist.gbm multinomial creates K trees per round", {
   skip_if_not_installed("gbm")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(Species ~ ., data = iris, distribution = "multinomial",
                      n.trees = 3, interaction.depth = 2, n.minobsinnode = 5)
@@ -1101,6 +1114,14 @@ test_that("edgelist.list escapes / in name_root", {
   el <- edgelist(list(a = 1), name_root = "my/root")
   expect_equal(el$from, "my%2Froot")
   expect_equal(el$to, "my%2Froot/a")
+})
+
+test_that("edgelist.list NA names use positional fallback", {
+  x <- list(1, 2)
+  names(x) <- c("a", NA)
+  el <- edgelist(x)
+
+  expect_equal(el$to[2], "root/[[2]]")
 })
 
 test_that("edgelist.list escapes / in element names", {

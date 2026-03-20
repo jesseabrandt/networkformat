@@ -47,21 +47,27 @@ nodelist.list <- function(input_object, name_root = "root", max_depth = NULL, ..
     return(root)
   }
 
-  nodes <- .list_nodes(input_object, parent_name = name_root,
-                       depth = 1L, max_depth = max_depth)
-  do.call(rbind, c(list(root), nodes))
+  # Accumulate nodes in a flat list via an environment, then bind once.
+  acc <- new.env(parent = emptyenv())
+  acc$nodes <- vector("list", 64L)
+  acc$n <- 0L
+
+  .list_nodes(input_object, parent_name = name_root,
+              depth = 1L, max_depth = max_depth, acc = acc)
+
+  if (acc$n == 0L) return(root)
+  do.call(rbind, c(list(root), acc$nodes[seq_len(acc$n)]))
 }
 
 #' Recursive helper to collect nodes from a nested list
 #' @noRd
-.list_nodes <- function(obj, parent_name, depth, max_depth) {
-  if (!is.null(max_depth) && depth > max_depth) return(list())
+.list_nodes <- function(obj, parent_name, depth, max_depth, acc) {
+  if (!is.null(max_depth) && depth > max_depth) return(invisible())
 
   nms <- names(obj)
-  nodes <- vector("list", length(obj))
 
   for (i in seq_along(obj)) {
-    label <- if (!is.null(nms) && nzchar(nms[i])) nms[i] else paste0("[[", i, "]]")
+    label <- if (!is.null(nms) && !is.na(nms[i]) && nzchar(nms[i])) nms[i] else paste0("[[", i, "]]")
     child_name <- paste0(parent_name, "/", gsub("/", "%2F", label, fixed = TRUE))
     child <- obj[[i]]
 
@@ -69,19 +75,20 @@ nodelist.list <- function(input_object, name_root = "root", max_depth = NULL, ..
     child_type <- class(child)[1L]
     n_children <- if (is_child_list) length(child) else 0L
 
-    node <- data.frame(name = child_name, depth = depth, type = child_type,
-                       n_children = n_children, label = label,
-                       stringsAsFactors = FALSE)
+    acc$n <- acc$n + 1L
+    if (acc$n > length(acc$nodes)) {
+      acc$nodes <- c(acc$nodes, vector("list", length(acc$nodes)))
+    }
+    acc$nodes[[acc$n]] <- data.frame(name = child_name, depth = depth,
+                                     type = child_type, n_children = n_children,
+                                     label = label, stringsAsFactors = FALSE)
 
     if (is_child_list && length(child) > 0L &&
         (is.null(max_depth) || depth < max_depth)) {
-      sub_nodes <- .list_nodes(child, parent_name = child_name,
-                               depth = depth + 1L, max_depth = max_depth)
-      nodes[[i]] <- do.call(rbind, c(list(node), sub_nodes))
-    } else {
-      nodes[[i]] <- node
+      .list_nodes(child, parent_name = child_name,
+                  depth = depth + 1L, max_depth = max_depth, acc = acc)
     }
   }
 
-  nodes
+  invisible()
 }

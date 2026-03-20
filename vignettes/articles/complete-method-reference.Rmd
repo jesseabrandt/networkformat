@@ -203,7 +203,7 @@ as_tbl_graph(tr)
 
 ```{r}
 library(randomForest)
-set.seed(42)
+set.seed(12)
 rf <- randomForest(Species ~ ., iris, ntree = 3)
 ```
 
@@ -295,7 +295,7 @@ as_tbl_graph(rp)
 
 ```{r}
 library(gbm)
-set.seed(42)
+set.seed(12)
 gb <- gbm(as.numeric(Species == "setosa") ~ ., data = iris,
            distribution = "bernoulli", n.trees = 3, interaction.depth = 3)
 ```
@@ -339,7 +339,7 @@ as_tbl_graph(gb, treenum = 1)
 
 ```{r}
 library(xgboost)
-set.seed(42)
+set.seed(12)
 xg <- xgboost(
   x = as.matrix(iris[, 1:4]),
   y = iris$Species,

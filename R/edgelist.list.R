@@ -50,37 +50,43 @@ edgelist.list <- function(input_object, name_root = "root", max_depth = NULL, ..
     return(empty)
   }
 
-  edges <- .list_edges(input_object, parent_name = name_root,
-                       depth = 1L, max_depth = max_depth)
-  result <- do.call(rbind, edges)
-  if (is.null(result)) empty else result
+  # Accumulate edges in a flat list via an environment, then bind once.
+  acc <- new.env(parent = emptyenv())
+  acc$edges <- vector("list", 64L)
+  acc$n <- 0L
+
+  .list_edges(input_object, parent_name = name_root,
+              depth = 1L, max_depth = max_depth, acc = acc)
+
+  if (acc$n == 0L) return(empty)
+  do.call(rbind, acc$edges[seq_len(acc$n)])
 }
 
 #' Recursive helper to collect edges from a nested list
 #' @noRd
-.list_edges <- function(obj, parent_name, depth, max_depth) {
-  if (!is.null(max_depth) && depth > max_depth) return(list())
+.list_edges <- function(obj, parent_name, depth, max_depth, acc) {
+  if (!is.null(max_depth) && depth > max_depth) return(invisible())
 
   nms <- names(obj)
-  edges <- vector("list", length(obj))
 
   for (i in seq_along(obj)) {
-    label <- if (!is.null(nms) && nzchar(nms[i])) nms[i] else paste0("[[", i, "]]")
+    label <- if (!is.null(nms) && !is.na(nms[i]) && nzchar(nms[i])) nms[i] else paste0("[[", i, "]]")
     child_name <- paste0(parent_name, "/", gsub("/", "%2F", label, fixed = TRUE))
 
-    edge <- data.frame(from = parent_name, to = child_name, depth = depth,
-                       stringsAsFactors = FALSE)
+    acc$n <- acc$n + 1L
+    if (acc$n > length(acc$edges)) {
+      acc$edges <- c(acc$edges, vector("list", length(acc$edges)))
+    }
+    acc$edges[[acc$n]] <- data.frame(from = parent_name, to = child_name,
+                                     depth = depth, stringsAsFactors = FALSE)
 
     child <- obj[[i]]
     if (is.list(child) && length(child) > 0L &&
         (is.null(max_depth) || depth < max_depth)) {
-      sub_edges <- .list_edges(child, parent_name = child_name,
-                               depth = depth + 1L, max_depth = max_depth)
-      edges[[i]] <- do.call(rbind, c(list(edge), sub_edges))
-    } else {
-      edges[[i]] <- edge
+      .list_edges(child, parent_name = child_name,
+                  depth = depth + 1L, max_depth = max_depth, acc = acc)
     }
   }
 
-  edges
+  invisible()
 }

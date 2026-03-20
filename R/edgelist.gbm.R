@@ -86,9 +86,8 @@ edgelist.gbm <- function(input_object, treenum = NULL, ...) {
       stringsAsFactors = FALSE
     )
 
-    # Exclude edges pointing to missing-sentinel nodes
-    real_ids <- sort(unique(c(from_ids, internal$LeftNode, internal$RightNode)))
-    edges <- edges[edges$to %in% real_ids, ]
+    # Edges are built from LeftNode/RightNode only, so missing-sentinel
+    # nodes (reached via MissingNode) are excluded by construction.
     edges
   }
 

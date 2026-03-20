@@ -43,11 +43,10 @@ edgelist.default <- function(input_object, weights = FALSE, ...) {
     )
 
     if (isTRUE(weights)) {
-      keys <- paste(df$from, df$to, sep = "\x1f")
-      tab <- table(keys)
-      first_idx <- !duplicated(keys)
+      dup_key <- interaction(df$from, df$to, drop = TRUE)
+      first_idx <- !duplicated(dup_key)
       df <- df[first_idx, , drop = FALSE]
-      df$weight <- as.integer(tab[keys[first_idx]])
+      df$weight <- as.integer(tabulate(dup_key)[dup_key[first_idx]])
       rownames(df) <- NULL
     }
 

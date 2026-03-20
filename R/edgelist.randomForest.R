@@ -18,6 +18,7 @@
 #'     \item{split_var}{Numeric index of the variable used for splitting}
 #'     \item{split_point}{Threshold value for the split}
 #'     \item{prediction}{Prediction value at the child node}
+#'     \item{direction}{Branch direction: \code{"left"} or \code{"right"}}
 #'     \item{treenum}{Tree number within the forest}
 #'     \item{split_var_name}{Character vector with human-readable variable names}
 #'   }
@@ -25,6 +26,7 @@
 #'
 #' @examples
 #' if (requireNamespace("randomForest", quietly = TRUE)) {
+#'   set.seed(12)
 #'   rf_model <- randomForest::randomForest(
 #'     Species ~ .,
 #'     data = iris,
@@ -53,6 +55,7 @@ edgelist.randomForest <- function(input_object, treenum = NULL, ...){
     tree1$index <- seq_len(nrow(tree1))
 
     parent_index <- tree1$`left daughter` != 0
+    n_internal <- sum(parent_index)
     edges_df <- data.frame(
       from        = c(tree1[parent_index, "index"], tree1[parent_index, "index"]),
       to          = c(tree1[parent_index, "left daughter"], tree1[parent_index, "right daughter"]),
@@ -60,6 +63,7 @@ edgelist.randomForest <- function(input_object, treenum = NULL, ...){
       split_point = c(tree1[parent_index, "split point"], tree1[parent_index, "split point"]),
       prediction  = c(tree1[tree1[parent_index, "left daughter"], "prediction"],
                        tree1[tree1[parent_index, "right daughter"], "prediction"]),
+      direction   = rep(c("left", "right"), each = n_internal),
       treenum     = tn)
     return(edges_df)
   }

@@ -93,7 +93,7 @@ ggraph(tg_rp, layout = "tree") +
 All trees as disconnected components:
 
 ```{r rf-all, eval = requireNamespace("randomForest", quietly = TRUE), fig.width = 14}
-set.seed(42)
+set.seed(12)
 rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3, maxnodes = 5)
 tg_rf <- as_tbl_graph(rf) %>%
   mutate(fill_var = ifelse(is_leaf,
@@ -151,7 +151,7 @@ ggraph(tg1, layout = "dendrogram") +
 ## Gradient boosted model (gbm)
 
 ```{r gbm, eval = requireNamespace("gbm", quietly = TRUE)}
-set.seed(42)
+set.seed(12)
 gb <- gbm::gbm(mpg ~ ., data = mtcars,
                 distribution = "gaussian", n.trees = 3, interaction.depth = 3,
                 n.minobsinnode = 3, bag.fraction = 0.8)
@@ -200,7 +200,7 @@ ggraph(tg_gb_all, layout = "tree") +
 ## XGBoost (xgb.Booster)
 
 ```{r xgboost, eval = requireNamespace("xgboost", quietly = TRUE)}
-set.seed(42)
+set.seed(12)
 xg <- xgboost::xgboost(
   x = as.matrix(iris[, 1:4]),
   y = iris$Species,

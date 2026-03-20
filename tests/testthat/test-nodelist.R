@@ -123,7 +123,7 @@ test_that("nodelist.tree label column has correct format", {
 test_that("nodelist.randomForest returns expected columns", {
   skip_if_not_installed("randomForest")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
   nl <- nodelist(rf)
 
@@ -135,7 +135,7 @@ test_that("nodelist.randomForest returns expected columns", {
 test_that("nodelist.randomForest has correct number of trees", {
   skip_if_not_installed("randomForest")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
   nl <- nodelist(rf)
 
@@ -145,7 +145,7 @@ test_that("nodelist.randomForest has correct number of trees", {
 test_that("nodelist.randomForest node IDs match edgelist per tree", {
   skip_if_not_installed("randomForest")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
   nl <- nodelist(rf)
   el <- edgelist(rf)
@@ -163,7 +163,7 @@ test_that("nodelist.randomForest node IDs match edgelist per tree", {
 test_that("nodelist.randomForest leaves have NA split attributes", {
   skip_if_not_installed("randomForest")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
   nl <- nodelist(rf)
 
@@ -173,10 +173,24 @@ test_that("nodelist.randomForest leaves have NA split attributes", {
   expect_true(all(is.na(leaves$split_point)))
 })
 
+test_that("nodelist.randomForest internal nodes have NA prediction", {
+  skip_if_not_installed("randomForest")
+
+  set.seed(12)
+  rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
+  nl <- nodelist(rf)
+
+  internal <- nl[!nl$is_leaf, ]
+  expect_true(all(is.na(internal$prediction)))
+  # Leaf nodes have non-NA prediction
+  leaves <- nl[nl$is_leaf, ]
+  expect_false(any(is.na(leaves$prediction)))
+})
+
 test_that("nodelist.randomForest works for regression", {
   skip_if_not_installed("randomForest")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(mpg ~ cyl + disp + hp, data = mtcars, ntree = 2)
   nl <- nodelist(rf)
 
@@ -193,7 +207,7 @@ test_that("nodelist.randomForest split_var_name is correct when leaves precede i
   # recycles it, assigning wrong variable names to internal nodes that follow leaves.
   # This seed produces a tree where a leaf (split_var=0) appears at row 4 and 5,
   # before the internal node at row 6 (split_var=4, Petal.Width).
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 1)
   nl <- nodelist(rf, treenum = 1)
 
@@ -211,7 +225,7 @@ test_that("nodelist.randomForest split_var_name is correct when leaves precede i
 test_that("nodelist.randomForest label column exists", {
   skip_if_not_installed("randomForest")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 2)
   nl <- nodelist(rf)
 
@@ -233,7 +247,7 @@ test_that("nodelist.randomForest label column exists", {
 test_that("nodelist.randomForest treenum extracts specific trees", {
   skip_if_not_installed("randomForest")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 5)
 
   nl1 <- nodelist(rf, treenum = 1)
@@ -246,7 +260,7 @@ test_that("nodelist.randomForest treenum extracts specific trees", {
 test_that("nodelist.randomForest treenum NULL returns all trees", {
   skip_if_not_installed("randomForest")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
 
   nl_all <- nodelist(rf, treenum = NULL)
@@ -257,7 +271,7 @@ test_that("nodelist.randomForest treenum NULL returns all trees", {
 test_that("nodelist.randomForest treenum validates range", {
   skip_if_not_installed("randomForest")
 
-  set.seed(42)
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
 
   expect_error(nodelist(rf, treenum = 0), "treenum must be between")
@@ -415,6 +429,15 @@ test_that("nodelist on logical vector works", {
 
   expect_equal(nl$name, c(TRUE, FALSE))
   expect_equal(nl$n, c(3L, 1L))
+})
+
+test_that("nodelist on vector with NAs includes NA as a unique value", {
+  nl <- nodelist(c(NA, "A", NA, "B"))
+
+  expect_equal(nrow(nl), 3)
+  expect_true(any(is.na(nl$name)))
+  expect_equal(nl$n[is.na(nl$name)], 2L)
+  expect_equal(nl$n[nl$name == "A" & !is.na(nl$name)], 1L)
 })
 
 # --- nodelist.rpart tests ---
@@ -657,7 +680,7 @@ test_that("nodelist.xgb.Booster treenum NULL returns all trees", {
 test_that("nodelist.gbm returns expected columns", {
   skip_if_not_installed("gbm")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
                      n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
@@ -673,7 +696,7 @@ test_that("nodelist.gbm returns expected columns", {
 test_that("nodelist.gbm excludes missing-sentinel nodes", {
   skip_if_not_installed("gbm")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
                      n.trees = 3, interaction.depth = 3, n.minobsinnode = 3)
@@ -691,7 +714,7 @@ test_that("nodelist.gbm excludes missing-sentinel nodes", {
 test_that("nodelist.gbm leaves have NA split attributes", {
   skip_if_not_installed("gbm")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
                      n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
@@ -707,7 +730,7 @@ test_that("nodelist.gbm leaves have NA split attributes", {
 test_that("nodelist.gbm treenum filters correctly", {
   skip_if_not_installed("gbm")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
                      n.trees = 5, interaction.depth = 2, n.minobsinnode = 3)
@@ -723,7 +746,7 @@ test_that("nodelist.gbm treenum filters correctly", {
 test_that("nodelist.gbm treenum validates range", {
   skip_if_not_installed("gbm")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
                      n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
@@ -738,7 +761,7 @@ test_that("nodelist.gbm treenum validates range", {
 test_that("nodelist.gbm label column exists", {
   skip_if_not_installed("gbm")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
                      n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
@@ -757,7 +780,7 @@ test_that("nodelist.gbm label column exists", {
 test_that("nodelist.gbm leaf labels show rounded prediction values", {
   skip_if_not_installed("gbm")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
                      n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
@@ -773,7 +796,7 @@ test_that("nodelist.gbm leaf labels show rounded prediction values", {
 test_that("nodelist.gbm node IDs match edgelist", {
   skip_if_not_installed("gbm")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
                      n.trees = 3, interaction.depth = 3, n.minobsinnode = 3)
@@ -790,7 +813,7 @@ test_that("nodelist.gbm node IDs match edgelist", {
 test_that("nodelist.gbm treenum NULL returns all trees", {
   skip_if_not_installed("gbm")
 
-  set.seed(42)
+  set.seed(12)
   suppressWarnings(
     fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
                      n.trees = 3, interaction.depth = 2, n.minobsinnode = 3)
@@ -917,4 +940,13 @@ test_that("nodelist.list escapes / in name_root", {
   nl <- nodelist(list(a = 1), name_root = "my/root")
   expect_equal(nl$name[1], "my%2Froot")
   expect_equal(nl$name[2], "my%2Froot/a")
+})
+
+test_that("nodelist.list NA names use positional fallback", {
+  x <- list(1, 2)
+  names(x) <- c("a", NA)
+  nl <- nodelist(x)
+
+  expect_equal(nl$name[3], "root/[[2]]")
+  expect_equal(nl$label[3], "[[2]]")
 })

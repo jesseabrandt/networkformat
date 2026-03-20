@@ -367,7 +367,7 @@ structure and verify the missing-sentinel pattern at scale.
 
 ```{r gbm-fit}
 library(gbm)
-set.seed(42)
+set.seed(12)
 fit_gbm <- gbm(mpg ~ ., data = mtcars,
                 distribution = "gaussian", n.trees = 10,
                 interaction.depth = 4, shrinkage = 0.1,
@@ -584,7 +584,7 @@ if (length(fit_gbm_cat$c.splits) > 0) {
 ### Multinomial classification
 
 ```{r gbm-multinomial}
-set.seed(42)
+set.seed(12)
 fit_gbm_multi <- gbm(Species ~ ., data = iris,
                       distribution = "multinomial", n.trees = 5,
                       interaction.depth = 3, shrinkage = 0.1,
@@ -692,7 +692,7 @@ trees with 30-60 nodes — enough structure to verify our understanding.
 library(xgboost)
 
 # Synthetic dataset — 500 obs, 8 numeric predictors, non-linear response
-set.seed(42)
+set.seed(12)
 n <- 500
 X_syn <- matrix(rnorm(n * 8), nrow = n)
 colnames(X_syn) <- paste0("x", 1:8)
@@ -855,7 +855,7 @@ X_iris <- as.matrix(iris[, 1:4])
 colnames(X_iris) <- colnames(iris)[1:4]
 y_iris <- as.integer(iris$Species) - 1L
 
-set.seed(42)
+set.seed(12)
 fit_xgb_mc <- xgboost(data = X_iris, label = y_iris,
                        objective = "multi:softmax", num_class = 3,
                        nrounds = 5, max_depth = 4,

@@ -45,7 +45,8 @@ nodelist.gbm <- function(input_object, treenum = NULL, ...) {
   convert_tree <- function(tn) {
     pt <- gbm::pretty.gbm.tree(input_object, i.tree = tn)
 
-    # Find real nodes by traversing from root (node 0) via LeftNode/RightNode
+    # Collect real nodes: internal nodes plus their LeftNode/RightNode children.
+    # Missing-sentinel nodes (reached only via MissingNode) are excluded.
     internal <- pt[pt$SplitVar != -1, ]
     if (nrow(internal) == 0L) {
       # Stump: root only
@@ -62,8 +63,22 @@ nodelist.gbm <- function(input_object, treenum = NULL, ...) {
     is_leaf <- pt_real$SplitVar == -1
 
     split_var <- ifelse(is_leaf, NA_integer_, pt_real$SplitVar)
+    # Leaf nodes have SplitVar = -1; adding 1 gives index 0, and R's `[`
+    # silently drops 0-indices (returns character(0) instead of NA).  Guard
+    # with pmax so the indexed value is harmless — ifelse selects NA for leaves.
     split_var_name <- ifelse(is_leaf, NA_character_,
-                             input_object$var.names[pt_real$SplitVar + 1L])
+                             input_object$var.names[pmax(pt_real$SplitVar + 1L, 1L)])
+
+    # Detect categorical splits: var.type > 0 means categorical.
+    # For categorical splits, SplitCodePred is a c.splits index, not a threshold.
+    var_type <- input_object$var.type
+    is_categorical <- !is_leaf & var_type[pmax(pt_real$SplitVar + 1L, 1L)] > 0
+
+    internal_label <- ifelse(
+      is_categorical,
+      split_var_name,
+      paste0(split_var_name, "\n< ", round(pt_real$SplitCodePred, 2))
+    )
 
     data.frame(
       name           = real_ids,
@@ -75,8 +90,7 @@ nodelist.gbm <- function(input_object, treenum = NULL, ...) {
       treenum        = tn,
       label          = ifelse(is_leaf,
                               as.character(round(pt_real$Prediction, 4)),
-                              paste0(split_var_name, "\n< ",
-                                     round(pt_real$SplitCodePred, 2))),
+                              internal_label),
       stringsAsFactors = FALSE
     )
   }

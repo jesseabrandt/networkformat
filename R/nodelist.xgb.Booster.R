@@ -47,6 +47,10 @@ nodelist.xgb.Booster <- function(input_object, treenum = NULL, ...) {
   if (is.null(dt$Quality) && !is.null(dt$Gain)) {
     dt$Quality <- dt$Gain
   }
+  if (is.null(dt$Quality)) {
+    stop("xgb.model.dt.tree() returned neither 'Quality' nor 'Gain' column; ",
+         "check your xgboost version.")
+  }
 
   if (nrow(dt) == 0L) {
     stop("xgb.model.dt.tree() returned no rows; the model may have no trees.")
