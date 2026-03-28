@@ -653,6 +653,86 @@ test_that("nodelist.rpart stump returns single node", {
   expect_true(nl$is_leaf)
 })
 
+test_that("nodelist.rpart classification has depth column", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+
+  expect_true("depth" %in% names(nl))
+  expect_equal(nl$depth[nl$name == 1L], 0L)
+  expect_true(all(nl$depth >= 0L))
+})
+
+test_that("nodelist.rpart classification has rpart-specific columns", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+
+  expect_true(all(c("wt", "complexity", "ncompete", "nsurrogate") %in% names(nl)))
+  expect_true(all(nl$wt > 0))
+  expect_true(all(nl$complexity >= 0))
+  expect_true(all(nl$ncompete >= 0))
+  expect_true(all(nl$nsurrogate >= 0))
+})
+
+test_that("nodelist.rpart classification has dev_improvement column", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+
+  expect_true("dev_improvement" %in% names(nl))
+  expect_true(all(is.na(nl$dev_improvement[nl$is_leaf])))
+  internal_imp <- nl$dev_improvement[!nl$is_leaf]
+  expect_true(all(!is.na(internal_imp)))
+  expect_true(all(internal_imp >= -1e-10))
+})
+
+test_that("nodelist.rpart classification has prob and count columns", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+
+  prob_cols <- grep("^prob_", names(nl), value = TRUE)
+  n_cols    <- grep("^n_", names(nl), value = TRUE)
+  expect_length(prob_cols, 3)
+  expect_length(n_cols, 3)
+  expect_true(all(c("prob_setosa", "prob_versicolor", "prob_virginica") %in% names(nl)))
+  expect_true(all(c("n_setosa", "n_versicolor", "n_virginica") %in% names(nl)))
+
+  # Probabilities sum to ~1
+  prob_sums <- rowSums(nl[, prob_cols])
+  expect_true(all(abs(prob_sums - 1) < 1e-10))
+
+  # Class counts sum to n
+  count_sums <- rowSums(nl[, n_cols])
+  expect_equal(count_sums, nl$n)
+})
+
+test_that("nodelist.rpart classification has nodeprob column", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+
+  expect_true("nodeprob" %in% names(nl))
+  expect_true(all(nl$nodeprob >= 0 & nl$nodeprob <= 1))
+  # Root nodeprob should be 1
+  expect_equal(nl$nodeprob[nl$name == 1L], 1)
+})
+
+test_that("nodelist.rpart classification label is last column", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+
+  expect_equal(names(nl)[ncol(nl)], "label")
+})
+
 # --- nodelist.xgb.Booster tests ---
 
 test_that("nodelist.xgb.Booster returns expected columns", {
