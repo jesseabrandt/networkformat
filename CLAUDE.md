@@ -58,8 +58,8 @@ The package uses **S3 method dispatch** with four groups of functions:
 | `nodelist.randomForest` | randomForest | `treenum` | name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label | Complete |
 | `nodelist.tree` | tree | | name, var, n, dev, yval, is_leaf, depth, dev_improvement, [prob_\*], label | Complete |
 | `nodelist.rpart` | rpart | | name, var, n, dev, yval, is_leaf, depth, wt, complexity, ncompete, nsurrogate, dev_improvement, [n_\*], [prob_\*], [nodeprob], label | Complete |
-| `nodelist.xgb.Booster` | xgb.Booster | `treenum` | name, is_leaf, feature, split, quality, cover, treenum, label | Complete |
-| `nodelist.gbm` | gbm | `treenum` | name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label | Complete |
+| `nodelist.xgb.Booster` | xgb.Booster | `treenum` | name, is_leaf, feature, split, quality, cover, missing, treenum, label | Complete |
+| `nodelist.gbm` | gbm | `treenum` | name, is_leaf, split_var, split_var_name, split_point, prediction, error_reduction, weight, treenum, label | Complete |
 
 ### `as.igraph()` / `as_tbl_graph()` — direct graph construction
 
