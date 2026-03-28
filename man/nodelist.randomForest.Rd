@@ -31,7 +31,7 @@ A data.frame with one row per node (across all trees) and the
     \item{prediction}{Predicted value (numeric for regression, integer
       class index for classification)}
     \item{treenum}{Integer identifying which tree the node belongs to}
-    \item{label}{Display label: \code{"<var>\n< <threshold>"} for
+    \item{label}{Display label: \code{"<var>\\n< <threshold>"} for
       internal nodes, predicted class name (classification) or numeric
       value (regression) for leaves}
   }
@@ -46,6 +46,7 @@ filtering to a single \code{treenum}).
 }
 \examples{
 if (requireNamespace("randomForest", quietly = TRUE)) {
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
   nodes <- nodelist(rf)
   head(nodes)

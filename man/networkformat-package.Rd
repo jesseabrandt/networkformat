@@ -6,7 +6,7 @@
 \alias{networkformat-package}
 \title{networkformat: Convert R Objects to Network Edgelists and Nodelists}
 \description{
-Converts R objects into network edgelist and nodelist format for visualization and analysis with packages like 'igraph', 'tidygraph', and 'ggraph'. Works with atomic vectors (sequential edges), data frames (column-pair edges with tidyselect), and tree-based model objects ('randomForest', 'tree', 'rpart', 'xgboost', 'gbm'). Also provides one-step graph construction via as.igraph() and as_tbl_graph() methods for tree models.
+Converts R objects into network edgelist and nodelist format for visualization and analysis with packages like 'igraph', 'tidygraph', and 'ggraph'. Works with data frames (column-pair edges with tidyselect), tree-based model objects ('randomForest', 'tree', 'rpart', 'xgboost', 'gbm'), lists (recursive parent-child edges), and atomic vectors (sequential edges). Also provides one-step graph construction via as.igraph() and as_tbl_graph() methods for tree models.
 }
 \seealso{
 Vignettes:

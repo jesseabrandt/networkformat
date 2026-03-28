@@ -28,8 +28,6 @@ test_that("nodelist.data.frame maintains row order and data", {
   expect_equal(nrow(nl), 3)
 })
 
-# --- nodelist.tree tests ---
-
 # --- internal helper tests ---
 
 test_that(".compute_depth returns correct depths from binary heap IDs", {
@@ -50,6 +48,28 @@ test_that(".compute_dev_improvement is correct for known topology", {
   # root: 10 - 3 - 4 = 3
   expect_equal(result, c(3, NA_real_, NA_real_))
 })
+
+test_that(".compute_dev_improvement handles multi-level trees", {
+  # 7-node complete binary tree
+  ids     <- c(1L, 2L, 3L, 4L, 5L, 6L, 7L)
+  devs    <- c(100, 60, 30, 20, 25, 10, 15)
+  is_leaf <- c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE)
+  result  <- networkformat:::.compute_dev_improvement(ids, devs, is_leaf)
+  expect_equal(result, c(100 - 60 - 30, 60 - 20 - 25, 30 - 10 - 15,
+                          NA_real_, NA_real_, NA_real_, NA_real_))
+})
+
+test_that(".compute_dev_improvement returns NA when child is missing", {
+  # Internal node whose children are not in the id vector (pruned tree)
+  ids     <- c(1L, 2L)
+  devs    <- c(10, 3)
+  is_leaf <- c(FALSE, TRUE)
+  result  <- networkformat:::.compute_dev_improvement(ids, devs, is_leaf)
+  # Node 1 is internal but child 3 is missing -> NA
+  expect_equal(result, c(NA_real_, NA_real_))
+})
+
+# --- nodelist.tree tests ---
 
 test_that("nodelist.tree returns expected columns", {
   skip_if_not_installed("tree")

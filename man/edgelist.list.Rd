@@ -10,22 +10,18 @@
 \item{input_object}{A list (or S3 object falling through to this method).}
 
 \item{name_root}{Character; label for the root node.
-  Defaults to \code{"root"}.}
+Defaults to \code{"root"}.}
 
 \item{max_depth}{Integer or \code{NULL}; maximum node depth to include
-  (root is depth 0, its children are depth 1).  \code{NULL} (the default)
-  means unlimited.  \code{max_depth = 0} returns an empty edgelist (root
-  only).}
+(root is depth 0, its children are depth 1).  \code{NULL} (the default)
+means unlimited.  \code{max_depth = 0} returns an empty edgelist (root
+only).}
 
 \item{...}{Additional arguments (currently unused).}
 }
 \value{
-A data.frame with the following columns:
-  \describe{
-    \item{from}{Parent node path-style ID (e.g. \code{"root"}, \code{"root/a"})}
-    \item{to}{Child node path-style ID (e.g. \code{"root/a"}, \code{"root/a/b"})}
-    \item{depth}{Integer depth of the child node (root children are depth 1)}
-  }
+A data.frame with columns \code{from}, \code{to}, and \code{depth}
+  (integer depth of the child node, root children are depth 1).
   An empty list returns a zero-row data.frame with the same columns.
 }
 \description{
@@ -33,7 +29,8 @@ Recursively traverses a nested list structure, producing a parent-child
 edgelist.  Each element of the list becomes a node; nested lists create
 deeper edges.  Path-style IDs ensure unique node names even when element
 names repeat at different levels.
-
+}
+\details{
 When called on an S3 object that has no dedicated \code{edgelist} method
 (e.g. an \code{lm} object), the object is treated as a plain list and a
 diagnostic message is emitted.  To force structural decomposition of an

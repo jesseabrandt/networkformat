@@ -23,6 +23,7 @@ A data.frame with the following columns:
     \item{split_var}{Numeric index of the variable used for splitting}
     \item{split_point}{Threshold value for the split}
     \item{prediction}{Prediction value at the child node}
+    \item{direction}{Branch direction: \code{"left"} or \code{"right"}}
     \item{treenum}{Tree number within the forest}
     \item{split_var_name}{Character vector with human-readable variable names}
   }
@@ -35,6 +36,7 @@ including split variable, split point, and prediction values.
 }
 \examples{
 if (requireNamespace("randomForest", quietly = TRUE)) {
+  set.seed(12)
   rf_model <- randomForest::randomForest(
     Species ~ .,
     data = iris,
