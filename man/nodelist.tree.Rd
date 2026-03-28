@@ -21,6 +21,11 @@ A data.frame with one row per node and the following columns:
     \item{yval}{Predicted value (numeric for regression, character for
       classification)}
     \item{is_leaf}{Logical: \code{TRUE} for terminal nodes}
+    \item{depth}{Integer tree depth (root = 0)}
+    \item{dev_improvement}{Numeric deviance reduction from this node's split
+      (\code{NA} for leaves)}
+    \item{prob_*}{(Classification only) One column per class with the
+      class probability at that node, named \code{prob_<classname>}}
     \item{label}{Display label: \code{"<var>\\nn=<n>"} for internal nodes,
       \code{"<yval>\\nn=<n>"} for leaves}
   }

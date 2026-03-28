@@ -21,6 +21,19 @@ A data.frame with one row per node and the following columns:
     \item{yval}{Predicted value (numeric for regression, character class label
       for classification)}
     \item{is_leaf}{Logical: \code{TRUE} for terminal nodes}
+    \item{depth}{Integer tree depth (root = 0)}
+    \item{wt}{Weighted observation count}
+    \item{complexity}{CP pruning parameter at this node}
+    \item{ncompete}{Number of competing splits considered}
+    \item{nsurrogate}{Number of surrogate splits used}
+    \item{dev_improvement}{Numeric deviance reduction from this node's split
+      (\code{NA} for leaves)}
+    \item{n_*}{(Classification only) One column per class with the count of
+      observations of that class at the node, named \code{n_<classname>}}
+    \item{prob_*}{(Classification only) One column per class with the
+      class probability at that node, named \code{prob_<classname>}}
+    \item{nodeprob}{(Classification only) Proportion of training data
+      reaching this node}
     \item{label}{Display label: \code{"<var>\\nn=<n>"} for internal nodes,
       \code{"<yval>\\nn=<n>"} for leaves}
   }
