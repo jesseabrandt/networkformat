@@ -39,17 +39,33 @@ nodelist.tree <- function(input_object, ...) {
   frame <- input_object$frame
   is_leaf <- frame$var == "<leaf>"
   yval <- if (is.factor(frame$yval)) as.character(frame$yval) else frame$yval
+  ids <- as.integer(rownames(frame))
 
-  data.frame(
-    name    = as.integer(rownames(frame)),
+  result <- data.frame(
+    name    = ids,
     var     = as.character(frame$var),
     n       = frame$n,
     dev     = frame$dev,
     yval    = yval,
     is_leaf = is_leaf,
-    label   = ifelse(is_leaf,
-                     paste0(yval, "\nn=", frame$n),
-                     paste0(as.character(frame$var), "\nn=", frame$n)),
+    depth   = .compute_depth(ids),
+    dev_improvement = .compute_dev_improvement(ids, frame$dev, is_leaf),
     stringsAsFactors = FALSE
   )
+
+  # Classification trees have a yprob matrix: one column per class
+  if (!is.null(frame$yprob)) {
+    class_names <- colnames(frame$yprob)
+    prob_names <- paste0("prob_", tolower(make.names(class_names)))
+    for (i in seq_along(class_names)) {
+      result[[prob_names[i]]] <- frame$yprob[, i]
+    }
+  }
+
+  # Label stays last
+  result$label <- ifelse(is_leaf,
+                         paste0(yval, "\nn=", frame$n),
+                         paste0(as.character(frame$var), "\nn=", frame$n))
+
+  result
 }

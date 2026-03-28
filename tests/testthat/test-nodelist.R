@@ -159,6 +159,82 @@ test_that("nodelist.tree label column has correct format", {
   }
 })
 
+test_that("nodelist.tree classification has depth column", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+  nl <- nodelist(tr)
+
+  expect_true("depth" %in% names(nl))
+  expect_equal(nl$depth[nl$name == 1L], 0L)  # root
+  expect_true(all(nl$depth >= 0L))
+  expect_true(all(nl$depth[nl$is_leaf] > 0L))  # leaves are not root
+})
+
+test_that("nodelist.tree classification has dev_improvement column", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+  nl <- nodelist(tr)
+
+  expect_true("dev_improvement" %in% names(nl))
+  expect_true(all(is.na(nl$dev_improvement[nl$is_leaf])))
+  # Internal nodes should have non-negative improvement
+  internal_imp <- nl$dev_improvement[!nl$is_leaf]
+  expect_true(all(!is.na(internal_imp)))
+  expect_true(all(internal_imp >= -1e-10))  # allow float tolerance
+})
+
+test_that("nodelist.tree classification has prob columns", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+  nl <- nodelist(tr)
+
+  prob_cols <- grep("^prob_", names(nl), value = TRUE)
+  expect_length(prob_cols, 3)  # setosa, versicolor, virginica
+  expect_true(all(c("prob_setosa", "prob_versicolor", "prob_virginica") %in% names(nl)))
+
+  # Probabilities sum to ~1 per row
+  prob_sums <- rowSums(nl[, prob_cols])
+  expect_true(all(abs(prob_sums - 1) < 1e-10))
+
+  # All probabilities in [0, 1]
+  for (col in prob_cols) {
+    expect_true(all(nl[[col]] >= 0 & nl[[col]] <= 1))
+  }
+})
+
+test_that("nodelist.tree classification label is last column", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+  nl <- nodelist(tr)
+
+  expect_equal(names(nl)[ncol(nl)], "label")
+})
+
+test_that("nodelist.tree regression has depth and dev_improvement", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(mpg ~ cyl + disp + hp, data = mtcars)
+  nl <- nodelist(tr)
+
+  expect_true("depth" %in% names(nl))
+  expect_true("dev_improvement" %in% names(nl))
+  expect_equal(nl$depth[nl$name == 1L], 0L)
+})
+
+test_that("nodelist.tree regression has no prob columns", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(mpg ~ cyl + disp + hp, data = mtcars)
+  nl <- nodelist(tr)
+
+  prob_cols <- grep("^prob_", names(nl), value = TRUE)
+  expect_length(prob_cols, 0)
+})
+
 # --- nodelist.randomForest tests ---
 
 test_that("nodelist.randomForest returns expected columns", {
