@@ -733,6 +733,35 @@ test_that("nodelist.rpart classification label is last column", {
   expect_equal(names(nl)[ncol(nl)], "label")
 })
 
+test_that("nodelist.rpart regression has depth and rpart columns, no prob columns", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(mpg ~ cyl + disp + hp, data = mtcars)
+  nl <- nodelist(fit)
+
+  expect_true(all(c("depth", "wt", "complexity", "ncompete", "nsurrogate",
+                     "dev_improvement") %in% names(nl)))
+  expect_equal(nl$depth[nl$name == 1L], 0L)
+
+  prob_cols <- grep("^prob_", names(nl), value = TRUE)
+  n_cols    <- grep("^n_", names(nl), value = TRUE)
+  expect_length(prob_cols, 0)
+  expect_length(n_cols, 0)
+  expect_false("nodeprob" %in% names(nl))
+})
+
+test_that("nodelist.rpart stump has enriched columns", {
+  skip_if_not_installed("rpart")
+
+  stump <- rpart::rpart(Species ~ ., data = iris,
+                         control = rpart::rpart.control(cp = 1))
+  nl <- nodelist(stump)
+
+  expect_equal(nrow(nl), 1)
+  expect_equal(nl$depth, 0L)
+  expect_true(is.na(nl$dev_improvement))  # leaf, no split
+})
+
 # --- nodelist.xgb.Booster tests ---
 
 test_that("nodelist.xgb.Booster returns expected columns", {
