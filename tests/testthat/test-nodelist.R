@@ -28,6 +28,47 @@ test_that("nodelist.data.frame maintains row order and data", {
   expect_equal(nrow(nl), 3)
 })
 
+# --- internal helper tests ---
+
+test_that(".compute_depth returns correct depths from binary heap IDs", {
+  # Root=1 -> depth 0, children 2,3 -> depth 1, grandchildren 4-7 -> depth 2
+  ids <- c(1L, 2L, 3L, 4L, 5L, 6L, 7L)
+  expect_equal(
+    networkformat:::.compute_depth(ids),
+    c(0L, 1L, 1L, 2L, 2L, 2L, 2L)
+  )
+})
+
+test_that(".compute_dev_improvement is correct for known topology", {
+  # 3-node tree: root (id=1, dev=10), left (id=2, dev=3), right (id=3, dev=4)
+  ids <- c(1L, 2L, 3L)
+  devs <- c(10, 3, 4)
+  is_leaf <- c(FALSE, TRUE, TRUE)
+  result <- networkformat:::.compute_dev_improvement(ids, devs, is_leaf)
+  # root: 10 - 3 - 4 = 3
+  expect_equal(result, c(3, NA_real_, NA_real_))
+})
+
+test_that(".compute_dev_improvement handles multi-level trees", {
+  # 7-node complete binary tree
+  ids     <- c(1L, 2L, 3L, 4L, 5L, 6L, 7L)
+  devs    <- c(100, 60, 30, 20, 25, 10, 15)
+  is_leaf <- c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE)
+  result  <- networkformat:::.compute_dev_improvement(ids, devs, is_leaf)
+  expect_equal(result, c(100 - 60 - 30, 60 - 20 - 25, 30 - 10 - 15,
+                          NA_real_, NA_real_, NA_real_, NA_real_))
+})
+
+test_that(".compute_dev_improvement returns NA when child is missing", {
+  # Internal node whose children are not in the id vector (pruned tree)
+  ids     <- c(1L, 2L)
+  devs    <- c(10, 3)
+  is_leaf <- c(FALSE, TRUE)
+  result  <- networkformat:::.compute_dev_improvement(ids, devs, is_leaf)
+  # Node 1 is internal but child 3 is missing -> NA
+  expect_equal(result, c(NA_real_, NA_real_))
+})
+
 # --- nodelist.tree tests ---
 
 test_that("nodelist.tree returns expected columns", {
@@ -116,6 +157,82 @@ test_that("nodelist.tree label column has correct format", {
     expect_true(grepl(paste0("\\nn=", leaves$n[i]), leaves$label[i]))
     expect_true(startsWith(leaves$label[i], as.character(leaves$yval[i])))
   }
+})
+
+test_that("nodelist.tree classification has depth column", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+  nl <- nodelist(tr)
+
+  expect_true("depth" %in% names(nl))
+  expect_equal(nl$depth[nl$name == 1L], 0L)  # root
+  expect_true(all(nl$depth >= 0L))
+  expect_true(all(nl$depth[nl$is_leaf] > 0L))  # leaves are not root
+})
+
+test_that("nodelist.tree classification has dev_improvement column", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+  nl <- nodelist(tr)
+
+  expect_true("dev_improvement" %in% names(nl))
+  expect_true(all(is.na(nl$dev_improvement[nl$is_leaf])))
+  # Internal nodes should have non-negative improvement
+  internal_imp <- nl$dev_improvement[!nl$is_leaf]
+  expect_true(all(!is.na(internal_imp)))
+  expect_true(all(internal_imp >= -1e-10))  # allow float tolerance
+})
+
+test_that("nodelist.tree classification has prob columns", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+  nl <- nodelist(tr)
+
+  prob_cols <- grep("^prob_", names(nl), value = TRUE)
+  expect_length(prob_cols, 3)  # setosa, versicolor, virginica
+  expect_true(all(c("prob_setosa", "prob_versicolor", "prob_virginica") %in% names(nl)))
+
+  # Probabilities sum to ~1 per row
+  prob_sums <- rowSums(nl[, prob_cols])
+  expect_true(all(abs(prob_sums - 1) < 1e-10))
+
+  # All probabilities in [0, 1]
+  for (col in prob_cols) {
+    expect_true(all(nl[[col]] >= 0 & nl[[col]] <= 1))
+  }
+})
+
+test_that("nodelist.tree classification label is last column", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(Species ~ Sepal.Length + Sepal.Width, data = iris)
+  nl <- nodelist(tr)
+
+  expect_equal(names(nl)[ncol(nl)], "label")
+})
+
+test_that("nodelist.tree regression has depth and dev_improvement", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(mpg ~ cyl + disp + hp, data = mtcars)
+  nl <- nodelist(tr)
+
+  expect_true("depth" %in% names(nl))
+  expect_true("dev_improvement" %in% names(nl))
+  expect_equal(nl$depth[nl$name == 1L], 0L)
+})
+
+test_that("nodelist.tree regression has no prob columns", {
+  skip_if_not_installed("tree")
+
+  tr <- tree::tree(mpg ~ cyl + disp + hp, data = mtcars)
+  nl <- nodelist(tr)
+
+  prob_cols <- grep("^prob_", names(nl), value = TRUE)
+  expect_length(prob_cols, 0)
 })
 
 # --- nodelist.randomForest tests ---
@@ -536,6 +653,115 @@ test_that("nodelist.rpart stump returns single node", {
   expect_true(nl$is_leaf)
 })
 
+test_that("nodelist.rpart classification has depth column", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+
+  expect_true("depth" %in% names(nl))
+  expect_equal(nl$depth[nl$name == 1L], 0L)
+  expect_true(all(nl$depth >= 0L))
+})
+
+test_that("nodelist.rpart classification has rpart-specific columns", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+
+  expect_true(all(c("wt", "complexity", "ncompete", "nsurrogate") %in% names(nl)))
+  expect_true(all(nl$wt > 0))
+  expect_true(all(nl$complexity >= 0))
+  expect_true(all(nl$ncompete >= 0))
+  expect_true(all(nl$nsurrogate >= 0))
+})
+
+test_that("nodelist.rpart classification has dev_improvement column", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+
+  expect_true("dev_improvement" %in% names(nl))
+  expect_true(all(is.na(nl$dev_improvement[nl$is_leaf])))
+  internal_imp <- nl$dev_improvement[!nl$is_leaf]
+  expect_true(all(!is.na(internal_imp)))
+  expect_true(all(internal_imp >= -1e-10))
+})
+
+test_that("nodelist.rpart classification has prob and count columns", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+
+  prob_cols <- grep("^prob_", names(nl), value = TRUE)
+  n_cols    <- grep("^n_", names(nl), value = TRUE)
+  expect_length(prob_cols, 3)
+  expect_length(n_cols, 3)
+  expect_true(all(c("prob_setosa", "prob_versicolor", "prob_virginica") %in% names(nl)))
+  expect_true(all(c("n_setosa", "n_versicolor", "n_virginica") %in% names(nl)))
+
+  # Probabilities sum to ~1
+  prob_sums <- rowSums(nl[, prob_cols])
+  expect_true(all(abs(prob_sums - 1) < 1e-10))
+
+  # Class counts sum to n
+  count_sums <- rowSums(nl[, n_cols])
+  expect_equal(count_sums, nl$n)
+})
+
+test_that("nodelist.rpart classification has nodeprob column", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+
+  expect_true("nodeprob" %in% names(nl))
+  expect_true(all(nl$nodeprob >= 0 & nl$nodeprob <= 1))
+  # Root nodeprob should be 1
+  expect_equal(nl$nodeprob[nl$name == 1L], 1)
+})
+
+test_that("nodelist.rpart classification label is last column", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(Species ~ ., data = iris)
+  nl <- nodelist(fit)
+
+  expect_equal(names(nl)[ncol(nl)], "label")
+})
+
+test_that("nodelist.rpart regression has depth and rpart columns, no prob columns", {
+  skip_if_not_installed("rpart")
+
+  fit <- rpart::rpart(mpg ~ cyl + disp + hp, data = mtcars)
+  nl <- nodelist(fit)
+
+  expect_true(all(c("depth", "wt", "complexity", "ncompete", "nsurrogate",
+                     "dev_improvement") %in% names(nl)))
+  expect_equal(nl$depth[nl$name == 1L], 0L)
+
+  prob_cols <- grep("^prob_", names(nl), value = TRUE)
+  n_cols    <- grep("^n_", names(nl), value = TRUE)
+  expect_length(prob_cols, 0)
+  expect_length(n_cols, 0)
+  expect_false("nodeprob" %in% names(nl))
+})
+
+test_that("nodelist.rpart stump has enriched columns", {
+  skip_if_not_installed("rpart")
+
+  stump <- rpart::rpart(Species ~ ., data = iris,
+                         control = rpart::rpart.control(cp = 1))
+  nl <- nodelist(stump)
+
+  expect_equal(nrow(nl), 1)
+  expect_equal(nl$depth, 0L)
+  expect_true(is.na(nl$dev_improvement))  # leaf, no split
+})
+
 # --- nodelist.xgb.Booster tests ---
 
 test_that("nodelist.xgb.Booster returns expected columns", {
@@ -550,8 +776,8 @@ test_that("nodelist.xgb.Booster returns expected columns", {
   nl <- nodelist(bst)
 
   expect_s3_class(nl, "data.frame")
-  expect_true(all(c("name", "is_leaf", "feature", "split", "quality",
-                     "cover", "treenum", "label") %in% names(nl)))
+  expect_equal(names(nl), c("name", "is_leaf", "feature", "split",
+                             "quality", "cover", "missing", "treenum", "label"))
 })
 
 test_that("nodelist.xgb.Booster leaves have NA feature and split", {
@@ -675,6 +901,42 @@ test_that("nodelist.xgb.Booster treenum NULL returns all trees", {
   expect_equal(sort(unique(nl_all$treenum)), c(1L, 2L, 3L))
 })
 
+test_that("nodelist.xgb.Booster has missing column", {
+  skip_if_not_installed("xgboost")
+
+  data(agaricus.train, package = "xgboost")
+  bst <- xgboost::xgboost(
+    x = agaricus.train$data,
+    y = factor(agaricus.train$label),
+    max_depth = 2, nrounds = 2, nthreads = 1, verbosity = 0
+  )
+  nl <- nodelist(bst)
+
+  expect_true("missing" %in% names(nl))
+
+  # Leaves should have NA missing
+  expect_true(all(is.na(nl$missing[nl$is_leaf])))
+
+  # Internal nodes should have valid node ID strings (Tree-Node format)
+  internal_missing <- nl$missing[!nl$is_leaf]
+  expect_true(all(!is.na(internal_missing)))
+  expect_true(all(grepl("^\\d+-\\d+$", internal_missing)))
+})
+
+test_that("nodelist.xgb.Booster label is last column", {
+  skip_if_not_installed("xgboost")
+
+  data(agaricus.train, package = "xgboost")
+  bst <- xgboost::xgboost(
+    x = agaricus.train$data,
+    y = factor(agaricus.train$label),
+    max_depth = 2, nrounds = 2, nthreads = 1, verbosity = 0
+  )
+  nl <- nodelist(bst)
+
+  expect_equal(names(nl)[ncol(nl)], "label")
+})
+
 # --- nodelist.gbm tests ---
 
 test_that("nodelist.gbm returns expected columns", {
@@ -688,9 +950,9 @@ test_that("nodelist.gbm returns expected columns", {
   nl <- nodelist(fit)
 
   expect_s3_class(nl, "data.frame")
-  expect_true(all(c("name", "is_leaf", "split_var", "split_var_name",
-                     "split_point", "prediction", "treenum",
-                     "label") %in% names(nl)))
+  expect_equal(names(nl), c("name", "is_leaf", "split_var", "split_var_name",
+                             "split_point", "prediction", "error_reduction",
+                             "weight", "treenum", "label"))
 })
 
 test_that("nodelist.gbm excludes missing-sentinel nodes", {
@@ -826,6 +1088,39 @@ test_that("nodelist.gbm treenum NULL returns all trees", {
 
   expect_equal(nrow(nl_all), nrow(nl_1) + nrow(nl_2) + nrow(nl_3))
   expect_equal(sort(unique(nl_all$treenum)), c(1L, 2L, 3L))
+})
+
+test_that("nodelist.gbm has error_reduction and weight columns", {
+  skip_if_not_installed("gbm")
+
+  set.seed(1)
+  fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                   n.trees = 3, interaction.depth = 3, n.minobsinnode = 3)
+  nl <- nodelist(fit, treenum = 1L)
+
+  expect_true("error_reduction" %in% names(nl))
+  expect_true("weight" %in% names(nl))
+
+  # Error reduction is 0 for leaves, > 0 for internal splits
+  expect_true(all(nl$error_reduction[nl$is_leaf] == 0))
+  internal_er <- nl$error_reduction[!nl$is_leaf]
+  if (length(internal_er) > 0) {
+    expect_true(all(internal_er > 0))
+  }
+
+  # Weight should be positive for all nodes
+  expect_true(all(nl$weight > 0))
+})
+
+test_that("nodelist.gbm label is last column", {
+  skip_if_not_installed("gbm")
+
+  set.seed(1)
+  fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                   n.trees = 3, interaction.depth = 3, n.minobsinnode = 3)
+  nl <- nodelist(fit, treenum = 1L)
+
+  expect_equal(names(nl)[ncol(nl)], "label")
 })
 
 # --- nodelist.list tests ---

@@ -10,30 +10,26 @@
 \item{input_object}{A list (or S3 object falling through to this method).}
 
 \item{name_root}{Character; label for the root node.
-  Defaults to \code{"root"}.}
+Defaults to \code{"root"}.}
 
 \item{max_depth}{Integer or \code{NULL}; maximum node depth to include
-  (root is depth 0, its children are depth 1).  \code{NULL} (the default)
-  means unlimited.  \code{max_depth = 0} returns the root node only.}
+(root is depth 0, its children are depth 1).  \code{NULL} (the default)
+means unlimited.  \code{max_depth = 0} returns the root node only.}
 
 \item{...}{Additional arguments (currently unused).}
 }
 \value{
-A data.frame with the following columns:
-  \describe{
-    \item{name}{Path-style node ID (e.g. \code{"root"}, \code{"root/a"})}
-    \item{depth}{Integer depth (root is 0, root children are 1)}
-    \item{type}{Character class of the element (e.g. \code{"numeric"},
-      \code{"character"}, \code{"list"})}
-    \item{n_children}{Integer number of direct children (0 for leaves)}
-    \item{label}{Element name or positional index (e.g. \code{"a"}, \code{"[[2]]"})}
-  }
+A data.frame with columns \code{name} (path-style ID),
+  \code{depth} (integer), \code{type} (character class of the element),
+  \code{n_children} (integer, 0 for leaves), and \code{label}
+  (element name or positional index).
   An empty list returns a one-row data.frame for the root node only.
 }
 \description{
 Recursively traverses a nested list structure, producing one row per node
 with metadata about each element.
-
+}
+\details{
 When called on an S3 object that has no dedicated \code{nodelist} method,
 the object is treated as a plain list and a diagnostic message is emitted.
 To force structural decomposition of an object that has its own method

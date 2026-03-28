@@ -18,6 +18,10 @@
 #'     \item{split_var_name}{Variable name (\code{NA} for leaves)}
 #'     \item{split_point}{Split threshold (\code{NA} for leaves)}
 #'     \item{prediction}{Prediction value at the node}
+#'     \item{error_reduction}{Impurity reduction from the split (0 for leaves);
+#'       per-node variable importance from \code{ErrorReduction}}
+#'     \item{weight}{Number of training observations reaching the node,
+#'       from \code{Weight}}
 #'     \item{treenum}{1-based tree number}
 #'     \item{label}{Display label: \code{"<var>\\n< <threshold>"} for
 #'       splits, rounded prediction for leaves}
@@ -81,16 +85,18 @@ nodelist.gbm <- function(input_object, treenum = NULL, ...) {
     )
 
     data.frame(
-      name           = real_ids,
-      is_leaf        = is_leaf,
-      split_var      = split_var,
-      split_var_name = split_var_name,
-      split_point    = ifelse(is_leaf, NA_real_, pt_real$SplitCodePred),
-      prediction     = pt_real$Prediction,
-      treenum        = tn,
-      label          = ifelse(is_leaf,
-                              as.character(round(pt_real$Prediction, 4)),
-                              internal_label),
+      name            = real_ids,
+      is_leaf         = is_leaf,
+      split_var       = split_var,
+      split_var_name  = split_var_name,
+      split_point     = ifelse(is_leaf, NA_real_, pt_real$SplitCodePred),
+      prediction      = pt_real$Prediction,
+      error_reduction = pt_real$ErrorReduction,
+      weight          = pt_real$Weight,
+      treenum         = tn,
+      label           = ifelse(is_leaf,
+                               as.character(round(pt_real$Prediction, 4)),
+                               internal_label),
       stringsAsFactors = FALSE
     )
   }
