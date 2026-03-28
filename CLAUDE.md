@@ -56,8 +56,8 @@ The package uses **S3 method dispatch** with four groups of functions:
 | `nodelist.list` | list | `name_root`, `max_depth` | name, depth, type, n_children, label | Complete |
 | `nodelist.data.frame` | data.frame | `id_col` | (reordered input, id_col first) | Complete |
 | `nodelist.randomForest` | randomForest | `treenum` | name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label | Complete |
-| `nodelist.tree` | tree | | name, var, n, dev, yval, is_leaf, label | Complete |
-| `nodelist.rpart` | rpart | | name, var, n, dev, yval, is_leaf, label | Complete |
+| `nodelist.tree` | tree | | name, var, n, dev, yval, is_leaf, depth, dev_improvement, [prob_\*], label | Complete |
+| `nodelist.rpart` | rpart | | name, var, n, dev, yval, is_leaf, depth, wt, complexity, ncompete, nsurrogate, dev_improvement, [n_\*], [prob_\*], [nodeprob], label | Complete |
 | `nodelist.xgb.Booster` | xgb.Booster | `treenum` | name, is_leaf, feature, split, quality, cover, treenum, label | Complete |
 | `nodelist.gbm` | gbm | `treenum` | name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label | Complete |
 
@@ -89,7 +89,7 @@ Node IDs in nodelist outputs match the from/to columns in the corresponding edge
 
 ### File organization
 
-Each S3 method lives in its own file: `R/edgelist.R` (generic), `R/edgelist.data.frame.R`, `R/edgelist.randomForest.R`, etc. Same pattern for `nodelist.*`. Graph conversion methods live in `R/as.igraph.R` (methods for `igraph::as.igraph`) and `R/as_tbl_graph.R` (methods for `tidygraph::as_tbl_graph`).
+Each S3 method lives in its own file: `R/edgelist.R` (generic), `R/edgelist.data.frame.R`, `R/edgelist.randomForest.R`, etc. Same pattern for `nodelist.*`. Graph conversion methods live in `R/as.igraph.R` (methods for `igraph::as.igraph`) and `R/as_tbl_graph.R` (methods for `tidygraph::as_tbl_graph`). Internal helpers shared across nodelist methods live in `R/utils-nodelist.R` (`.compute_depth()`, `.compute_dev_improvement()`).
 
 ### Key algorithms
 
