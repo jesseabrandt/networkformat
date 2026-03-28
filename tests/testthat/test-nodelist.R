@@ -914,9 +914,9 @@ test_that("nodelist.gbm returns expected columns", {
   nl <- nodelist(fit)
 
   expect_s3_class(nl, "data.frame")
-  expect_true(all(c("name", "is_leaf", "split_var", "split_var_name",
-                     "split_point", "prediction", "treenum",
-                     "label") %in% names(nl)))
+  expect_equal(names(nl), c("name", "is_leaf", "split_var", "split_var_name",
+                             "split_point", "prediction", "error_reduction",
+                             "weight", "treenum", "label"))
 })
 
 test_that("nodelist.gbm excludes missing-sentinel nodes", {
@@ -1052,6 +1052,39 @@ test_that("nodelist.gbm treenum NULL returns all trees", {
 
   expect_equal(nrow(nl_all), nrow(nl_1) + nrow(nl_2) + nrow(nl_3))
   expect_equal(sort(unique(nl_all$treenum)), c(1L, 2L, 3L))
+})
+
+test_that("nodelist.gbm has error_reduction and weight columns", {
+  skip_if_not_installed("gbm")
+
+  set.seed(1)
+  fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                   n.trees = 3, interaction.depth = 3, n.minobsinnode = 3)
+  nl <- nodelist(fit, treenum = 1L)
+
+  expect_true("error_reduction" %in% names(nl))
+  expect_true("weight" %in% names(nl))
+
+  # Error reduction is 0 for leaves, > 0 for internal splits
+  expect_true(all(nl$error_reduction[nl$is_leaf] == 0))
+  internal_er <- nl$error_reduction[!nl$is_leaf]
+  if (length(internal_er) > 0) {
+    expect_true(all(internal_er > 0))
+  }
+
+  # Weight should be positive for all nodes
+  expect_true(all(nl$weight > 0))
+})
+
+test_that("nodelist.gbm label is last column", {
+  skip_if_not_installed("gbm")
+
+  set.seed(1)
+  fit <- gbm::gbm(mpg ~ ., data = mtcars, distribution = "gaussian",
+                   n.trees = 3, interaction.depth = 3, n.minobsinnode = 3)
+  nl <- nodelist(fit, treenum = 1L)
+
+  expect_equal(names(nl)[ncol(nl)], "label")
 })
 
 # --- nodelist.list tests ---
