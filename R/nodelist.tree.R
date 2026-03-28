@@ -22,7 +22,8 @@
 #'     \item{dev_improvement}{Numeric deviance reduction from this node's split
 #'       (\code{NA} for leaves)}
 #'     \item{prob_*}{(Classification only) One column per class with the
-#'       class probability at that node, named \code{prob_<classname>}}
+#'       class probability at that node, named \code{prob_<classname>}.
+#'       Class names are sanitized via \code{make.names()} and lowercased.}
 #'     \item{label}{Display label: \code{"<var>\\nn=<n>"} for internal nodes,
 #'       \code{"<yval>\\nn=<n>"} for leaves}
 #'   }

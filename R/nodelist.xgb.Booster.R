@@ -74,7 +74,7 @@ nodelist.xgb.Booster <- function(input_object, treenum = NULL, ...) {
     split   = ifelse(is_leaf, NA_real_, dt$Split),
     quality = dt$Quality,
     cover   = dt$Cover,
-    missing = ifelse(is_leaf, NA_character_, dt$Missing),
+    missing = if (!is.null(dt$Missing)) ifelse(is_leaf, NA_character_, dt$Missing) else NA_character_,
     treenum = dt$Tree + 1L,
     label   = ifelse(is_leaf,
                      as.character(round(dt$Quality, 4)),

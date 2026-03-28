@@ -23,17 +23,8 @@
   # Build lookup: id -> deviance
   dev_lookup <- stats::setNames(devs, as.character(ids))
 
-  result <- rep(NA_real_, length(ids))
-  for (i in seq_along(ids)) {
-    if (!is_leaf[i]) {
-      left_id  <- as.character(2L * ids[i])
-      right_id <- as.character(2L * ids[i] + 1L)
-      left_dev  <- dev_lookup[left_id]
-      right_dev <- dev_lookup[right_id]
-      if (!is.na(left_dev) && !is.na(right_dev)) {
-        result[i] <- devs[i] - left_dev - right_dev
-      }
-    }
-  }
+  left_devs  <- unname(dev_lookup[as.character(2L * ids)])
+  right_devs <- unname(dev_lookup[as.character(2L * ids + 1L)])
+  result <- ifelse(is_leaf, NA_real_, devs - left_devs - right_devs)
   result
 }

@@ -26,9 +26,11 @@
 #'     \item{dev_improvement}{Numeric deviance reduction from this node's split
 #'       (\code{NA} for leaves)}
 #'     \item{n_*}{(Classification only) One column per class with the count of
-#'       observations of that class at the node, named \code{n_<classname>}}
+#'       observations of that class at the node, named \code{n_<classname>}.
+#'       Class names are sanitized via \code{make.names()} and lowercased.}
 #'     \item{prob_*}{(Classification only) One column per class with the
-#'       class probability at that node, named \code{prob_<classname>}}
+#'       class probability at that node, named \code{prob_<classname>}.
+#'       Class names are sanitized via \code{make.names()} and lowercased.}
 #'     \item{nodeprob}{(Classification only) Proportion of training data
 #'       reaching this node}
 #'     \item{label}{Display label: \code{"<var>\\nn=<n>"} for internal nodes,
@@ -84,18 +86,24 @@ nodelist.rpart <- function(input_object, ...) {
     class_names_clean <- tolower(make.names(ylevels))
 
     # yval2 layout: yval | counts (n_classes) | probs (n_classes) | nodeprob
-    # Column 1 is predicted class (already used above as yval)
-    count_cols <- seq(2, 1 + n_classes)
-    prob_cols  <- seq(2 + n_classes, 1 + 2 * n_classes)
-    nodeprob_col <- 2 + 2 * n_classes
+    expected_cols <- 1L + 2L * n_classes + 1L
+    if (ncol(yval2) != expected_cols) {
+      warning("Unexpected yval2 layout in rpart frame (", ncol(yval2),
+              " cols, expected ", expected_cols, "); skipping class probabilities.")
+    } else {
+      # Column 1 is predicted class (already used above as yval)
+      count_cols <- seq(2, 1 + n_classes)
+      prob_cols  <- seq(2 + n_classes, 1 + 2 * n_classes)
+      nodeprob_col <- 2 + 2 * n_classes
 
-    for (i in seq_len(n_classes)) {
-      result[[paste0("n_", class_names_clean[i])]] <- yval2[, count_cols[i]]
+      for (i in seq_len(n_classes)) {
+        result[[paste0("n_", class_names_clean[i])]] <- yval2[, count_cols[i]]
+      }
+      for (i in seq_len(n_classes)) {
+        result[[paste0("prob_", class_names_clean[i])]] <- yval2[, prob_cols[i]]
+      }
+      result$nodeprob <- yval2[, nodeprob_col]
     }
-    for (i in seq_len(n_classes)) {
-      result[[paste0("prob_", class_names_clean[i])]] <- yval2[, prob_cols[i]]
-    }
-    result$nodeprob <- yval2[, nodeprob_col]
   }
 
   # Label stays last

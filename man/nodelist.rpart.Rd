@@ -29,9 +29,11 @@ A data.frame with one row per node and the following columns:
     \item{dev_improvement}{Numeric deviance reduction from this node's split
       (\code{NA} for leaves)}
     \item{n_*}{(Classification only) One column per class with the count of
-      observations of that class at the node, named \code{n_<classname>}}
+      observations of that class at the node, named \code{n_<classname>}.
+      Class names are sanitized via \code{make.names()} and lowercased.}
     \item{prob_*}{(Classification only) One column per class with the
-      class probability at that node, named \code{prob_<classname>}}
+      class probability at that node, named \code{prob_<classname>}.
+      Class names are sanitized via \code{make.names()} and lowercased.}
     \item{nodeprob}{(Classification only) Proportion of training data
       reaching this node}
     \item{label}{Display label: \code{"<var>\\nn=<n>"} for internal nodes,

@@ -23,6 +23,10 @@ A data.frame with one row per real node and the following columns:
     \item{split_var_name}{Variable name (\code{NA} for leaves)}
     \item{split_point}{Split threshold (\code{NA} for leaves)}
     \item{prediction}{Prediction value at the node}
+    \item{error_reduction}{Impurity reduction from the split (0 for leaves);
+      per-node variable importance from \code{ErrorReduction}}
+    \item{weight}{Number of training observations reaching the node,
+      from \code{Weight}}
     \item{treenum}{1-based tree number}
     \item{label}{Display label: \code{"<var>\\n< <threshold>"} for
       splits, rounded prediction for leaves}
