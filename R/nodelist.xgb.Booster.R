@@ -19,6 +19,8 @@
 #'     \item{split}{Split threshold (\code{NA} for leaves)}
 #'     \item{quality}{Information gain for splits, leaf score for leaves}
 #'     \item{cover}{Cover (sum of second-order gradient)}
+#'     \item{missing}{Node ID (\code{"Tree-Node"} format) where observations
+#'       with missing values are routed; \code{NA} for leaves}
 #'     \item{treenum}{1-based tree number}
 #'     \item{label}{Display label: \code{"<feature>\\n< <threshold>"} for
 #'       splits, rounded leaf score for leaves}
@@ -72,6 +74,7 @@ nodelist.xgb.Booster <- function(input_object, treenum = NULL, ...) {
     split   = ifelse(is_leaf, NA_real_, dt$Split),
     quality = dt$Quality,
     cover   = dt$Cover,
+    missing = ifelse(is_leaf, NA_character_, dt$Missing),
     treenum = dt$Tree + 1L,
     label   = ifelse(is_leaf,
                      as.character(round(dt$Quality, 4)),

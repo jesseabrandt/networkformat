@@ -776,8 +776,8 @@ test_that("nodelist.xgb.Booster returns expected columns", {
   nl <- nodelist(bst)
 
   expect_s3_class(nl, "data.frame")
-  expect_true(all(c("name", "is_leaf", "feature", "split", "quality",
-                     "cover", "treenum", "label") %in% names(nl)))
+  expect_equal(names(nl), c("name", "is_leaf", "feature", "split",
+                             "quality", "cover", "missing", "treenum", "label"))
 })
 
 test_that("nodelist.xgb.Booster leaves have NA feature and split", {
@@ -899,6 +899,42 @@ test_that("nodelist.xgb.Booster treenum NULL returns all trees", {
 
   expect_equal(nrow(nl_all), nrow(nl_1) + nrow(nl_2) + nrow(nl_3))
   expect_equal(sort(unique(nl_all$treenum)), c(1L, 2L, 3L))
+})
+
+test_that("nodelist.xgb.Booster has missing column", {
+  skip_if_not_installed("xgboost")
+
+  data(agaricus.train, package = "xgboost")
+  bst <- xgboost::xgboost(
+    x = agaricus.train$data,
+    y = factor(agaricus.train$label),
+    max_depth = 2, nrounds = 2, nthreads = 1, verbosity = 0
+  )
+  nl <- nodelist(bst)
+
+  expect_true("missing" %in% names(nl))
+
+  # Leaves should have NA missing
+  expect_true(all(is.na(nl$missing[nl$is_leaf])))
+
+  # Internal nodes should have valid node ID strings (Tree-Node format)
+  internal_missing <- nl$missing[!nl$is_leaf]
+  expect_true(all(!is.na(internal_missing)))
+  expect_true(all(grepl("^\\d+-\\d+$", internal_missing)))
+})
+
+test_that("nodelist.xgb.Booster label is last column", {
+  skip_if_not_installed("xgboost")
+
+  data(agaricus.train, package = "xgboost")
+  bst <- xgboost::xgboost(
+    x = agaricus.train$data,
+    y = factor(agaricus.train$label),
+    max_depth = 2, nrounds = 2, nthreads = 1, verbosity = 0
+  )
+  nl <- nodelist(bst)
+
+  expect_equal(names(nl)[ncol(nl)], "label")
 })
 
 # --- nodelist.gbm tests ---
