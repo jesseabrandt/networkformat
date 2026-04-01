@@ -43,3 +43,12 @@ registered against the
 \pkg{tidygraph} via delayed S3 registration and are available
 whenever \pkg{tidygraph} is loaded.
 }
+\examples{
+if (requireNamespace("rpart", quietly = TRUE) &&
+    requireNamespace("tidygraph", quietly = TRUE) &&
+    requireNamespace("igraph", quietly = TRUE)) {
+  fit <- rpart::rpart(Sepal.Length ~ ., data = iris)
+  tg <- tidygraph::as_tbl_graph(fit)
+  tg
+}
+}

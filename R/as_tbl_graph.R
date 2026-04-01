@@ -14,6 +14,15 @@
 #' @param ... Additional arguments passed to \code{\link[igraph:as.igraph]{as.igraph}}.
 #'
 #' @returns A \code{\link[tidygraph]{tbl_graph}} object.
+#'
+#' @examples
+#' if (requireNamespace("rpart", quietly = TRUE) &&
+#'     requireNamespace("tidygraph", quietly = TRUE) &&
+#'     requireNamespace("igraph", quietly = TRUE)) {
+#'   fit <- rpart::rpart(Sepal.Length ~ ., data = iris)
+#'   tg <- tidygraph::as_tbl_graph(fit)
+#'   tg
+#' }
 #' @name as_tbl_graph
 NULL
 

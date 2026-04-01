@@ -1,7 +1,7 @@
 Package: networkformat
 Type: Package
 Title: Convert R Objects to Network Edgelists and Nodelists
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: person(
       "Jesse", "Brandt",
       email = "jesseabrandt@users.noreply.github.com",

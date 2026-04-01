@@ -46,3 +46,12 @@ These methods are registered against the
 \pkg{igraph} via delayed S3 registration and are available
 whenever \pkg{igraph} is loaded.
 }
+\examples{
+if (requireNamespace("rpart", quietly = TRUE) &&
+    requireNamespace("igraph", quietly = TRUE)) {
+  fit <- rpart::rpart(Sepal.Length ~ ., data = iris)
+  g <- igraph::as.igraph(fit)
+  igraph::vcount(g)
+  igraph::ecount(g)
+}
+}

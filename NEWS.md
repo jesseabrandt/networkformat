@@ -1,4 +1,4 @@
-# networkformat 0.0.0.9000 (Development version)
+# networkformat 0.1.0
 
 ## Features
 

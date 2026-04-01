@@ -17,6 +17,15 @@
 #'   \code{randomForest} with multiple trees, the graph contains
 #'   disconnected components (one per tree) and a \code{treenum}
 #'   vertex/edge attribute.
+#'
+#' @examples
+#' if (requireNamespace("rpart", quietly = TRUE) &&
+#'     requireNamespace("igraph", quietly = TRUE)) {
+#'   fit <- rpart::rpart(Sepal.Length ~ ., data = iris)
+#'   g <- igraph::as.igraph(fit)
+#'   igraph::vcount(g)
+#'   igraph::ecount(g)
+#' }
 #' @name as.igraph
 NULL
 
