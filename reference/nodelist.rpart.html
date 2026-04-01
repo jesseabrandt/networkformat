@@ -15,7 +15,7 @@ igraph::graph_from_data_frame()."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">networkformat</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -92,6 +92,39 @@ and match the <code>from</code>/<code>to</code> values produced by
 
     <dt>is_leaf</dt>
 <dd><p>Logical: <code>TRUE</code> for terminal nodes</p></dd>
+
+    <dt>depth</dt>
+<dd><p>Integer tree depth (root = 0)</p></dd>
+
+    <dt>wt</dt>
+<dd><p>Weighted observation count</p></dd>
+
+    <dt>complexity</dt>
+<dd><p>CP pruning parameter at this node</p></dd>
+
+    <dt>ncompete</dt>
+<dd><p>Number of competing splits considered</p></dd>
+
+    <dt>nsurrogate</dt>
+<dd><p>Number of surrogate splits used</p></dd>
+
+    <dt>dev_improvement</dt>
+<dd><p>Numeric deviance reduction from this node's split
+      (<code>NA</code> for leaves)</p></dd>
+
+    <dt>n_*</dt>
+<dd><p>(Classification only) One column per class with the count of
+      observations of that class at the node, named <code>n_&lt;classname&gt;</code>.
+      Class names are sanitized via <code><a href="https://rdrr.io/r/base/make.names.html" class="external-link">make.names()</a></code> and lowercased.</p></dd>
+
+    <dt>prob_*</dt>
+<dd><p>(Classification only) One column per class with the
+      class probability at that node, named <code>prob_&lt;classname&gt;</code>.
+      Class names are sanitized via <code><a href="https://rdrr.io/r/base/make.names.html" class="external-link">make.names()</a></code> and lowercased.</p></dd>
+
+    <dt>nodeprob</dt>
+<dd><p>(Classification only) Proportion of training data
+      reaching this node</p></dd>
 
     <dt>label</dt>
 <dd><p>Display label: <code>"&lt;var&gt;\nn=&lt;n&gt;"</code> for internal nodes,

@@ -52,6 +52,10 @@ A data.frame with the following columns:
 
   Prediction value at the child node
 
+- direction:
+
+  Branch direction: `"left"` or `"right"`
+
 - treenum:
 
   Tree number within the forest
@@ -64,6 +68,7 @@ A data.frame with the following columns:
 
 ``` r
 if (requireNamespace("randomForest", quietly = TRUE)) {
+  set.seed(12)
   rf_model <- randomForest::randomForest(
     Species ~ .,
     data = iris,

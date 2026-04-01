@@ -3,8 +3,9 @@
 This article demonstrates every
 [`edgelist()`](https://jesseabrandt.github.io/networkformat/reference/edgelist.md),
 [`nodelist()`](https://jesseabrandt.github.io/networkformat/reference/nodelist.md),
-[`as.igraph()`](https://r.igraph.org/reference/as.igraph.html), and
-[`as_tbl_graph()`](https://tidygraph.data-imaginist.com/reference/tbl_graph.html)
+[`as.igraph()`](https://jesseabrandt.github.io/networkformat/reference/as.igraph.md),
+and
+[`as_tbl_graph()`](https://jesseabrandt.github.io/networkformat/reference/as_tbl_graph.md)
 method in the package. For a gentler introduction, see
 [`vignette("networkformat")`](https://jesseabrandt.github.io/networkformat/articles/networkformat.md).
 
@@ -329,18 +330,30 @@ edgelist(tr)
 
 ``` r
 nodelist(tr)
-#>    name          var   n        dev       yval is_leaf               label
-#> 1     1 Petal.Length 150 329.583687     setosa   FALSE Petal.Length\nn=150
-#> 2     2       <leaf>  50   0.000000     setosa    TRUE        setosa\nn=50
-#> 3     3  Petal.Width 100 138.629436 versicolor   FALSE  Petal.Width\nn=100
-#> 4     6 Petal.Length  54  33.317509 versicolor   FALSE  Petal.Length\nn=54
-#> 5    12 Sepal.Length  48   9.721422 versicolor   FALSE  Sepal.Length\nn=48
-#> 6    24       <leaf>   5   5.004024 versicolor    TRUE     versicolor\nn=5
-#> 7    25       <leaf>  43   0.000000 versicolor    TRUE    versicolor\nn=43
-#> 8    13       <leaf>   6   7.638170  virginica    TRUE      virginica\nn=6
-#> 9     7 Petal.Length  46   9.635384  virginica   FALSE  Petal.Length\nn=46
-#> 10   14       <leaf>   6   5.406735  virginica    TRUE      virginica\nn=6
-#> 11   15       <leaf>  40   0.000000  virginica    TRUE     virginica\nn=40
+#>    name          var   n        dev       yval is_leaf depth dev_improvement
+#> 1     1 Petal.Length 150 329.583687     setosa   FALSE     0      190.954250
+#> 2     2       <leaf>  50   0.000000     setosa    TRUE     1              NA
+#> 3     3  Petal.Width 100 138.629436 versicolor   FALSE     1       95.676543
+#> 4     6 Petal.Length  54  33.317509 versicolor   FALSE     2       15.957916
+#> 5    12 Sepal.Length  48   9.721422 versicolor   FALSE     3        4.717398
+#> 6    24       <leaf>   5   5.004024 versicolor    TRUE     4              NA
+#> 7    25       <leaf>  43   0.000000 versicolor    TRUE     4              NA
+#> 8    13       <leaf>   6   7.638170  virginica    TRUE     3              NA
+#> 9     7 Petal.Length  46   9.635384  virginica   FALSE     2        4.228650
+#> 10   14       <leaf>   6   5.406735  virginica    TRUE     3              NA
+#> 11   15       <leaf>  40   0.000000  virginica    TRUE     3              NA
+#>    prob_setosa prob_versicolor prob_virginica               label
+#> 1    0.3333333      0.33333333     0.33333333 Petal.Length\nn=150
+#> 2    1.0000000      0.00000000     0.00000000        setosa\nn=50
+#> 3    0.0000000      0.50000000     0.50000000  Petal.Width\nn=100
+#> 4    0.0000000      0.90740741     0.09259259  Petal.Length\nn=54
+#> 5    0.0000000      0.97916667     0.02083333  Sepal.Length\nn=48
+#> 6    0.0000000      0.80000000     0.20000000     versicolor\nn=5
+#> 7    0.0000000      1.00000000     0.00000000    versicolor\nn=43
+#> 8    0.0000000      0.33333333     0.66666667      virginica\nn=6
+#> 9    0.0000000      0.02173913     0.97826087  Petal.Length\nn=46
+#> 10   0.0000000      0.16666667     0.83333333      virginica\nn=6
+#> 11   0.0000000      0.00000000     1.00000000     virginica\nn=40
 ```
 
 ### as.igraph
@@ -360,11 +373,12 @@ library(igraph)
 #>     union
 g <- as.igraph(tr)
 g
-#> IGRAPH 8412f69 DN-- 11 10 -- 
+#> IGRAPH 956051e DN-- 11 10 -- 
 #> + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf
-#> | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),
-#> | split_point (e/n)
-#> + edges from 8412f69 (vertex names):
+#> | (v/l), depth (v/n), dev_improvement (v/n), prob_setosa (v/n),
+#> | prob_versicolor (v/n), prob_virginica (v/n), label (v/c), label
+#> | (e/c), split_var (e/c), split_op (e/c), split_point (e/n)
+#> + edges from 956051e (vertex names):
 #>  [1] 1 ->2  1 ->3  3 ->6  6 ->12 12->24 12->25 6 ->13 3 ->7  7 ->14 7 ->15
 ```
 
@@ -392,20 +406,21 @@ as_tbl_graph(tr)
 #> #
 #> # A rooted tree
 #> #
-#> # Node Data: 11 × 7 (active)
-#>    name  var              n    dev yval       is_leaf label                
-#>    <chr> <chr>        <dbl>  <dbl> <chr>      <lgl>   <chr>                
-#>  1 1     Petal.Length   150 330.   setosa     FALSE   "Petal.Length\nn=150"
-#>  2 2     <leaf>          50   0    setosa     TRUE    "setosa\nn=50"       
-#>  3 3     Petal.Width    100 139.   versicolor FALSE   "Petal.Width\nn=100" 
-#>  4 6     Petal.Length    54  33.3  versicolor FALSE   "Petal.Length\nn=54" 
-#>  5 12    Sepal.Length    48   9.72 versicolor FALSE   "Sepal.Length\nn=48" 
-#>  6 24    <leaf>           5   5.00 versicolor TRUE    "versicolor\nn=5"    
-#>  7 25    <leaf>          43   0    versicolor TRUE    "versicolor\nn=43"   
-#>  8 13    <leaf>           6   7.64 virginica  TRUE    "virginica\nn=6"     
-#>  9 7     Petal.Length    46   9.64 virginica  FALSE   "Petal.Length\nn=46" 
-#> 10 14    <leaf>           6   5.41 virginica  TRUE    "virginica\nn=6"     
-#> 11 15    <leaf>          40   0    virginica  TRUE    "virginica\nn=40"    
+#> # Node Data: 11 × 12 (active)
+#>    name  var            n    dev yval  is_leaf depth dev_improvement prob_setosa
+#>    <chr> <chr>      <dbl>  <dbl> <chr> <lgl>   <int>           <dbl>       <dbl>
+#>  1 1     Petal.Len…   150 330.   seto… FALSE       0          191.         0.333
+#>  2 2     <leaf>        50   0    seto… TRUE        1           NA          1    
+#>  3 3     Petal.Wid…   100 139.   vers… FALSE       1           95.7        0    
+#>  4 6     Petal.Len…    54  33.3  vers… FALSE       2           16.0        0    
+#>  5 12    Sepal.Len…    48   9.72 vers… FALSE       3            4.72       0    
+#>  6 24    <leaf>         5   5.00 vers… TRUE        4           NA          0    
+#>  7 25    <leaf>        43   0    vers… TRUE        4           NA          0    
+#>  8 13    <leaf>         6   7.64 virg… TRUE        3           NA          0    
+#>  9 7     Petal.Len…    46   9.64 virg… FALSE       2            4.23       0    
+#> 10 14    <leaf>         6   5.41 virg… TRUE        3           NA          0    
+#> 11 15    <leaf>        40   0    virg… TRUE        3           NA          0    
+#> # ℹ 3 more variables: prob_versicolor <dbl>, prob_virginica <dbl>, label <chr>
 #> #
 #> # Edge Data: 10 × 6
 #>    from    to label              split_var    split_op split_point
@@ -624,12 +639,12 @@ Single tree:
 ``` r
 g <- as.igraph(rf, treenum = 1)
 g
-#> IGRAPH 364d9a0 DN-- 21 20 -- 
+#> IGRAPH 9811f36 DN-- 21 20 -- 
 #> + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name
 #> | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label
 #> | (v/c), split_var (e/n), split_point (e/n), prediction (e/n),
 #> | direction (e/c), treenum (e/n), split_var_name (e/c)
-#> + edges from 364d9a0 (vertex names):
+#> + edges from 9811f36 (vertex names):
 #>  [1] 1 ->2  2 ->4  3 ->6  5 ->8  6 ->10 7 ->12 9 ->14 12->16 16->18 18->20
 #> [11] 1 ->3  2 ->5  3 ->7  5 ->9  6 ->11 7 ->13 9 ->15 12->17 16->19 18->21
 ```
@@ -698,12 +713,24 @@ edgelist(rp)
 
 ``` r
 nodelist(rp)
-#>   name          var   n dev       yval is_leaf               label
-#> 1    1 Petal.Length 150 100     setosa   FALSE Petal.Length\nn=150
-#> 2    2       <leaf>  50   0     setosa    TRUE        setosa\nn=50
-#> 3    3  Petal.Width 100  50 versicolor   FALSE  Petal.Width\nn=100
-#> 4    6       <leaf>  54   5 versicolor    TRUE    versicolor\nn=54
-#> 5    7       <leaf>  46   1  virginica    TRUE     virginica\nn=46
+#>   name          var   n dev       yval is_leaf depth  wt complexity ncompete
+#> 1    1 Petal.Length 150 100     setosa   FALSE     0 150       0.50        3
+#> 2    2       <leaf>  50   0     setosa    TRUE     1  50       0.01        0
+#> 3    3  Petal.Width 100  50 versicolor   FALSE     1 100       0.44        3
+#> 4    6       <leaf>  54   5 versicolor    TRUE     2  54       0.00        0
+#> 5    7       <leaf>  46   1  virginica    TRUE     2  46       0.01        0
+#>   nsurrogate dev_improvement n_setosa n_versicolor n_virginica prob_setosa
+#> 1          3              50       50           50          50   0.3333333
+#> 2          0              NA       50            0           0   1.0000000
+#> 3          3              44        0           50          50   0.0000000
+#> 4          0              NA        0           49           5   0.0000000
+#> 5          0              NA        0            1          45   0.0000000
+#>   prob_versicolor prob_virginica  nodeprob               label
+#> 1      0.33333333     0.33333333 1.0000000 Petal.Length\nn=150
+#> 2      0.00000000     0.00000000 0.3333333        setosa\nn=50
+#> 3      0.50000000     0.50000000 0.6666667  Petal.Width\nn=100
+#> 4      0.90740741     0.09259259 0.3600000    versicolor\nn=54
+#> 5      0.02173913     0.97826087 0.3066667     virginica\nn=46
 ```
 
 ### as.igraph
@@ -711,11 +738,14 @@ nodelist(rp)
 ``` r
 g <- as.igraph(rp)
 g
-#> IGRAPH fcbdca1 DN-- 5 4 -- 
+#> IGRAPH e2c8ba4 DN-- 5 4 -- 
 #> + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf
-#> | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),
-#> | split_point (e/n)
-#> + edges from fcbdca1 (vertex names):
+#> | (v/l), depth (v/n), wt (v/n), complexity (v/n), ncompete (v/n),
+#> | nsurrogate (v/n), dev_improvement (v/n), n_setosa (v/n), n_versicolor
+#> | (v/n), n_virginica (v/n), prob_setosa (v/n), prob_versicolor (v/n),
+#> | prob_virginica (v/n), nodeprob (v/n), label (v/c), label (e/c),
+#> | split_var (e/c), split_op (e/c), split_point (e/n)
+#> + edges from e2c8ba4 (vertex names):
 #> [1] 1->2 1->3 3->6 3->7
 ```
 
@@ -727,14 +757,17 @@ as_tbl_graph(rp)
 #> #
 #> # A rooted tree
 #> #
-#> # Node Data: 5 × 7 (active)
-#>   name  var              n   dev yval       is_leaf label                
-#>   <chr> <chr>        <int> <dbl> <chr>      <lgl>   <chr>                
-#> 1 1     Petal.Length   150   100 setosa     FALSE   "Petal.Length\nn=150"
-#> 2 2     <leaf>          50     0 setosa     TRUE    "setosa\nn=50"       
-#> 3 3     Petal.Width    100    50 versicolor FALSE   "Petal.Width\nn=100" 
-#> 4 6     <leaf>          54     5 versicolor TRUE    "versicolor\nn=54"   
-#> 5 7     <leaf>          46     1 virginica  TRUE    "virginica\nn=46"    
+#> # Node Data: 5 × 20 (active)
+#>   name  var              n   dev yval    is_leaf depth    wt complexity ncompete
+#>   <chr> <chr>        <int> <dbl> <chr>   <lgl>   <int> <dbl>      <dbl>    <int>
+#> 1 1     Petal.Length   150   100 setosa  FALSE       0   150       0.5         3
+#> 2 2     <leaf>          50     0 setosa  TRUE        1    50       0.01        0
+#> 3 3     Petal.Width    100    50 versic… FALSE       1   100       0.44        3
+#> 4 6     <leaf>          54     5 versic… TRUE        2    54       0           0
+#> 5 7     <leaf>          46     1 virgin… TRUE        2    46       0.01        0
+#> # ℹ 10 more variables: nsurrogate <int>, dev_improvement <dbl>, n_setosa <dbl>,
+#> #   n_versicolor <dbl>, n_virginica <dbl>, prob_setosa <dbl>,
+#> #   prob_versicolor <dbl>, prob_virginica <dbl>, nodeprob <dbl>, label <chr>
 #> #
 #> # Edge Data: 4 × 6
 #>    from    to label              split_var    split_op split_point
@@ -802,22 +835,22 @@ edgelist(gb, treenum = 1)
 
 ``` r
 nodelist(gb, treenum = 1)
-#>   name is_leaf split_var split_var_name split_point prediction treenum
-#> 1    0   FALSE         2   Petal.Length        2.45      0.018       1
-#> 2    1   FALSE         1    Sepal.Width        3.30      0.300       1
-#> 3    2    TRUE        NA           <NA>          NA      0.300       1
-#> 4    3    TRUE        NA           <NA>          NA      0.300       1
-#> 5    5   FALSE         3    Petal.Width        1.95     -0.150       1
-#> 6    6    TRUE        NA           <NA>          NA     -0.150       1
-#> 7    7    TRUE        NA           <NA>          NA     -0.150       1
-#>                  label
-#> 1 Petal.Length\n< 2.45
-#> 2   Sepal.Width\n< 3.3
-#> 3                  0.3
-#> 4                  0.3
-#> 5  Petal.Width\n< 1.95
-#> 6                -0.15
-#> 7                -0.15
+#>   name is_leaf split_var split_var_name split_point prediction error_reduction
+#> 1    0   FALSE         2   Petal.Length        2.45      0.018    1.754667e+01
+#> 2    1   FALSE         1    Sepal.Width        3.30      0.300    7.131443e-31
+#> 3    2    TRUE        NA           <NA>          NA      0.300    0.000000e+00
+#> 4    3    TRUE        NA           <NA>          NA      0.300    0.000000e+00
+#> 5    5   FALSE         3    Petal.Width        1.95     -0.150    1.069801e-29
+#> 6    6    TRUE        NA           <NA>          NA     -0.150    0.000000e+00
+#> 7    7    TRUE        NA           <NA>          NA     -0.150    0.000000e+00
+#>   weight treenum                label
+#> 1     75       1 Petal.Length\n< 2.45
+#> 2     28       1   Sepal.Width\n< 3.3
+#> 3     10       1                  0.3
+#> 4     18       1                  0.3
+#> 5     47       1  Petal.Width\n< 1.95
+#> 6     37       1                -0.15
+#> 7     10       1                -0.15
 ```
 
 ### as.igraph
@@ -825,12 +858,13 @@ nodelist(gb, treenum = 1)
 ``` r
 g <- as.igraph(gb, treenum = 1)
 g
-#> IGRAPH ef0c2be DN-- 7 6 -- 
+#> IGRAPH 54d1a53 DN-- 7 6 -- 
 #> + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name
-#> | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label
-#> | (v/c), split_var (e/n), split_point (e/n), prediction (e/n), treenum
-#> | (e/n), split_var_name (e/c)
-#> + edges from ef0c2be (vertex names):
+#> | (v/c), split_point (v/n), prediction (v/n), error_reduction (v/n),
+#> | weight (v/n), treenum (v/n), label (v/c), split_var (e/n),
+#> | split_point (e/n), prediction (e/n), treenum (e/n), split_var_name
+#> | (e/c)
+#> + edges from 54d1a53 (vertex names):
 #> [1] 0->1 1->2 5->6 0->5 1->3 5->7
 ```
 
@@ -842,16 +876,17 @@ as_tbl_graph(gb, treenum = 1)
 #> #
 #> # A rooted tree
 #> #
-#> # Node Data: 7 × 8 (active)
-#>   name  is_leaf split_var split_var_name split_point prediction treenum label   
-#>   <chr> <lgl>       <int> <chr>                <dbl>      <dbl>   <int> <chr>   
-#> 1 0     FALSE           2 Petal.Length          2.45     0.0180       1 "Petal.…
-#> 2 1     FALSE           1 Sepal.Width           3.3      0.3          1 "Sepal.…
-#> 3 2     TRUE           NA NA                   NA        0.3          1 "0.3"   
-#> 4 3     TRUE           NA NA                   NA        0.3          1 "0.3"   
-#> 5 5     FALSE           3 Petal.Width           1.95    -0.15         1 "Petal.…
-#> 6 6     TRUE           NA NA                   NA       -0.15         1 "-0.15" 
-#> 7 7     TRUE           NA NA                   NA       -0.15         1 "-0.15" 
+#> # Node Data: 7 × 10 (active)
+#>   name  is_leaf split_var split_var_name split_point prediction error_reduction
+#>   <chr> <lgl>       <int> <chr>                <dbl>      <dbl>           <dbl>
+#> 1 0     FALSE           2 Petal.Length          2.45     0.0180        1.75e+ 1
+#> 2 1     FALSE           1 Sepal.Width           3.3      0.3           7.13e-31
+#> 3 2     TRUE           NA NA                   NA        0.3           0       
+#> 4 3     TRUE           NA NA                   NA        0.3           0       
+#> 5 5     FALSE           3 Petal.Width           1.95    -0.15          1.07e-29
+#> 6 6     TRUE           NA NA                   NA       -0.15          0       
+#> 7 7     TRUE           NA NA                   NA       -0.15          0       
+#> # ℹ 3 more variables: weight <dbl>, treenum <int>, label <chr>
 #> #
 #> # Edge Data: 6 × 7
 #>    from    to split_var split_point prediction treenum split_var_name
@@ -952,10 +987,14 @@ edgelist(xg, treenum = 1)
 
 ``` r
 nodelist(xg, treenum = 1)
-#>   name is_leaf      feature split    quality    cover treenum             label
-#> 1  0-0   FALSE Petal.Length     3 72.2967682 66.66666       1 Petal.Length\n< 3
-#> 2  0-1    TRUE         <NA>    NA  0.4306220 22.22222       1            0.4306
-#> 3  0-2    TRUE         <NA>    NA -0.2200489 44.44444       1             -0.22
+#>   name is_leaf      feature split    quality    cover missing treenum
+#> 1  0-0   FALSE Petal.Length     3 72.2967682 66.66666     0-2       1
+#> 2  0-1    TRUE         <NA>    NA  0.4306220 22.22222    <NA>       1
+#> 3  0-2    TRUE         <NA>    NA -0.2200489 44.44444    <NA>       1
+#>               label
+#> 1 Petal.Length\n< 3
+#> 2            0.4306
+#> 3             -0.22
 ```
 
 ### as.igraph
@@ -963,11 +1002,11 @@ nodelist(xg, treenum = 1)
 ``` r
 g <- as.igraph(xg, treenum = 1)
 g
-#> IGRAPH 799c631 DN-- 3 2 -- 
+#> IGRAPH 22be017 DN-- 3 2 -- 
 #> + attr: name (v/c), is_leaf (v/l), feature (v/c), split (v/n), quality
-#> | (v/n), cover (v/n), treenum (v/n), label (v/c), feature (e/c), split
-#> | (e/n), quality (e/n), cover (e/n), treenum (e/n)
-#> + edges from 799c631 (vertex names):
+#> | (v/n), cover (v/n), missing (v/c), treenum (v/n), label (v/c),
+#> | feature (e/c), split (e/n), quality (e/n), cover (e/n), treenum (e/n)
+#> + edges from 22be017 (vertex names):
 #> [1] 0-0->0-1 0-0->0-2
 ```
 
@@ -979,12 +1018,12 @@ as_tbl_graph(xg, treenum = 1)
 #> #
 #> # A rooted tree
 #> #
-#> # Node Data: 3 × 8 (active)
-#>   name  is_leaf feature      split quality cover treenum label              
-#>   <chr> <lgl>   <chr>        <dbl>   <dbl> <dbl>   <int> <chr>              
-#> 1 0-0   FALSE   Petal.Length     3  72.3    66.7       1 "Petal.Length\n< 3"
-#> 2 0-1   TRUE    NA              NA   0.431  22.2       1 "0.4306"           
-#> 3 0-2   TRUE    NA              NA  -0.220  44.4       1 "-0.22"            
+#> # Node Data: 3 × 9 (active)
+#>   name  is_leaf feature      split quality cover missing treenum label          
+#>   <chr> <lgl>   <chr>        <dbl>   <dbl> <dbl> <chr>     <int> <chr>          
+#> 1 0-0   FALSE   Petal.Length     3  72.3    66.7 0-2           1 "Petal.Length\…
+#> 2 0-1   TRUE    NA              NA   0.431  22.2 NA            1 "0.4306"       
+#> 3 0-2   TRUE    NA              NA  -0.220  44.4 NA            1 "-0.22"        
 #> #
 #> # Edge Data: 2 × 7
 #>    from    to feature      split quality cover treenum

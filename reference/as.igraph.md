@@ -54,3 +54,16 @@ An [`igraph`](https://r.igraph.org/reference/aaa-igraph-package.html)
 object. For `randomForest` with multiple trees, the graph contains
 disconnected components (one per tree) and a `treenum` vertex/edge
 attribute.
+
+## Examples
+
+``` r
+if (requireNamespace("rpart", quietly = TRUE) &&
+    requireNamespace("igraph", quietly = TRUE)) {
+  fit <- rpart::rpart(Sepal.Length ~ ., data = iris)
+  g <- igraph::as.igraph(fit)
+  igraph::vcount(g)
+  igraph::ecount(g)
+}
+#> [1] 12
+```

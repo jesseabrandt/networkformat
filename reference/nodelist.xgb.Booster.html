@@ -13,7 +13,7 @@ columns produced by edgelist.xgb.Booster.'></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">networkformat</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -95,6 +95,10 @@ columns produced by <code><a href="edgelist.xgb.Booster.html">edgelist.xgb.Boost
     <dt>cover</dt>
 <dd><p>Cover (sum of second-order gradient)</p></dd>
 
+    <dt>missing</dt>
+<dd><p>Node ID (<code>"Tree-Node"</code> format) where observations
+      with missing values are routed; <code>NA</code> for leaves</p></dd>
+
     <dt>treenum</dt>
 <dd><p>1-based tree number</p></dd>
 
@@ -117,20 +121,20 @@ columns produced by <code><a href="edgelist.xgb.Booster.html">edgelist.xgb.Boost
 <span class="r-in"><span>  <span class="va">nl</span> <span class="op">&lt;-</span> <span class="fu"><a href="nodelist.html">nodelist</a></span><span class="op">(</span><span class="va">bst</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">nl</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   name is_leaf                 feature   split      quality      cover treenum</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  0-0   FALSE               odor=none 2.00001 4005.7177700 1626.16614       1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0-1   FALSE spore-print-color=green 2.00001  198.1621090  702.84930       1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0-2   FALSE         stalk-root=club 2.00001 1159.8702400  923.31677       1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0-3    TRUE                    &lt;NA&gt;      NA    0.5785417   13.23304       1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  0-4    TRUE                    &lt;NA&gt;      NA   -0.5614965  689.61627       1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  0-5    TRUE                    &lt;NA&gt;      NA   -0.4894775  112.35602       1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                          label</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1               odor=none\n&lt; 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 spore-print-color=green\n&lt; 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3         stalk-root=club\n&lt; 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4                       0.5785</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5                      -0.5615</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6                      -0.4895</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   name is_leaf                 feature   split      quality      cover missing</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  0-0   FALSE               odor=none 2.00001 4005.7177700 1626.16614     0-2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0-1   FALSE spore-print-color=green 2.00001  198.1621090  702.84930     0-4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0-2   FALSE         stalk-root=club 2.00001 1159.8702400  923.31677     0-6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0-3    TRUE                    &lt;NA&gt;      NA    0.5785417   13.23304    &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  0-4    TRUE                    &lt;NA&gt;      NA   -0.5614965  689.61627    &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  0-5    TRUE                    &lt;NA&gt;      NA   -0.4894775  112.35602    &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   treenum                        label</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       1               odor=none\n&lt; 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       1 spore-print-color=green\n&lt; 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       1         stalk-root=club\n&lt; 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       1                       0.5785</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5       1                      -0.5615</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6       1                      -0.4895</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

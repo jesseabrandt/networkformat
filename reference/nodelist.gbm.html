@@ -13,7 +13,7 @@ edges from the root."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">networkformat</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -94,6 +94,14 @@ edges from the root.</p>
     <dt>prediction</dt>
 <dd><p>Prediction value at the node</p></dd>
 
+    <dt>error_reduction</dt>
+<dd><p>Impurity reduction from the split (0 for leaves);
+      per-node variable importance from <code>ErrorReduction</code></p></dd>
+
+    <dt>weight</dt>
+<dd><p>Number of training observations reaching the node,
+      from <code>Weight</code></p></dd>
+
     <dt>treenum</dt>
 <dd><p>1-based tree number</p></dd>
 
@@ -114,20 +122,20 @@ edges from the root.</p>
 <span class="r-in"><span>  <span class="va">nl</span> <span class="op">&lt;-</span> <span class="fu"><a href="nodelist.html">nodelist</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">nl</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   name is_leaf split_var split_var_name split_point prediction treenum</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1    0   FALSE         0            cyl         5.0 -0.0290625       1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2    1    TRUE        NA           &lt;NA&gt;          NA  0.8434375       1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3    2   FALSE         2             hp       177.5 -0.3198958       1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4    3   FALSE         0            cyl         7.0 -0.1176339       1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5    4    TRUE        NA           &lt;NA&gt;          NA -0.0340625       1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6    5    TRUE        NA           &lt;NA&gt;          NA -0.2290625       1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         label</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1    cyl\n&lt; 5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      0.8434</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 hp\n&lt; 177.5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4    cyl\n&lt; 7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5     -0.0341</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6     -0.2291</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   name is_leaf split_var split_var_name split_point prediction error_reduction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    0   FALSE         0            cyl         5.0 -0.0290625      406.003333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2    1    TRUE        NA           &lt;NA&gt;          NA  0.8434375        0.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    2   FALSE         2             hp       177.5 -0.3198958       68.728595</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4    3   FALSE         0            cyl         7.0 -0.1176339        6.518571</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5    4    TRUE        NA           &lt;NA&gt;          NA -0.0340625        0.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6    5    TRUE        NA           &lt;NA&gt;          NA -0.2290625        0.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   weight treenum       label</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     16       1    cyl\n&lt; 5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      4       1      0.8434</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3     12       1 hp\n&lt; 177.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      7       1    cyl\n&lt; 7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      4       1     -0.0341</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      3       1     -0.2291</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

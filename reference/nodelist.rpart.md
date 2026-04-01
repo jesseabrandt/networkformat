@@ -53,6 +53,49 @@ A data.frame with one row per node and the following columns:
 
   Logical: `TRUE` for terminal nodes
 
+- depth:
+
+  Integer tree depth (root = 0)
+
+- wt:
+
+  Weighted observation count
+
+- complexity:
+
+  CP pruning parameter at this node
+
+- ncompete:
+
+  Number of competing splits considered
+
+- nsurrogate:
+
+  Number of surrogate splits used
+
+- dev_improvement:
+
+  Numeric deviance reduction from this node's split (`NA` for leaves)
+
+- n\_\*:
+
+  (Classification only) One column per class with the count of
+  observations of that class at the node, named `n_<classname>`. Class
+  names are sanitized via
+  [`make.names()`](https://rdrr.io/r/base/make.names.html) and
+  lowercased.
+
+- prob\_\*:
+
+  (Classification only) One column per class with the class probability
+  at that node, named `prob_<classname>`. Class names are sanitized via
+  [`make.names()`](https://rdrr.io/r/base/make.names.html) and
+  lowercased.
+
+- nodeprob:
+
+  (Classification only) Proportion of training data reaching this node
+
 - label:
 
   Display label: `"<var>\nn=<n>"` for internal nodes, `"<yval>\nn=<n>"`

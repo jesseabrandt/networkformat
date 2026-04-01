@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">networkformat</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,8 +67,8 @@
     
     
 <p>This article demonstrates every <code><a href="../reference/edgelist.html">edgelist()</a></code>,
-<code><a href="../reference/nodelist.html">nodelist()</a></code>, <code><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph()</a></code>, and
-<code><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph()</a></code> method in the package. For a gentler
+<code><a href="../reference/nodelist.html">nodelist()</a></code>, <code><a href="../reference/as.igraph.html">as.igraph()</a></code>, and
+<code><a href="../reference/as_tbl_graph.html">as_tbl_graph()</a></code> method in the package. For a gentler
 introduction, see <code><a href="../articles/networkformat.html">vignette("networkformat")</a></code>.</p>
 <div class="section level2">
 <h2 id="atomic-vectors">Atomic vectors<a class="anchor" aria-label="anchor" href="#atomic-vectors"></a>
@@ -362,18 +362,30 @@ count:</p>
 </h3>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/nodelist.html">nodelist</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    name          var   n        dev       yval is_leaf               label</span></span>
-<span><span class="co">#&gt; 1     1 Petal.Length 150 329.583687     setosa   FALSE Petal.Length\nn=150</span></span>
-<span><span class="co">#&gt; 2     2       &lt;leaf&gt;  50   0.000000     setosa    TRUE        setosa\nn=50</span></span>
-<span><span class="co">#&gt; 3     3  Petal.Width 100 138.629436 versicolor   FALSE  Petal.Width\nn=100</span></span>
-<span><span class="co">#&gt; 4     6 Petal.Length  54  33.317509 versicolor   FALSE  Petal.Length\nn=54</span></span>
-<span><span class="co">#&gt; 5    12 Sepal.Length  48   9.721422 versicolor   FALSE  Sepal.Length\nn=48</span></span>
-<span><span class="co">#&gt; 6    24       &lt;leaf&gt;   5   5.004024 versicolor    TRUE     versicolor\nn=5</span></span>
-<span><span class="co">#&gt; 7    25       &lt;leaf&gt;  43   0.000000 versicolor    TRUE    versicolor\nn=43</span></span>
-<span><span class="co">#&gt; 8    13       &lt;leaf&gt;   6   7.638170  virginica    TRUE      virginica\nn=6</span></span>
-<span><span class="co">#&gt; 9     7 Petal.Length  46   9.635384  virginica   FALSE  Petal.Length\nn=46</span></span>
-<span><span class="co">#&gt; 10   14       &lt;leaf&gt;   6   5.406735  virginica    TRUE      virginica\nn=6</span></span>
-<span><span class="co">#&gt; 11   15       &lt;leaf&gt;  40   0.000000  virginica    TRUE     virginica\nn=40</span></span></code></pre></div>
+<span><span class="co">#&gt;    name          var   n        dev       yval is_leaf depth dev_improvement</span></span>
+<span><span class="co">#&gt; 1     1 Petal.Length 150 329.583687     setosa   FALSE     0      190.954250</span></span>
+<span><span class="co">#&gt; 2     2       &lt;leaf&gt;  50   0.000000     setosa    TRUE     1              NA</span></span>
+<span><span class="co">#&gt; 3     3  Petal.Width 100 138.629436 versicolor   FALSE     1       95.676543</span></span>
+<span><span class="co">#&gt; 4     6 Petal.Length  54  33.317509 versicolor   FALSE     2       15.957916</span></span>
+<span><span class="co">#&gt; 5    12 Sepal.Length  48   9.721422 versicolor   FALSE     3        4.717398</span></span>
+<span><span class="co">#&gt; 6    24       &lt;leaf&gt;   5   5.004024 versicolor    TRUE     4              NA</span></span>
+<span><span class="co">#&gt; 7    25       &lt;leaf&gt;  43   0.000000 versicolor    TRUE     4              NA</span></span>
+<span><span class="co">#&gt; 8    13       &lt;leaf&gt;   6   7.638170  virginica    TRUE     3              NA</span></span>
+<span><span class="co">#&gt; 9     7 Petal.Length  46   9.635384  virginica   FALSE     2        4.228650</span></span>
+<span><span class="co">#&gt; 10   14       &lt;leaf&gt;   6   5.406735  virginica    TRUE     3              NA</span></span>
+<span><span class="co">#&gt; 11   15       &lt;leaf&gt;  40   0.000000  virginica    TRUE     3              NA</span></span>
+<span><span class="co">#&gt;    prob_setosa prob_versicolor prob_virginica               label</span></span>
+<span><span class="co">#&gt; 1    0.3333333      0.33333333     0.33333333 Petal.Length\nn=150</span></span>
+<span><span class="co">#&gt; 2    1.0000000      0.00000000     0.00000000        setosa\nn=50</span></span>
+<span><span class="co">#&gt; 3    0.0000000      0.50000000     0.50000000  Petal.Width\nn=100</span></span>
+<span><span class="co">#&gt; 4    0.0000000      0.90740741     0.09259259  Petal.Length\nn=54</span></span>
+<span><span class="co">#&gt; 5    0.0000000      0.97916667     0.02083333  Sepal.Length\nn=48</span></span>
+<span><span class="co">#&gt; 6    0.0000000      0.80000000     0.20000000     versicolor\nn=5</span></span>
+<span><span class="co">#&gt; 7    0.0000000      1.00000000     0.00000000    versicolor\nn=43</span></span>
+<span><span class="co">#&gt; 8    0.0000000      0.33333333     0.66666667      virginica\nn=6</span></span>
+<span><span class="co">#&gt; 9    0.0000000      0.02173913     0.97826087  Petal.Length\nn=46</span></span>
+<span><span class="co">#&gt; 10   0.0000000      0.16666667     0.83333333      virginica\nn=6</span></span>
+<span><span class="co">#&gt; 11   0.0000000      0.00000000     1.00000000     virginica\nn=40</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="as-igraph">as.igraph<a class="anchor" aria-label="anchor" href="#as-igraph"></a>
@@ -391,13 +403,14 @@ count:</p>
 <span><span class="co">#&gt; The following object is masked from 'package:base':</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     union</span></span>
-<span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span>
+<span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as.igraph.html">as.igraph</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH 8412f69 DN-- 11 10 -- </span></span>
+<span><span class="co">#&gt; IGRAPH 956051e DN-- 11 10 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf</span></span>
-<span><span class="co">#&gt; | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),</span></span>
-<span><span class="co">#&gt; | split_point (e/n)</span></span>
-<span><span class="co">#&gt; + edges from 8412f69 (vertex names):</span></span>
+<span><span class="co">#&gt; | (v/l), depth (v/n), dev_improvement (v/n), prob_setosa (v/n),</span></span>
+<span><span class="co">#&gt; | prob_versicolor (v/n), prob_virginica (v/n), label (v/c), label</span></span>
+<span><span class="co">#&gt; | (e/c), split_var (e/c), split_op (e/c), split_point (e/n)</span></span>
+<span><span class="co">#&gt; + edges from 956051e (vertex names):</span></span>
 <span><span class="co">#&gt;  [1] 1 -&gt;2  1 -&gt;3  3 -&gt;6  6 -&gt;12 12-&gt;24 12-&gt;25 6 -&gt;13 3 -&gt;7  7 -&gt;14 7 -&gt;15</span></span></code></pre></div>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://r.igraph.org/reference/gorder.html" class="external-link">vcount</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span></span>
@@ -418,25 +431,26 @@ count:</p>
 <span><span class="co">#&gt; The following object is masked from 'package:stats':</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     filter</span></span>
-<span><span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/as_tbl_graph.html">as_tbl_graph</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tbl_graph: 11 nodes and 10 edges</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # A rooted tree</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
-<span><span class="co"><span style="color: #949494;">#&gt; # Node Data: 11 × 7 (active)</span></span></span>
-<span><span class="co">#&gt;    name  var              n    dev yval       is_leaf label                </span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 1     Petal.Length   150 330.   setosa     FALSE   <span style="color: #949494;">"</span>Petal.Length\nn=150<span style="color: #949494;">"</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 2     &lt;leaf&gt;          50   0    setosa     TRUE    <span style="color: #949494;">"</span>setosa\nn=50<span style="color: #949494;">"</span>       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 3     Petal.Width    100 139.   versicolor FALSE   <span style="color: #949494;">"</span>Petal.Width\nn=100<span style="color: #949494;">"</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 6     Petal.Length    54  33.3  versicolor FALSE   <span style="color: #949494;">"</span>Petal.Length\nn=54<span style="color: #949494;">"</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 12    Sepal.Length    48   9.72 versicolor FALSE   <span style="color: #949494;">"</span>Sepal.Length\nn=48<span style="color: #949494;">"</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 24    &lt;leaf&gt;           5   5.00 versicolor TRUE    <span style="color: #949494;">"</span>versicolor\nn=5<span style="color: #949494;">"</span>    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 25    &lt;leaf&gt;          43   0    versicolor TRUE    <span style="color: #949494;">"</span>versicolor\nn=43<span style="color: #949494;">"</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 13    &lt;leaf&gt;           6   7.64 virginica  TRUE    <span style="color: #949494;">"</span>virginica\nn=6<span style="color: #949494;">"</span>     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 7     Petal.Length    46   9.64 virginica  FALSE   <span style="color: #949494;">"</span>Petal.Length\nn=46<span style="color: #949494;">"</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 14    &lt;leaf&gt;           6   5.41 virginica  TRUE    <span style="color: #949494;">"</span>virginica\nn=6<span style="color: #949494;">"</span>     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> 15    &lt;leaf&gt;          40   0    virginica  TRUE    <span style="color: #949494;">"</span>virginica\nn=40<span style="color: #949494;">"</span>    </span></span>
+<span><span class="co"><span style="color: #949494;">#&gt; # Node Data: 11 × 12 (active)</span></span></span>
+<span><span class="co">#&gt;    name  var            n    dev yval  is_leaf depth dev_improvement prob_setosa</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 1     Petal.Len…   150 330.   seto… FALSE       0          191.         0.333</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 2     &lt;leaf&gt;        50   0    seto… TRUE        1           <span style="color: #BB0000;">NA</span>          1    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 3     Petal.Wid…   100 139.   vers… FALSE       1           95.7        0    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 6     Petal.Len…    54  33.3  vers… FALSE       2           16.0        0    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 12    Sepal.Len…    48   9.72 vers… FALSE       3            4.72       0    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 24    &lt;leaf&gt;         5   5.00 vers… TRUE        4           <span style="color: #BB0000;">NA</span>          0    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 25    &lt;leaf&gt;        43   0    vers… TRUE        4           <span style="color: #BB0000;">NA</span>          0    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 13    &lt;leaf&gt;         6   7.64 virg… TRUE        3           <span style="color: #BB0000;">NA</span>          0    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 7     Petal.Len…    46   9.64 virg… FALSE       2            4.23       0    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 14    &lt;leaf&gt;         6   5.41 virg… TRUE        3           <span style="color: #BB0000;">NA</span>          0    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> 15    &lt;leaf&gt;        40   0    virg… TRUE        3           <span style="color: #BB0000;">NA</span>          0    </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 more variables: prob_versicolor &lt;dbl&gt;, prob_virginica &lt;dbl&gt;, label &lt;chr&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # Edge Data: 10 × 6</span></span></span>
 <span><span class="co">#&gt;    from    to label              split_var    split_op split_point</span></span>
@@ -644,19 +658,19 @@ count:</p>
 </h3>
 <p>Single tree:</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">rf</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as.igraph.html">as.igraph</a></span><span class="op">(</span><span class="va">rf</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH 364d9a0 DN-- 21 20 -- </span></span>
+<span><span class="co">#&gt; IGRAPH 9811f36 DN-- 21 20 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name</span></span>
 <span><span class="co">#&gt; | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label</span></span>
 <span><span class="co">#&gt; | (v/c), split_var (e/n), split_point (e/n), prediction (e/n),</span></span>
 <span><span class="co">#&gt; | direction (e/c), treenum (e/n), split_var_name (e/c)</span></span>
-<span><span class="co">#&gt; + edges from 364d9a0 (vertex names):</span></span>
+<span><span class="co">#&gt; + edges from 9811f36 (vertex names):</span></span>
 <span><span class="co">#&gt;  [1] 1 -&gt;2  2 -&gt;4  3 -&gt;6  5 -&gt;8  6 -&gt;10 7 -&gt;12 9 -&gt;14 12-&gt;16 16-&gt;18 18-&gt;20</span></span>
 <span><span class="co">#&gt; [11] 1 -&gt;3  2 -&gt;5  3 -&gt;7  5 -&gt;9  6 -&gt;11 7 -&gt;13 9 -&gt;15 12-&gt;17 16-&gt;19 18-&gt;21</span></span></code></pre></div>
 <p>Multiple trees produce disconnected components:</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">g_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">rf</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">g_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as.igraph.html">as.igraph</a></span><span class="op">(</span><span class="va">rf</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://r.igraph.org/reference/components.html" class="external-link">components</a></span><span class="op">(</span><span class="va">g_all</span><span class="op">)</span><span class="op">$</span><span class="va">no</span></span>
 <span><span class="co">#&gt; [1] 3</span></span></code></pre></div>
 </div>
@@ -664,7 +678,7 @@ count:</p>
 <h3 id="as_tbl_graph-1">as_tbl_graph<a class="anchor" aria-label="anchor" href="#as_tbl_graph-1"></a>
 </h3>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph</a></span><span class="op">(</span><span class="va">rf</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/as_tbl_graph.html">as_tbl_graph</a></span><span class="op">(</span><span class="va">rf</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tbl_graph: 21 nodes and 20 edges</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # A rooted tree</span></span></span>
@@ -716,43 +730,61 @@ count:</p>
 </h3>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/nodelist.html">nodelist</a></span><span class="op">(</span><span class="va">rp</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   name          var   n dev       yval is_leaf               label</span></span>
-<span><span class="co">#&gt; 1    1 Petal.Length 150 100     setosa   FALSE Petal.Length\nn=150</span></span>
-<span><span class="co">#&gt; 2    2       &lt;leaf&gt;  50   0     setosa    TRUE        setosa\nn=50</span></span>
-<span><span class="co">#&gt; 3    3  Petal.Width 100  50 versicolor   FALSE  Petal.Width\nn=100</span></span>
-<span><span class="co">#&gt; 4    6       &lt;leaf&gt;  54   5 versicolor    TRUE    versicolor\nn=54</span></span>
-<span><span class="co">#&gt; 5    7       &lt;leaf&gt;  46   1  virginica    TRUE     virginica\nn=46</span></span></code></pre></div>
+<span><span class="co">#&gt;   name          var   n dev       yval is_leaf depth  wt complexity ncompete</span></span>
+<span><span class="co">#&gt; 1    1 Petal.Length 150 100     setosa   FALSE     0 150       0.50        3</span></span>
+<span><span class="co">#&gt; 2    2       &lt;leaf&gt;  50   0     setosa    TRUE     1  50       0.01        0</span></span>
+<span><span class="co">#&gt; 3    3  Petal.Width 100  50 versicolor   FALSE     1 100       0.44        3</span></span>
+<span><span class="co">#&gt; 4    6       &lt;leaf&gt;  54   5 versicolor    TRUE     2  54       0.00        0</span></span>
+<span><span class="co">#&gt; 5    7       &lt;leaf&gt;  46   1  virginica    TRUE     2  46       0.01        0</span></span>
+<span><span class="co">#&gt;   nsurrogate dev_improvement n_setosa n_versicolor n_virginica prob_setosa</span></span>
+<span><span class="co">#&gt; 1          3              50       50           50          50   0.3333333</span></span>
+<span><span class="co">#&gt; 2          0              NA       50            0           0   1.0000000</span></span>
+<span><span class="co">#&gt; 3          3              44        0           50          50   0.0000000</span></span>
+<span><span class="co">#&gt; 4          0              NA        0           49           5   0.0000000</span></span>
+<span><span class="co">#&gt; 5          0              NA        0            1          45   0.0000000</span></span>
+<span><span class="co">#&gt;   prob_versicolor prob_virginica  nodeprob               label</span></span>
+<span><span class="co">#&gt; 1      0.33333333     0.33333333 1.0000000 Petal.Length\nn=150</span></span>
+<span><span class="co">#&gt; 2      0.00000000     0.00000000 0.3333333        setosa\nn=50</span></span>
+<span><span class="co">#&gt; 3      0.50000000     0.50000000 0.6666667  Petal.Width\nn=100</span></span>
+<span><span class="co">#&gt; 4      0.90740741     0.09259259 0.3600000    versicolor\nn=54</span></span>
+<span><span class="co">#&gt; 5      0.02173913     0.97826087 0.3066667     virginica\nn=46</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="as-igraph-2">as.igraph<a class="anchor" aria-label="anchor" href="#as-igraph-2"></a>
 </h3>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">rp</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as.igraph.html">as.igraph</a></span><span class="op">(</span><span class="va">rp</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH fcbdca1 DN-- 5 4 -- </span></span>
+<span><span class="co">#&gt; IGRAPH e2c8ba4 DN-- 5 4 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), var (v/c), n (v/n), dev (v/n), yval (v/c), is_leaf</span></span>
-<span><span class="co">#&gt; | (v/l), label (v/c), label (e/c), split_var (e/c), split_op (e/c),</span></span>
-<span><span class="co">#&gt; | split_point (e/n)</span></span>
-<span><span class="co">#&gt; + edges from fcbdca1 (vertex names):</span></span>
+<span><span class="co">#&gt; | (v/l), depth (v/n), wt (v/n), complexity (v/n), ncompete (v/n),</span></span>
+<span><span class="co">#&gt; | nsurrogate (v/n), dev_improvement (v/n), n_setosa (v/n), n_versicolor</span></span>
+<span><span class="co">#&gt; | (v/n), n_virginica (v/n), prob_setosa (v/n), prob_versicolor (v/n),</span></span>
+<span><span class="co">#&gt; | prob_virginica (v/n), nodeprob (v/n), label (v/c), label (e/c),</span></span>
+<span><span class="co">#&gt; | split_var (e/c), split_op (e/c), split_point (e/n)</span></span>
+<span><span class="co">#&gt; + edges from e2c8ba4 (vertex names):</span></span>
 <span><span class="co">#&gt; [1] 1-&gt;2 1-&gt;3 3-&gt;6 3-&gt;7</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="as_tbl_graph-2">as_tbl_graph<a class="anchor" aria-label="anchor" href="#as_tbl_graph-2"></a>
 </h3>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph</a></span><span class="op">(</span><span class="va">rp</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/as_tbl_graph.html">as_tbl_graph</a></span><span class="op">(</span><span class="va">rp</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tbl_graph: 5 nodes and 4 edges</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # A rooted tree</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
-<span><span class="co"><span style="color: #949494;">#&gt; # Node Data: 5 × 7 (active)</span></span></span>
-<span><span class="co">#&gt;   name  var              n   dev yval       is_leaf label                </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1     Petal.Length   150   100 setosa     FALSE   <span style="color: #949494;">"</span>Petal.Length\nn=150<span style="color: #949494;">"</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2     &lt;leaf&gt;          50     0 setosa     TRUE    <span style="color: #949494;">"</span>setosa\nn=50<span style="color: #949494;">"</span>       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3     Petal.Width    100    50 versicolor FALSE   <span style="color: #949494;">"</span>Petal.Width\nn=100<span style="color: #949494;">"</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 6     &lt;leaf&gt;          54     5 versicolor TRUE    <span style="color: #949494;">"</span>versicolor\nn=54<span style="color: #949494;">"</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 7     &lt;leaf&gt;          46     1 virginica  TRUE    <span style="color: #949494;">"</span>virginica\nn=46<span style="color: #949494;">"</span>    </span></span>
+<span><span class="co"><span style="color: #949494;">#&gt; # Node Data: 5 × 20 (active)</span></span></span>
+<span><span class="co">#&gt;   name  var              n   dev yval    is_leaf depth    wt complexity ncompete</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1     Petal.Length   150   100 setosa  FALSE       0   150       0.5         3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2     &lt;leaf&gt;          50     0 setosa  TRUE        1    50       0.01        0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3     Petal.Width    100    50 versic… FALSE       1   100       0.44        3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 6     &lt;leaf&gt;          54     5 versic… TRUE        2    54       0           0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 7     &lt;leaf&gt;          46     1 virgin… TRUE        2    46       0.01        0</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 10 more variables: nsurrogate &lt;int&gt;, dev_improvement &lt;dbl&gt;, n_setosa &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   n_versicolor &lt;dbl&gt;, n_virginica &lt;dbl&gt;, prob_setosa &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   prob_versicolor &lt;dbl&gt;, prob_virginica &lt;dbl&gt;, nodeprob &lt;dbl&gt;, label &lt;chr&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # Edge Data: 4 × 6</span></span></span>
 <span><span class="co">#&gt;    from    to label              split_var    split_op split_point</span></span>
@@ -815,56 +847,58 @@ count:</p>
 </h3>
 <div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/nodelist.html">nodelist</a></span><span class="op">(</span><span class="va">gb</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   name is_leaf split_var split_var_name split_point prediction treenum</span></span>
-<span><span class="co">#&gt; 1    0   FALSE         2   Petal.Length        2.45      0.018       1</span></span>
-<span><span class="co">#&gt; 2    1   FALSE         1    Sepal.Width        3.30      0.300       1</span></span>
-<span><span class="co">#&gt; 3    2    TRUE        NA           &lt;NA&gt;          NA      0.300       1</span></span>
-<span><span class="co">#&gt; 4    3    TRUE        NA           &lt;NA&gt;          NA      0.300       1</span></span>
-<span><span class="co">#&gt; 5    5   FALSE         3    Petal.Width        1.95     -0.150       1</span></span>
-<span><span class="co">#&gt; 6    6    TRUE        NA           &lt;NA&gt;          NA     -0.150       1</span></span>
-<span><span class="co">#&gt; 7    7    TRUE        NA           &lt;NA&gt;          NA     -0.150       1</span></span>
-<span><span class="co">#&gt;                  label</span></span>
-<span><span class="co">#&gt; 1 Petal.Length\n&lt; 2.45</span></span>
-<span><span class="co">#&gt; 2   Sepal.Width\n&lt; 3.3</span></span>
-<span><span class="co">#&gt; 3                  0.3</span></span>
-<span><span class="co">#&gt; 4                  0.3</span></span>
-<span><span class="co">#&gt; 5  Petal.Width\n&lt; 1.95</span></span>
-<span><span class="co">#&gt; 6                -0.15</span></span>
-<span><span class="co">#&gt; 7                -0.15</span></span></code></pre></div>
+<span><span class="co">#&gt;   name is_leaf split_var split_var_name split_point prediction error_reduction</span></span>
+<span><span class="co">#&gt; 1    0   FALSE         2   Petal.Length        2.45      0.018    1.754667e+01</span></span>
+<span><span class="co">#&gt; 2    1   FALSE         1    Sepal.Width        3.30      0.300    7.131443e-31</span></span>
+<span><span class="co">#&gt; 3    2    TRUE        NA           &lt;NA&gt;          NA      0.300    0.000000e+00</span></span>
+<span><span class="co">#&gt; 4    3    TRUE        NA           &lt;NA&gt;          NA      0.300    0.000000e+00</span></span>
+<span><span class="co">#&gt; 5    5   FALSE         3    Petal.Width        1.95     -0.150    1.069801e-29</span></span>
+<span><span class="co">#&gt; 6    6    TRUE        NA           &lt;NA&gt;          NA     -0.150    0.000000e+00</span></span>
+<span><span class="co">#&gt; 7    7    TRUE        NA           &lt;NA&gt;          NA     -0.150    0.000000e+00</span></span>
+<span><span class="co">#&gt;   weight treenum                label</span></span>
+<span><span class="co">#&gt; 1     75       1 Petal.Length\n&lt; 2.45</span></span>
+<span><span class="co">#&gt; 2     28       1   Sepal.Width\n&lt; 3.3</span></span>
+<span><span class="co">#&gt; 3     10       1                  0.3</span></span>
+<span><span class="co">#&gt; 4     18       1                  0.3</span></span>
+<span><span class="co">#&gt; 5     47       1  Petal.Width\n&lt; 1.95</span></span>
+<span><span class="co">#&gt; 6     37       1                -0.15</span></span>
+<span><span class="co">#&gt; 7     10       1                -0.15</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="as-igraph-3">as.igraph<a class="anchor" aria-label="anchor" href="#as-igraph-3"></a>
 </h3>
 <div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">gb</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as.igraph.html">as.igraph</a></span><span class="op">(</span><span class="va">gb</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH ef0c2be DN-- 7 6 -- </span></span>
+<span><span class="co">#&gt; IGRAPH 54d1a53 DN-- 7 6 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), is_leaf (v/l), split_var (v/n), split_var_name</span></span>
-<span><span class="co">#&gt; | (v/c), split_point (v/n), prediction (v/n), treenum (v/n), label</span></span>
-<span><span class="co">#&gt; | (v/c), split_var (e/n), split_point (e/n), prediction (e/n), treenum</span></span>
-<span><span class="co">#&gt; | (e/n), split_var_name (e/c)</span></span>
-<span><span class="co">#&gt; + edges from ef0c2be (vertex names):</span></span>
+<span><span class="co">#&gt; | (v/c), split_point (v/n), prediction (v/n), error_reduction (v/n),</span></span>
+<span><span class="co">#&gt; | weight (v/n), treenum (v/n), label (v/c), split_var (e/n),</span></span>
+<span><span class="co">#&gt; | split_point (e/n), prediction (e/n), treenum (e/n), split_var_name</span></span>
+<span><span class="co">#&gt; | (e/c)</span></span>
+<span><span class="co">#&gt; + edges from 54d1a53 (vertex names):</span></span>
 <span><span class="co">#&gt; [1] 0-&gt;1 1-&gt;2 5-&gt;6 0-&gt;5 1-&gt;3 5-&gt;7</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="as_tbl_graph-3">as_tbl_graph<a class="anchor" aria-label="anchor" href="#as_tbl_graph-3"></a>
 </h3>
 <div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph</a></span><span class="op">(</span><span class="va">gb</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/as_tbl_graph.html">as_tbl_graph</a></span><span class="op">(</span><span class="va">gb</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tbl_graph: 7 nodes and 6 edges</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # A rooted tree</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
-<span><span class="co"><span style="color: #949494;">#&gt; # Node Data: 7 × 8 (active)</span></span></span>
-<span><span class="co">#&gt;   name  is_leaf split_var split_var_name split_point prediction treenum label   </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0     FALSE           2 Petal.Length          2.45     0.018<span style="text-decoration: underline;">0</span>       1 <span style="color: #949494;">"</span>Petal.…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 1     FALSE           1 Sepal.Width           3.3      0.3          1 <span style="color: #949494;">"</span>Sepal.…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 2     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>        0.3          1 <span style="color: #949494;">"</span>0.3<span style="color: #949494;">"</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 3     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>        0.3          1 <span style="color: #949494;">"</span>0.3<span style="color: #949494;">"</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 5     FALSE           3 Petal.Width           1.95    -<span style="color: #BB0000;">0.15</span>         1 <span style="color: #949494;">"</span>Petal.…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 6     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>       -<span style="color: #BB0000;">0.15</span>         1 <span style="color: #949494;">"</span>-0.15<span style="color: #949494;">"</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> 7     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>       -<span style="color: #BB0000;">0.15</span>         1 <span style="color: #949494;">"</span>-0.15<span style="color: #949494;">"</span> </span></span>
+<span><span class="co"><span style="color: #949494;">#&gt; # Node Data: 7 × 10 (active)</span></span></span>
+<span><span class="co">#&gt;   name  is_leaf split_var split_var_name split_point prediction error_reduction</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0     FALSE           2 Petal.Length          2.45     0.018<span style="text-decoration: underline;">0</span>        1.75<span style="color: #949494;">e</span>+ 1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 1     FALSE           1 Sepal.Width           3.3      0.3           7.13<span style="color: #949494;">e</span><span style="color: #BB0000;">-31</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 2     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>        0.3           0   <span style="color: #949494;"> </span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 3     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>        0.3           0   <span style="color: #949494;"> </span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 5     FALSE           3 Petal.Width           1.95    -<span style="color: #BB0000;">0.15</span>          1.07<span style="color: #949494;">e</span><span style="color: #BB0000;">-29</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 6     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>       -<span style="color: #BB0000;">0.15</span>          0   <span style="color: #949494;"> </span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> 7     TRUE           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>                   <span style="color: #BB0000;">NA</span>       -<span style="color: #BB0000;">0.15</span>          0   <span style="color: #949494;"> </span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 more variables: weight &lt;dbl&gt;, treenum &lt;int&gt;, label &lt;chr&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # Edge Data: 6 × 7</span></span></span>
 <span><span class="co">#&gt;    from    to split_var split_point prediction treenum split_var_name</span></span>
@@ -960,39 +994,43 @@ count:</p>
 </h3>
 <div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/nodelist.html">nodelist</a></span><span class="op">(</span><span class="va">xg</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   name is_leaf      feature split    quality    cover treenum             label</span></span>
-<span><span class="co">#&gt; 1  0-0   FALSE Petal.Length     3 72.2967682 66.66666       1 Petal.Length\n&lt; 3</span></span>
-<span><span class="co">#&gt; 2  0-1    TRUE         &lt;NA&gt;    NA  0.4306220 22.22222       1            0.4306</span></span>
-<span><span class="co">#&gt; 3  0-2    TRUE         &lt;NA&gt;    NA -0.2200489 44.44444       1             -0.22</span></span></code></pre></div>
+<span><span class="co">#&gt;   name is_leaf      feature split    quality    cover missing treenum</span></span>
+<span><span class="co">#&gt; 1  0-0   FALSE Petal.Length     3 72.2967682 66.66666     0-2       1</span></span>
+<span><span class="co">#&gt; 2  0-1    TRUE         &lt;NA&gt;    NA  0.4306220 22.22222    &lt;NA&gt;       1</span></span>
+<span><span class="co">#&gt; 3  0-2    TRUE         &lt;NA&gt;    NA -0.2200489 44.44444    &lt;NA&gt;       1</span></span>
+<span><span class="co">#&gt;               label</span></span>
+<span><span class="co">#&gt; 1 Petal.Length\n&lt; 3</span></span>
+<span><span class="co">#&gt; 2            0.4306</span></span>
+<span><span class="co">#&gt; 3             -0.22</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="as-igraph-4">as.igraph<a class="anchor" aria-label="anchor" href="#as-igraph-4"></a>
 </h3>
 <div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">as.igraph</a></span><span class="op">(</span><span class="va">xg</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as.igraph.html">as.igraph</a></span><span class="op">(</span><span class="va">xg</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH 799c631 DN-- 3 2 -- </span></span>
+<span><span class="co">#&gt; IGRAPH 22be017 DN-- 3 2 -- </span></span>
 <span><span class="co">#&gt; + attr: name (v/c), is_leaf (v/l), feature (v/c), split (v/n), quality</span></span>
-<span><span class="co">#&gt; | (v/n), cover (v/n), treenum (v/n), label (v/c), feature (e/c), split</span></span>
-<span><span class="co">#&gt; | (e/n), quality (e/n), cover (e/n), treenum (e/n)</span></span>
-<span><span class="co">#&gt; + edges from 799c631 (vertex names):</span></span>
+<span><span class="co">#&gt; | (v/n), cover (v/n), missing (v/c), treenum (v/n), label (v/c),</span></span>
+<span><span class="co">#&gt; | feature (e/c), split (e/n), quality (e/n), cover (e/n), treenum (e/n)</span></span>
+<span><span class="co">#&gt; + edges from 22be017 (vertex names):</span></span>
 <span><span class="co">#&gt; [1] 0-0-&gt;0-1 0-0-&gt;0-2</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="as_tbl_graph-4">as_tbl_graph<a class="anchor" aria-label="anchor" href="#as_tbl_graph-4"></a>
 </h3>
 <div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">as_tbl_graph</a></span><span class="op">(</span><span class="va">xg</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/as_tbl_graph.html">as_tbl_graph</a></span><span class="op">(</span><span class="va">xg</span>, treenum <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tbl_graph: 3 nodes and 2 edges</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # A rooted tree</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
-<span><span class="co"><span style="color: #949494;">#&gt; # Node Data: 3 × 8 (active)</span></span></span>
-<span><span class="co">#&gt;   name  is_leaf feature      split quality cover treenum label              </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0-0   FALSE   Petal.Length     3  72.3    66.7       1 <span style="color: #949494;">"</span>Petal.Length\n&lt; 3<span style="color: #949494;">"</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0-1   TRUE    <span style="color: #BB0000;">NA</span>              <span style="color: #BB0000;">NA</span>   0.431  22.2       1 <span style="color: #949494;">"</span>0.4306<span style="color: #949494;">"</span>           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 0-2   TRUE    <span style="color: #BB0000;">NA</span>              <span style="color: #BB0000;">NA</span>  -<span style="color: #BB0000;">0.220</span>  44.4       1 <span style="color: #949494;">"</span>-0.22<span style="color: #949494;">"</span>            </span></span>
+<span><span class="co"><span style="color: #949494;">#&gt; # Node Data: 3 × 9 (active)</span></span></span>
+<span><span class="co">#&gt;   name  is_leaf feature      split quality cover missing treenum label          </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0-0   FALSE   Petal.Length     3  72.3    66.7 0-2           1 <span style="color: #949494;">"</span>Petal.Length\…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0-1   TRUE    <span style="color: #BB0000;">NA</span>              <span style="color: #BB0000;">NA</span>   0.431  22.2 <span style="color: #BB0000;">NA</span>            1 <span style="color: #949494;">"</span>0.4306<span style="color: #949494;">"</span>       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 0-2   TRUE    <span style="color: #BB0000;">NA</span>              <span style="color: #BB0000;">NA</span>  -<span style="color: #BB0000;">0.220</span>  44.4 <span style="color: #BB0000;">NA</span>            1 <span style="color: #949494;">"</span>-0.22<span style="color: #949494;">"</span>        </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # Edge Data: 2 × 7</span></span></span>
 <span><span class="co">#&gt;    from    to feature      split quality cover treenum</span></span>

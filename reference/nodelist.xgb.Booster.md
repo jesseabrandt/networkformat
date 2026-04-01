@@ -55,6 +55,11 @@ A data.frame with one row per node and the following columns:
 
   Cover (sum of second-order gradient)
 
+- missing:
+
+  Node ID (`"Tree-Node"` format) where observations with missing values
+  are routed; `NA` for leaves
+
 - treenum:
 
   1-based tree number
@@ -77,18 +82,18 @@ if (requireNamespace("xgboost", quietly = TRUE)) {
   nl <- nodelist(bst)
   head(nl)
 }
-#>   name is_leaf                 feature   split      quality      cover treenum
-#> 1  0-0   FALSE               odor=none 2.00001 4005.7177700 1626.16614       1
-#> 2  0-1   FALSE spore-print-color=green 2.00001  198.1621090  702.84930       1
-#> 3  0-2   FALSE         stalk-root=club 2.00001 1159.8702400  923.31677       1
-#> 4  0-3    TRUE                    <NA>      NA    0.5785417   13.23304       1
-#> 5  0-4    TRUE                    <NA>      NA   -0.5614965  689.61627       1
-#> 6  0-5    TRUE                    <NA>      NA   -0.4894775  112.35602       1
-#>                          label
-#> 1               odor=none\n< 2
-#> 2 spore-print-color=green\n< 2
-#> 3         stalk-root=club\n< 2
-#> 4                       0.5785
-#> 5                      -0.5615
-#> 6                      -0.4895
+#>   name is_leaf                 feature   split      quality      cover missing
+#> 1  0-0   FALSE               odor=none 2.00001 4005.7177700 1626.16614     0-2
+#> 2  0-1   FALSE spore-print-color=green 2.00001  198.1621090  702.84930     0-4
+#> 3  0-2   FALSE         stalk-root=club 2.00001 1159.8702400  923.31677     0-6
+#> 4  0-3    TRUE                    <NA>      NA    0.5785417   13.23304    <NA>
+#> 5  0-4    TRUE                    <NA>      NA   -0.5614965  689.61627    <NA>
+#> 6  0-5    TRUE                    <NA>      NA   -0.4894775  112.35602    <NA>
+#>   treenum                        label
+#> 1       1               odor=none\n< 2
+#> 2       1 spore-print-color=green\n< 2
+#> 3       1         stalk-root=club\n< 2
+#> 4       1                       0.5785
+#> 5       1                      -0.5615
+#> 6       1                      -0.4895
 ```

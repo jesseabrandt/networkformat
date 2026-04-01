@@ -88,22 +88,38 @@ edges[!is.na(edges$split_point) & edges$split_point > 5, ]
 ``` r
 nodes <- nodelist(tr)
 nodes
-#>    name          var   n        dev       yval is_leaf               label
-#> 1     1 Sepal.Length 150 329.583687     setosa   FALSE Sepal.Length\nn=150
-#> 2     2  Sepal.Width  59  66.481848     setosa   FALSE   Sepal.Width\nn=59
-#> 3     4 Sepal.Length  12  13.586058 versicolor   FALSE  Sepal.Length\nn=12
-#> 4     8       <leaf>   5   9.502705 versicolor    TRUE     versicolor\nn=5
-#> 5     9       <leaf>   7   0.000000 versicolor    TRUE     versicolor\nn=7
-#> 6     5 Sepal.Length  47   9.678866     setosa   FALSE  Sepal.Length\nn=47
-#> 7    10       <leaf>  39   0.000000     setosa    TRUE        setosa\nn=39
-#> 8    11       <leaf>   8   6.028323     setosa    TRUE         setosa\nn=8
-#> 9     3  Sepal.Width  91 147.228559  virginica   FALSE   Sepal.Width\nn=91
-#> 10    6 Sepal.Length  86 118.476052  virginica   FALSE  Sepal.Length\nn=86
-#> 11   12       <leaf>  37  46.626375 versicolor    TRUE    versicolor\nn=37
-#> 12   13 Sepal.Length  49  58.630420  virginica   FALSE  Sepal.Length\nn=49
-#> 13   26       <leaf>  39  50.920412  virginica    TRUE     virginica\nn=39
-#> 14   27       <leaf>  10   0.000000  virginica    TRUE     virginica\nn=10
-#> 15    7       <leaf>   5   6.730117     setosa    TRUE         setosa\nn=5
+#>    name          var   n        dev       yval is_leaf depth dev_improvement
+#> 1     1 Sepal.Length 150 329.583687     setosa   FALSE     0      115.873280
+#> 2     2  Sepal.Width  59  66.481848     setosa   FALSE     1       43.216924
+#> 3     4 Sepal.Length  12  13.586058 versicolor   FALSE     2        4.083352
+#> 4     8       <leaf>   5   9.502705 versicolor    TRUE     3              NA
+#> 5     9       <leaf>   7   0.000000 versicolor    TRUE     3              NA
+#> 6     5 Sepal.Length  47   9.678866     setosa   FALSE     2        3.650544
+#> 7    10       <leaf>  39   0.000000     setosa    TRUE     3              NA
+#> 8    11       <leaf>   8   6.028323     setosa    TRUE     3              NA
+#> 9     3  Sepal.Width  91 147.228559  virginica   FALSE     1       22.022390
+#> 10    6 Sepal.Length  86 118.476052  virginica   FALSE     2       13.219258
+#> 11   12       <leaf>  37  46.626375 versicolor    TRUE     3              NA
+#> 12   13 Sepal.Length  49  58.630420  virginica   FALSE     3        7.710008
+#> 13   26       <leaf>  39  50.920412  virginica    TRUE     4              NA
+#> 14   27       <leaf>  10   0.000000  virginica    TRUE     4              NA
+#> 15    7       <leaf>   5   6.730117     setosa    TRUE     2              NA
+#>    prob_setosa prob_versicolor prob_virginica               label
+#> 1   0.33333333       0.3333333     0.33333333 Sepal.Length\nn=150
+#> 2   0.79661017       0.1864407     0.01694915   Sepal.Width\nn=59
+#> 3   0.08333333       0.8333333     0.08333333  Sepal.Length\nn=12
+#> 4   0.20000000       0.6000000     0.20000000     versicolor\nn=5
+#> 5   0.00000000       1.0000000     0.00000000     versicolor\nn=7
+#> 6   0.97872340       0.0212766     0.00000000  Sepal.Length\nn=47
+#> 7   1.00000000       0.0000000     0.00000000        setosa\nn=39
+#> 8   0.87500000       0.1250000     0.00000000         setosa\nn=8
+#> 9   0.03296703       0.4285714     0.53846154   Sepal.Width\nn=91
+#> 10  0.00000000       0.4534884     0.54651163  Sepal.Length\nn=86
+#> 11  0.00000000       0.6756757     0.32432432    versicolor\nn=37
+#> 12  0.00000000       0.2857143     0.71428571  Sepal.Length\nn=49
+#> 13  0.00000000       0.3589744     0.64102564     virginica\nn=39
+#> 14  0.00000000       0.0000000     1.00000000     virginica\nn=10
+#> 15  0.60000000       0.0000000     0.40000000         setosa\nn=5
 ```
 
 Columns:

@@ -5,12 +5,6 @@ edgelist. Each element of the list becomes a node; nested lists create
 deeper edges. Path-style IDs ensure unique node names even when element
 names repeat at different levels.
 
-When called on an S3 object that has no dedicated `edgelist` method
-(e.g. an `lm` object), the object is treated as a plain list and a
-diagnostic message is emitted. To force structural decomposition of an
-object that has its own method (e.g. a `tree`), use
-`edgelist(unclass(x))`.
-
 ## Usage
 
 ``` r
@@ -40,21 +34,17 @@ edgelist(input_object, name_root = "root", max_depth = NULL, ...)
 
 ## Value
 
-A data.frame with the following columns:
+A data.frame with columns `from`, `to`, and `depth` (integer depth of
+the child node, root children are depth 1). An empty list returns a
+zero-row data.frame with the same columns.
 
-- from:
+## Details
 
-  Parent node path-style ID (e.g. `"root"`, `"root/a"`)
-
-- to:
-
-  Child node path-style ID (e.g. `"root/a"`, `"root/a/b"`)
-
-- depth:
-
-  Integer depth of the child node (root children are depth 1)
-
-An empty list returns a zero-row data.frame with the same columns.
+When called on an S3 object that has no dedicated `edgelist` method
+(e.g. an `lm` object), the object is treated as a plain list and a
+diagnostic message is emitted. To force structural decomposition of an
+object that has its own method (e.g. a `tree`), use
+`edgelist(unclass(x))`.
 
 ## Examples
 

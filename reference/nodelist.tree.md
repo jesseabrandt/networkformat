@@ -52,6 +52,21 @@ A data.frame with one row per node and the following columns:
 
   Logical: `TRUE` for terminal nodes
 
+- depth:
+
+  Integer tree depth (root = 0)
+
+- dev_improvement:
+
+  Numeric deviance reduction from this node's split (`NA` for leaves)
+
+- prob\_\*:
+
+  (Classification only) One column per class with the class probability
+  at that node, named `prob_<classname>`. Class names are sanitized via
+  [`make.names()`](https://rdrr.io/r/base/make.names.html) and
+  lowercased.
+
 - label:
 
   Display label: `"<var>\nn=<n>"` for internal nodes, `"<yval>\nn=<n>"`

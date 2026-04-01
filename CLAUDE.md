@@ -56,16 +56,16 @@ The package uses **S3 method dispatch** with four groups of functions:
 
 ### `nodelist()` — extract node attributes
 
-| Method                  | Input         | Key Parameters           | Output Columns                                                                    | Status   |
-|-------------------------|---------------|--------------------------|-----------------------------------------------------------------------------------|----------|
-| `nodelist.default`      | atomic vector |                          | name, n                                                                           | Complete |
-| `nodelist.list`         | list          | `name_root`, `max_depth` | name, depth, type, n_children, label                                              | Complete |
-| `nodelist.data.frame`   | data.frame    | `id_col`                 | (reordered input, id_col first)                                                   | Complete |
-| `nodelist.randomForest` | randomForest  | `treenum`                | name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label | Complete |
-| `nodelist.tree`         | tree          |                          | name, var, n, dev, yval, is_leaf, label                                           | Complete |
-| `nodelist.rpart`        | rpart         |                          | name, var, n, dev, yval, is_leaf, label                                           | Complete |
-| `nodelist.xgb.Booster`  | xgb.Booster   | `treenum`                | name, is_leaf, feature, split, quality, cover, treenum, label                     | Complete |
-| `nodelist.gbm`          | gbm           | `treenum`                | name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label | Complete |
+| Method                  | Input         | Key Parameters           | Output Columns                                                                                                                               | Status   |
+|-------------------------|---------------|--------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|----------|
+| `nodelist.default`      | atomic vector |                          | name, n                                                                                                                                      | Complete |
+| `nodelist.list`         | list          | `name_root`, `max_depth` | name, depth, type, n_children, label                                                                                                         | Complete |
+| `nodelist.data.frame`   | data.frame    | `id_col`                 | (reordered input, id_col first)                                                                                                              | Complete |
+| `nodelist.randomForest` | randomForest  | `treenum`                | name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label                                                            | Complete |
+| `nodelist.tree`         | tree          |                          | name, var, n, dev, yval, is_leaf, depth, dev_improvement, \[prob\_\*\], label                                                                | Complete |
+| `nodelist.rpart`        | rpart         |                          | name, var, n, dev, yval, is_leaf, depth, wt, complexity, ncompete, nsurrogate, dev_improvement, \[n\_\*\], \[prob\_\*\], \[nodeprob\], label | Complete |
+| `nodelist.xgb.Booster`  | xgb.Booster   | `treenum`                | name, is_leaf, feature, split, quality, cover, missing, treenum, label                                                                       | Complete |
+| `nodelist.gbm`          | gbm           | `treenum`                | name, is_leaf, split_var, split_var_name, split_point, prediction, error_reduction, weight, treenum, label                                   | Complete |
 
 ### `as.igraph()` / `as_tbl_graph()` — direct graph construction
 
@@ -121,6 +121,8 @@ pattern for `nodelist.*`. Graph conversion methods live in
 [`igraph::as.igraph`](https://r.igraph.org/reference/as.igraph.html))
 and `R/as_tbl_graph.R` (methods for
 [`tidygraph::as_tbl_graph`](https://tidygraph.data-imaginist.com/reference/tbl_graph.html)).
+Internal helpers shared across nodelist methods live in
+`R/utils-nodelist.R` (`.compute_depth()`, `.compute_dev_improvement()`).
 
 ### Key algorithms
 
@@ -184,7 +186,10 @@ and `R/as_tbl_graph.R` (methods for
 
 - Framework: testthat 3rd edition
 - Test files: `test-edgelist.R` (~220 tests), `test-nodelist.R` (~171
-  tests), `test-as.igraph.R` (tests `as.igraph()` and `as_tbl_graph()`
+  tests), `test-as.igraph.R` (tests
+  [`as.igraph()`](https://jesseabrandt.github.io/networkformat/reference/as.igraph.md)
+  and
+  [`as_tbl_graph()`](https://jesseabrandt.github.io/networkformat/reference/as_tbl_graph.md)
   methods)
 - Tests for randomForest/tree use `skip_if_not_installed()`
 - The overlap warning in `test-edgelist.R` is expected (tests that

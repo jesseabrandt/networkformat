@@ -3,11 +3,6 @@
 Recursively traverses a nested list structure, producing one row per
 node with metadata about each element.
 
-When called on an S3 object that has no dedicated `nodelist` method, the
-object is treated as a plain list and a diagnostic message is emitted.
-To force structural decomposition of an object that has its own method
-(e.g. a `tree`), use `nodelist(unclass(x))`.
-
 ## Usage
 
 ``` r
@@ -37,30 +32,17 @@ nodelist(input_object, name_root = "root", max_depth = NULL, ...)
 
 ## Value
 
-A data.frame with the following columns:
+A data.frame with columns `name` (path-style ID), `depth` (integer),
+`type` (character class of the element), `n_children` (integer, 0 for
+leaves), and `label` (element name or positional index). An empty list
+returns a one-row data.frame for the root node only.
 
-- name:
+## Details
 
-  Path-style node ID (e.g. `"root"`, `"root/a"`)
-
-- depth:
-
-  Integer depth (root is 0, root children are 1)
-
-- type:
-
-  Character class of the element (e.g. `"numeric"`, `"character"`,
-  `"list"`)
-
-- n_children:
-
-  Integer number of direct children (0 for leaves)
-
-- label:
-
-  Element name or positional index (e.g. `"a"`, `"[[2]]"`)
-
-An empty list returns a one-row data.frame for the root node only.
+When called on an S3 object that has no dedicated `nodelist` method, the
+object is treated as a plain list and a diagnostic message is emitted.
+To force structural decomposition of an object that has its own method
+(e.g. a `tree`), use `nodelist(unclass(x))`.
 
 ## Examples
 

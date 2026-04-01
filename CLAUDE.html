@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">networkformat</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -158,22 +158,22 @@
 </tr><tr class="odd"><td><code>nodelist.tree</code></td>
 <td>tree</td>
 <td></td>
-<td>name, var, n, dev, yval, is_leaf, label</td>
+<td>name, var, n, dev, yval, is_leaf, depth, dev_improvement, [prob_*], label</td>
 <td>Complete</td>
 </tr><tr class="even"><td><code>nodelist.rpart</code></td>
 <td>rpart</td>
 <td></td>
-<td>name, var, n, dev, yval, is_leaf, label</td>
+<td>name, var, n, dev, yval, is_leaf, depth, wt, complexity, ncompete, nsurrogate, dev_improvement, [n_*], [prob_*], [nodeprob], label</td>
 <td>Complete</td>
 </tr><tr class="odd"><td><code>nodelist.xgb.Booster</code></td>
 <td>xgb.Booster</td>
 <td><code>treenum</code></td>
-<td>name, is_leaf, feature, split, quality, cover, treenum, label</td>
+<td>name, is_leaf, feature, split, quality, cover, missing, treenum, label</td>
 <td>Complete</td>
 </tr><tr class="even"><td><code>nodelist.gbm</code></td>
 <td>gbm</td>
 <td><code>treenum</code></td>
-<td>name, is_leaf, split_var, split_var_name, split_point, prediction, treenum, label</td>
+<td>name, is_leaf, split_var, split_var_name, split_point, prediction, error_reduction, weight, treenum, label</td>
 <td>Complete</td>
 </tr></tbody></table></div>
 <div class="section level3">
@@ -245,7 +245,7 @@
 </ul></div>
 <div class="section level3">
 <h3 id="file-organization">File organization<a class="anchor" aria-label="anchor" href="#file-organization"></a></h3>
-<p>Each S3 method lives in its own file: <code>R/edgelist.R</code> (generic), <code>R/edgelist.data.frame.R</code>, <code>R/edgelist.randomForest.R</code>, etc. Same pattern for <code>nodelist.*</code>. Graph conversion methods live in <code>R/as.igraph.R</code> (methods for <code><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">igraph::as.igraph</a></code>) and <code>R/as_tbl_graph.R</code> (methods for <code><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">tidygraph::as_tbl_graph</a></code>).</p>
+<p>Each S3 method lives in its own file: <code>R/edgelist.R</code> (generic), <code>R/edgelist.data.frame.R</code>, <code>R/edgelist.randomForest.R</code>, etc. Same pattern for <code>nodelist.*</code>. Graph conversion methods live in <code>R/as.igraph.R</code> (methods for <code><a href="https://r.igraph.org/reference/as.igraph.html" class="external-link">igraph::as.igraph</a></code>) and <code>R/as_tbl_graph.R</code> (methods for <code><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">tidygraph::as_tbl_graph</a></code>). Internal helpers shared across nodelist methods live in <code>R/utils-nodelist.R</code> (<code>.compute_depth()</code>, <code>.compute_dev_improvement()</code>).</p>
 </div>
 <div class="section level3">
 <h3 id="key-algorithms">Key algorithms<a class="anchor" aria-label="anchor" href="#key-algorithms"></a></h3>
@@ -295,7 +295,7 @@
 <div class="section level2">
 <h2 id="testing">Testing<a class="anchor" aria-label="anchor" href="#testing"></a></h2>
 <ul><li>Framework: testthat 3rd edition</li>
-<li>Test files: <code>test-edgelist.R</code> (~220 tests), <code>test-nodelist.R</code> (~171 tests), <code>test-as.igraph.R</code> (tests <code>as.igraph()</code> and <code>as_tbl_graph()</code> methods)</li>
+<li>Test files: <code>test-edgelist.R</code> (~220 tests), <code>test-nodelist.R</code> (~171 tests), <code>test-as.igraph.R</code> (tests <code><a href="reference/as.igraph.html">as.igraph()</a></code> and <code><a href="reference/as_tbl_graph.html">as_tbl_graph()</a></code> methods)</li>
 <li>Tests for randomForest/tree use <code>skip_if_not_installed()</code>
 </li>
 <li>The overlap warning in <code>test-edgelist.R</code> is expected (tests that <code>attr_cols</code> overlap triggers a warning)</li>

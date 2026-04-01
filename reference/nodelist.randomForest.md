@@ -72,6 +72,7 @@ columns:
 
 ``` r
 if (requireNamespace("randomForest", quietly = TRUE)) {
+  set.seed(12)
   rf <- randomForest::randomForest(Species ~ ., data = iris, ntree = 3)
   nodes <- nodelist(rf)
   head(nodes)

@@ -60,12 +60,12 @@ if (requireNamespace("randomForest", quietly = TRUE)) {
   head(edges_rf)
 }
 #>   from to split_var split_point prediction direction treenum split_var_name
-#> 1    1  2         3        2.60          1      left       1   Petal.Length
-#> 2    3  4         4        1.65          0      left       1    Petal.Width
-#> 3    4  6         3        5.00          2      left       1   Petal.Length
-#> 4    5  8         4        1.75          0      left       1    Petal.Width
-#> 5    7 10         2        2.75          2      left       1    Sepal.Width
-#> 6    8 12         1        5.80          3      left       1   Sepal.Length
+#> 1    1  2         4        0.75          1      left       1    Petal.Width
+#> 2    3  4         3        4.85          0      left       1   Petal.Length
+#> 3    4  6         4        1.65          2      left       1    Petal.Width
+#> 4    5  8         3        5.15          0      left       1   Petal.Length
+#> 5    7 10         2        3.10          3      left       1    Sepal.Width
+#> 6    8 12         4        1.75          0      left       1    Petal.Width
 
 # Tree example
 if (requireNamespace("tree", quietly = TRUE)) {

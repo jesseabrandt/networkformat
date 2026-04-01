@@ -1,6 +1,6 @@
 # Changelog
 
-## networkformat 0.0.0.9000 (Development version)
+## networkformat 0.1.0
 
 ### Features
 
@@ -23,15 +23,15 @@
   - `rpart` — node attributes with labels
   - `xgb.Booster` — node attributes with labels
   - `gbm` — node attributes per tree
-- [`as.igraph()`](https://r.igraph.org/reference/as.igraph.html) methods
-  for one-step igraph construction from `tree`, `randomForest`, `rpart`,
-  `xgb.Booster`, and `gbm` models — registered against igraph’s
-  [`as.igraph()`](https://r.igraph.org/reference/as.igraph.html) generic
-  via delayed S3 registration
-- [`as_tbl_graph()`](https://tidygraph.data-imaginist.com/reference/tbl_graph.html)
+- [`as.igraph()`](https://jesseabrandt.github.io/networkformat/reference/as.igraph.md)
+  methods for one-step igraph construction from `tree`, `randomForest`,
+  `rpart`, `xgb.Booster`, and `gbm` models — registered against igraph’s
+  [`as.igraph()`](https://jesseabrandt.github.io/networkformat/reference/as.igraph.md)
+  generic via delayed S3 registration
+- [`as_tbl_graph()`](https://jesseabrandt.github.io/networkformat/reference/as_tbl_graph.md)
   methods for one-step tbl_graph construction from the same model types
   — registered against tidygraph’s
-  [`as_tbl_graph()`](https://tidygraph.data-imaginist.com/reference/tbl_graph.html)
+  [`as_tbl_graph()`](https://jesseabrandt.github.io/networkformat/reference/as_tbl_graph.md)
   generic via delayed S3 registration
 - `weights` parameter for `edgelist.data.frame` and vector method —
   collapses duplicate rows and adds a `weight` count column
