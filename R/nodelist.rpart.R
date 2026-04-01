@@ -18,6 +18,21 @@
 #'     \item{yval}{Predicted value (numeric for regression, character class label
 #'       for classification)}
 #'     \item{is_leaf}{Logical: \code{TRUE} for terminal nodes}
+#'     \item{depth}{Integer tree depth (root = 0)}
+#'     \item{wt}{Weighted observation count}
+#'     \item{complexity}{CP pruning parameter at this node}
+#'     \item{ncompete}{Number of competing splits considered}
+#'     \item{nsurrogate}{Number of surrogate splits used}
+#'     \item{dev_improvement}{Numeric deviance reduction from this node's split
+#'       (\code{NA} for leaves)}
+#'     \item{n_*}{(Classification only) One column per class with the count of
+#'       observations of that class at the node, named \code{n_<classname>}.
+#'       Class names are sanitized via \code{make.names()} and lowercased.}
+#'     \item{prob_*}{(Classification only) One column per class with the
+#'       class probability at that node, named \code{prob_<classname>}.
+#'       Class names are sanitized via \code{make.names()} and lowercased.}
+#'     \item{nodeprob}{(Classification only) Proportion of training data
+#'       reaching this node}
 #'     \item{label}{Display label: \code{"<var>\\nn=<n>"} for internal nodes,
 #'       \code{"<yval>\\nn=<n>"} for leaves}
 #'   }
@@ -38,6 +53,7 @@ nodelist.rpart <- function(input_object, ...) {
 
   frame <- input_object$frame
   is_leaf <- frame$var == "<leaf>"
+  ids <- as.integer(rownames(frame))
 
   # For classification trees, decode yval to class name
   ylevels <- attr(input_object, "ylevels")
@@ -47,16 +63,53 @@ nodelist.rpart <- function(input_object, ...) {
     yval <- frame$yval
   }
 
-  data.frame(
-    name    = as.integer(rownames(frame)),
-    var     = as.character(frame$var),
-    n       = frame$n,
-    dev     = frame$dev,
-    yval    = yval,
-    is_leaf = is_leaf,
-    label   = ifelse(is_leaf,
-                     paste0(yval, "\nn=", frame$n),
-                     paste0(as.character(frame$var), "\nn=", frame$n)),
+  result <- data.frame(
+    name        = ids,
+    var         = as.character(frame$var),
+    n           = frame$n,
+    dev         = frame$dev,
+    yval        = yval,
+    is_leaf     = is_leaf,
+    depth       = .compute_depth(ids),
+    wt          = frame$wt,
+    complexity  = frame$complexity,
+    ncompete    = frame$ncompete,
+    nsurrogate  = frame$nsurrogate,
+    dev_improvement = .compute_dev_improvement(ids, frame$dev, is_leaf),
     stringsAsFactors = FALSE
   )
+
+  # Classification trees have yval2 matrix with counts, probs, nodeprob
+  if (!is.null(ylevels) && !is.null(frame$yval2)) {
+    yval2 <- frame$yval2
+    n_classes <- length(ylevels)
+    class_names_clean <- tolower(make.names(ylevels))
+
+    # yval2 layout: yval | counts (n_classes) | probs (n_classes) | nodeprob
+    expected_cols <- 1L + 2L * n_classes + 1L
+    if (ncol(yval2) != expected_cols) {
+      warning("Unexpected yval2 layout in rpart frame (", ncol(yval2),
+              " cols, expected ", expected_cols, "); skipping class probabilities.")
+    } else {
+      # Column 1 is predicted class (already used above as yval)
+      count_cols <- seq(2, 1 + n_classes)
+      prob_cols  <- seq(2 + n_classes, 1 + 2 * n_classes)
+      nodeprob_col <- 2 + 2 * n_classes
+
+      for (i in seq_len(n_classes)) {
+        result[[paste0("n_", class_names_clean[i])]] <- yval2[, count_cols[i]]
+      }
+      for (i in seq_len(n_classes)) {
+        result[[paste0("prob_", class_names_clean[i])]] <- yval2[, prob_cols[i]]
+      }
+      result$nodeprob <- yval2[, nodeprob_col]
+    }
+  }
+
+  # Label stays last
+  result$label <- ifelse(is_leaf,
+                         paste0(yval, "\nn=", frame$n),
+                         paste0(as.character(frame$var), "\nn=", frame$n))
+
+  result
 }

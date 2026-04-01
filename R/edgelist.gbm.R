@@ -69,7 +69,7 @@ edgelist.gbm <- function(input_object, treenum = NULL, ...) {
 
     # Map node IDs (from rownames) to their prediction values to avoid
     # assuming any particular row ordering in pretty.gbm.tree().
-    pred_by_node <- setNames(pt$Prediction, rownames(pt))
+    pred_by_node <- stats::setNames(pt$Prediction, rownames(pt))
     left_pred  <- pred_by_node[as.character(internal$LeftNode)]
     right_pred <- pred_by_node[as.character(internal$RightNode)]
 

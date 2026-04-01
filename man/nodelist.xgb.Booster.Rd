@@ -24,8 +24,10 @@ A data.frame with one row per node and the following columns:
     \item{split}{Split threshold (\code{NA} for leaves)}
     \item{quality}{Information gain for splits, leaf score for leaves}
     \item{cover}{Cover (sum of second-order gradient)}
+    \item{missing}{Node ID (\code{"Tree-Node"} format) where observations
+      with missing values are routed; \code{NA} for leaves}
     \item{treenum}{1-based tree number}
-    \item{label}{Display label: \code{"<feature>\n< <threshold>"} for
+    \item{label}{Display label: \code{"<feature>\\n< <threshold>"} for
       splits, rounded leaf score for leaves}
   }
 }
